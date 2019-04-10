@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content">
+
+    <Button
+        android:id="@+id/c_buttonD"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/ic_folder_black_24dp"
+        android:drawableLeft="@drawable/ic_folder_black_24dp"
+        android:gravity="left|center_vertical"
+        android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/c_buttonF"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/ic_description_black_24dp"
+        android:drawableLeft="@drawable/ic_description_black_24dp"
+        android:gravity="left|center_vertical"
+        android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+        android:visibility="gone" />
+
+    <Button
+        android:id="@+id/c_buttonP"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/ic_arrow_back_black_24dp"
+        android:drawableLeft="@drawable/ic_arrow_back_black_24dp"
+        android:gravity="left|center_vertical"
+        android:text=".."
+        android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+        android:visibility="gone" />
+    <Button
+        android:id="@+id/c_buttonR"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:drawableStart="@drawable/ic_storage_black_24dp"
+        android:drawableLeft="@drawable/ic_storage_black_24dp"
+        android:gravity="left|center_vertical"
+        android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+        android:visibility="gone" />
+</RelativeLayout>

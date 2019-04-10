@@ -1,0 +1,8 @@
+<resources>
+    <string name="app_name">Tiddloid</string>
+    <string name="action_settings">Settings</string>
+    <string name="there_is_no_wiki_here">There is no wiki here.</string>
+    <string name="url">URL or keyword</string>
+    <string name="js"></string>
+    <string name="remote">Remote</string>
+</resources>
