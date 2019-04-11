@@ -1,5 +1,6 @@
 <?xml version="1.0" encoding="utf-8"?>
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="wrap_content"
     android:layout_height="wrap_content">
 
@@ -12,6 +13,41 @@
         android:layout_marginRight="20dp"
         android:orientation="vertical">
 
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="0"
+            android:gravity="center_vertical"
+            android:orientation="horizontal">
+
+            <Button
+                android:id="@+id/btnBack"
+                style="@style/Widget.AppCompat.Light.ActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                android:drawableStart="@drawable/ic_arrow_back_black_24dp"
+                android:drawableLeft="@drawable/ic_arrow_back_black_24dp"
+                android:text=".."
+                android:textAppearance="@style/TextAppearance.AppCompat.Title" />
+
+            <TextView
+                android:id="@+id/lblPath"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="1"
+                android:gravity="left|center_vertical"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+            <ImageButton
+                android:id="@+id/btnNewfldr"
+                style="@style/Widget.AppCompat.Light.ActionButton"
+                android:layout_width="wrap_content"
+                android:layout_height="wrap_content"
+                android:layout_weight="0"
+                app:srcCompat="@drawable/ic_create_new_folder_black_24dp" />
+        </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/diFileList"
@@ -27,6 +63,7 @@
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
             android:layout_margin="2dp"
+            android:layout_weight="0"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -36,7 +73,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="2dp"
                 android:layout_weight="1"
-                android:ems="10"
+                android:imeOptions="actionDone"
                 android:hint="Filename"
                 android:inputType="textPersonName" />
 
@@ -46,6 +83,7 @@
                 android:layout_height="wrap_content"
                 android:layout_margin="2dp"
                 android:layout_weight="0"
+                android:enabled="false"
                 android:text=".html" />
         </LinearLayout>
 

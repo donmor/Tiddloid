@@ -1,41 +1,32 @@
 package indi.donmor.tiddloid.utils;
 
 import android.content.Context;
-import android.os.Environment;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
 import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
-import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
 import android.widget.Toast;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileFilter;
-import java.text.SimpleDateFormat;
-import java.util.Date;
 
-import indi.donmor.tiddloid.MainActivity;
 import indi.donmor.tiddloid.R;
 
-public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
+public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.WikiListHolder> {
 
 	Context context;
 	JSONObject db;
 	int count;
-	ReloadListener rl;
 	private LayoutInflater inflater;
 
 	Vibrator vibrator;
 
-	public WikiListAdapter(Context context, JSONObject db) {
+	public BackupListAdapter(Context context, JSONObject db) {
 		this.context = context;
 		this.db = db;
 		vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
@@ -45,7 +36,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			e.printStackTrace();
 		}
 		inflater = LayoutInflater.from(context);
-//		mReloadListener.onReloaded(this.getItemCount());
 	}
 
 	public class WikiListHolder extends RecyclerView.ViewHolder {
@@ -70,6 +60,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	public void onBindViewHolder(@NonNull WikiListHolder holder, final int position) {
 
 		try {
+			holder.btnWiki.setText(db.getJSONArray("wiki").getJSONObject(position).getString("name"));
 			holder.id = db.getJSONArray("wiki").getJSONObject(position).getString("id");
 			holder.btnWiki.setOnClickListener(new View.OnClickListener() {
 				@Override
@@ -81,19 +72,16 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 				@Override
 				public boolean onLongClick(View v) {
 //                    mItemClickListener.onItemClick(position);
-					vibrator.vibrate(new long[]{0,1}, -1);
+					vibrator.vibrate(20);
 					Toast.makeText(context, "e", Toast.LENGTH_SHORT).show();
-					mItemClickListener.onItemLongClick(position);
 					return true;
 				}
 			});
 			holder.path = db.getJSONArray("wiki").getJSONObject(position).getString("path");
 			File f = new File(holder.path);
 			System.out.println(f.getAbsolutePath());
-			if (f.exists()) {
-				holder.cvWiki.setVisibility(View.VISIBLE);
-				holder.btnWiki.setText(Html.fromHtml("</b>" + db.getJSONArray("wiki").getJSONObject(position).getString("name") + "</b><br><font color=\"grey\">" + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(f.lastModified())) + "</font>"));
-			} else holder.cvWiki.setVisibility(View.GONE);
+			if (f.exists()) holder.cvWiki.setVisibility(View.VISIBLE);
+			else holder.cvWiki.setVisibility(View.GONE);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -107,23 +95,12 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	private ItemClickListener mItemClickListener;
 
 	public interface ItemClickListener {
-		void onItemClick(int position);
-
-		void onItemLongClick(int position);
+		public void onItemClick(int position);
 	}
 
 	public void setOnItemClickListener(ItemClickListener itemClickListener) {
 		this.mItemClickListener = itemClickListener;
-	}
 
-	private ReloadListener mReloadListener;
-
-	public interface ReloadListener {
-		public void onReloaded(int count);
-	}
-
-	public void setReloadListener(ReloadListener reloadListener) {
-		this.mReloadListener = reloadListener;
 	}
 
 	public void reload(JSONObject db) {
@@ -134,7 +111,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		mReloadListener.onReloaded(this.getItemCount());
+
 	}
 
 	public String getId(int position) {

@@ -46,11 +46,15 @@
                 app:layout_constraintLeft_toLeftOf="parent"
                 app:layout_constraintRight_toRightOf="parent"
                 app:layout_constraintTop_toTopOf="parent" />
-
-            <android.support.v7.widget.RecyclerView
-                android:id="@+id/rv_wikilist"
+            <android.support.v4.widget.SwipeRefreshLayout
+                android:id="@+id/swiperereshlayout"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent" />
+                android:layout_height="match_parent">
+                <android.support.v7.widget.RecyclerView
+                    android:id="@+id/rv_wikilist"
+                    android:layout_width="match_parent"
+                    android:layout_height="match_parent" />
+            </android.support.v4.widget.SwipeRefreshLayout>
         </android.support.constraint.ConstraintLayout>
 
     </LinearLayout>
@@ -71,7 +75,7 @@
         android:layout_gravity="bottom|end"
         android:layout_margin="@dimen/fab_margin"
         app:fab_expandDirection="up"
-        app:fab_labelStyle="@style/AppTheme"
+        app:fab_labelStyle="@style/menu_labels_style"
         app:fab_labelsPosition="left">
 
         <com.getbase.floatingactionbutton.FloatingActionButton

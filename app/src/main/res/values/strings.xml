@@ -5,4 +5,5 @@
     <string name="url">URL or keyword</string>
     <string name="js"></string>
     <string name="remote">Remote</string>
+    <string name="efn">eFn</string>
 </resources>

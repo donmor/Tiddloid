@@ -5,17 +5,17 @@
     android:layout_height="match_parent">
 
     <EditText
-        android:id="@+id/t_url"
+        android:id="@+id/eFn"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginStart="20dp"
         android:layout_marginLeft="20dp"
         android:layout_marginEnd="20dp"
         android:layout_marginRight="20dp"
-        android:autofillHints="addr"
-        android:hint="@string/url"
-        android:imeOptions="actionGo"
-        android:inputType="textUri"
+        android:hint="Input name:"
+        android:importantForAutofill="no"
+        android:imeOptions="actionDone"
+        android:inputType="text"
         android:lines="1"
         tools:targetApi="o" />
 </RelativeLayout>
