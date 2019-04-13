@@ -1,20 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
-
-    <ScrollView
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp">
+        android:layout_height="wrap_content">
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content">-->
+
+    <!--<ScrollView-->
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
+            android:layout_marginLeft="20dp"
+            android:layout_marginRight="20dp"
 
             android:orientation="vertical">
 
@@ -23,7 +23,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
                 android:layout_margin="2dp"
-                android:text="Search Engine"
+                android:text="@string/search_engine"
                 android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
 
             <RadioGroup
@@ -37,7 +37,7 @@
                     android:layout_width="match_parent"
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
-                    android:text="Google" />
+                    android:text="@string/google" />
 
                 <RadioButton
                     android:id="@+id/seBing"
@@ -74,7 +74,8 @@
                     android:layout_margin="2dp"
                     android:ems="10"
                     android:hint="e.g google.com/search?q=%s"
-                    android:inputType="textPersonName" />
+                    android:inputType="textPersonName"
+                    android:autofillHints="custom_se" tools:targetApi="o"/>
 
             </RadioGroup>
 
@@ -105,8 +106,8 @@
                     android:layout_height="wrap_content"
                     android:layout_margin="2dp"
                     android:layout_weight="1"
+                    android:contentDescription="TemplateStatus"
                     android:gravity="center"
-                    android:text="Not Exist"
                     android:textAllCaps="false"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
                     android:textColor="@android:color/holo_red_dark"
@@ -125,4 +126,4 @@
         </LinearLayout>
     </ScrollView>
 
-</RelativeLayout>
+<!--</RelativeLayout>-->

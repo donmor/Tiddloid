@@ -6,4 +6,13 @@
     <string name="js"></string>
     <string name="remote">Remote</string>
     <string name="efn">eFn</string>
+    <string name="dim">dim</string>
+    <string name="appVersion">v1.0.0@-1</string>
+    <string name="logo">logo</string>
+    <string name="exist">Exist</string>
+    <string name="not_exist">Not Exist</string>
+    <string name="icon">icon</string>
+    <string name="google">Google</string>
+    <string name="search_engine">Search Engine</string>
+    <string name="backup_directory_path">./$filename$_backup/</string>
 </resources>

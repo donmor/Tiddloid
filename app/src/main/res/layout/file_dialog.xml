@@ -1,23 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="wrap_content"
-    android:layout_height="wrap_content">
-
-    <LinearLayout
+    xmlns:tools="http://schemas.android.com/tools"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        android:layout_marginStart="20dp"
-        android:layout_marginEnd="20dp"
-        android:layout_marginLeft="20dp"
-        android:layout_marginRight="20dp"
         android:orientation="vertical">
+    <!--android:layout_width="wrap_content"-->
+    <!--android:layout_height="wrap_content">-->
+
+    <!--<LinearLayout-->
 
 
         <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:gravity="center_vertical"
             android:orientation="horizontal">
 
@@ -26,9 +24,7 @@
                 style="@style/Widget.AppCompat.Light.ActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
-                android:layout_weight="0"
                 android:drawableStart="@drawable/ic_arrow_back_black_24dp"
-                android:drawableLeft="@drawable/ic_arrow_back_black_24dp"
                 android:text=".."
                 android:textAppearance="@style/TextAppearance.AppCompat.Title" />
 
@@ -37,23 +33,27 @@
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="1"
-                android:gravity="left|center_vertical"
+                android:gravity="start|center_vertical"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
             <ImageButton
-                android:id="@+id/btnNewfldr"
+                android:id="@+id/btnNewFolder"
                 style="@style/Widget.AppCompat.Light.ActionButton"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_weight="0"
+                android:contentDescription="new_folder"
                 app:srcCompat="@drawable/ic_create_new_folder_black_24dp" />
         </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
             android:id="@+id/diFileList"
             android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_margin="2dp"
+            android:layout_height="0dp"
+            android:minWidth="720dp"
+            android:minHeight="1280dp"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:layout_weight="1">
 
         </android.support.v7.widget.RecyclerView>
@@ -62,8 +62,8 @@
             android:id="@+id/saveFnFrame"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_margin="2dp"
-            android:layout_weight="0"
+            android:layout_marginStart="20dp"
+            android:layout_marginEnd="20dp"
             android:gravity="center"
             android:orientation="horizontal">
 
@@ -75,7 +75,8 @@
                 android:layout_weight="1"
                 android:imeOptions="actionDone"
                 android:hint="Filename"
-                android:inputType="textPersonName" />
+                android:inputType="textPersonName"
+                android:autofillHints="file_tiddloid" tools:targetApi="o" />
 
             <TextView
                 android:id="@+id/textView"
@@ -89,4 +90,4 @@
 
     </LinearLayout>
 
-</RelativeLayout>
+<!--</RelativeLayout>-->

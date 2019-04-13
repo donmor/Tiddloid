@@ -25,8 +25,7 @@
                 android:background="@android:color/background_light"
                 app:navigationIcon="@drawable/ic_arrow_back_black_24dp"
                 app:popupTheme="@style/AppTheme.PopupOverlay"
-                app:titleTextAppearance="@style/Toolbar.TitleText"
-                app:titleTextColor="@android:color/black">
+                app:titleTextAppearance="@style/Toolbar.TitleText">
 
 
             </android.support.v7.widget.Toolbar>
@@ -43,7 +42,8 @@
         <WebView
             android:id="@+id/twwv"
             android:layout_width="match_parent"
-            android:layout_height="match_parent" />
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
 
     </LinearLayout>
 

@@ -1,0 +1,55 @@
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:aapt="http://schemas.android.com/aapt"
+    android:width="256dp"
+    android:height="256dp"
+    android:viewportWidth="256"
+    android:viewportHeight="256">
+    <!--<path-->
+        <!--android:fillType="evenOdd"-->
+        <!--android:pathData="M0 0H256V256H0Z"-->
+        <!--android:strokeWidth="1"-->
+        <!--android:strokeColor="#00000000">-->
+        <!--<aapt:attr name="android:fillColor">-->
+            <!--<gradient-->
+                <!--android:endX="157.177"-->
+                <!--android:endY="181.8318"-->
+                <!--android:startX="97.5316"-->
+                <!--android:startY="122.1854"-->
+                <!--android:type="linear">-->
+                <!--<item-->
+                    <!--android:color="#44000000"-->
+                    <!--android:offset="0.0" />-->
+                <!--<item-->
+                    <!--android:color="#00000000"-->
+                    <!--android:offset="1.0" />-->
+            <!--</gradient>-->
+        <!--</aapt:attr>-->
+    <!--</path>-->
+    <path
+        android:fillType="evenOdd"
+        android:pathData="M65 106 94 135 102 164 194 256 256 256 256 160 187 91 170 110 90 110 70 90Z"
+        android:strokeWidth="1"
+        android:strokeColor="#00000000">
+        <aapt:attr name="android:fillColor">
+            <gradient
+                android:endX="157.177"
+                android:endY="181.8318"
+                android:startX="97.5316"
+                android:startY="122.1854"
+                android:type="linear">
+                <item
+                    android:color="#44000000"
+                    android:offset="0.0" />
+                <item
+                    android:color="#00000000"
+                    android:offset="1.0" />
+            </gradient>
+        </aapt:attr>
+    </path>
+    <path
+        android:fillColor="#FFFFFF"
+        android:fillType="nonZero"
+        android:pathData="M107 155 107 157C107 155 109 157 109 157 107 155 107 151 103 151 103 147 103 144 103 142L103 142C103 144 101 144 101 149 101 151 103 153 105 155ZM164 166C155 166 153 166 151 166L149 166C147 166 147 166 144 164 144 164 144 159 144 159 142 153 144 151 144 144 144 144 142 137 140 137 139 137 137 137 134 137 128 137 122 137 117 134 115 139 113 144 115 151 119 155 122 157 126 159 128 159 128 164 128 166 126 166 126 166 126 166L122 166C122 166 119 166 117 166 115 164 113 159 109 157 112 159 112 159 112 159 109 164 103 164 101 164 99 159 92 151 90 144 92 139 99 134 101 130 94 126 92 122 92 117L92 115C88 117 92 117 86 117 72 117 59 107 67 92 67 90 67 90 69 90 69 90 69 92 69 92 65 113 86 113 97 107 99 107 101 107 103 105 105 103 107 103 112 103 119 101 128 107 132 107 137 107 144 105 147 107 151 107 153 107 157 107 159 99 159 92 164 90 166 90 166 92 168 94L168 94C169 94 174 97 176 97 180 97 187 92 189 92 189 92 189 92 189 92 184 94 184 101 184 107 187 109 184 113 182 115 180 122 178 126 174 126 172 126 172 124 169 124 169 126 168 126 168 128 166 132 164 134 157 137 151 142 159 157 159 159 164 164 166 166 166 166 166 166 166 166 164 166Z"
+        android:strokeWidth="1"
+        android:strokeColor="#00000000" />
+</vector>

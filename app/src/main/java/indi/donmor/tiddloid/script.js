@@ -6,11 +6,14 @@ var enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn) {
 //	if(isClassic) { injectClassicOverrides(doc,loadFileTextFn) ;
 //	}
 	messageBox.addEventListener("tiddlyfox-save-file",function(event) {
-	    var message = event.target, filepath = message.getAttribute("data-tiddlyfox-path"), content = message.getAttribute("data-tiddlyfox-content");
+	    var message = event.target,
+			filepath = message.getAttribute("data-tiddlyfox-path"), 
+			content = message.getAttribute("data-tiddlyfox-content");
 //		if(process.platform !== "win32" || isClassic) {
 		filepath = (new Buffer(filepath,"binary")).toString("utf8");
 //		}
-		if(areBackupsEnabledFn() && !isClassic) {
+//		if(areBackupsEnabledFn() && !isClassic) {
+		if(areBackupsEnabledFn()) {
 		    backupFile(filepath);
 		}
 		saveFile(filepath,content);
@@ -47,22 +50,37 @@ var enableSaving = function(doc,areBackupsEnabledFn,loadFileTextFn) {
 var stringify = function(s) { return (s || "") .replace(/\\/g, '\\\\') .replace(/"/g, '\\"') .replace(/'/g, "\\'") .replace(/\r/g, '\\r') .replace(/\n/g, '\\n') .replace(/[\x00-\x1f\x80-\uFFFF]/g, escape) ;
 } ;
 
-var saveFile = function(filepath,content) { var fs = require("fs") ;
-fs.writeFileSync(filepath,content) ;
+var saveFile = function(filepath,content) {
+	var fs = require("fs") ;
+	fs.writeFileSync(filepath,content) ;
 }
-var backupFile = function(filepath) { var fs = require("fs"), path = require("path") ;
-if(fs.existsSync(filepath)) { var timestamp = $tw.utils.stringifyDate(fs.statSync(filepath).mtime || (new Date())), backupSubPath = backupPathByPath(filepath) ;
-var count = 0, backupPath, uniquifier, ext = path.extname(filepath) ;
-do { uniquifier = count ? " " + count : "" ;
-backupPath = path.resolve( backupSubPath, path.basename(filepath,ext) + "." + timestamp + uniquifier + ext ) ;
-count = count + 1 ;
-} while(fs.existsSync(backupPath)) ;
-$tw.utils.createDirectory(path.dirname(backupPath)) ;
-fs.writeFileSync(backupPath,fs.readFileSync(filepath)) ;
-} }
+var backupFile = function(filepath) {
+    var fs = require("fs"), 
+		path = require("path") ;
+    if(fs.existsSync(filepath)) {
+        var timestamp = $tw.utils.stringifyDate(fs.statSync(filepath).mtime || (new Date())),
+			backupSubPath = backupPathByPath(filepath) ;
+        var count = 0, 
+			backupPath, 
+			uniquifier,
+			ext = path.extname(filepath) ;
+        do {
+            uniquifier = count ? " " + count : "" ;
+            backupPath = path.resolve( backupSubPath, path.basename(filepath,ext) + "." + timestamp + uniquifier + ext ) ;
+            count = count + 1 ;
+        } while(fs.existsSync(backupPath)) ;
+        $tw.utils.createDirectory(path.dirname(backupPath)) ;
+        fs.writeFileSync(backupPath,fs.readFileSync(filepath)) ;
+    }
+}
 
-backupPathByPath = function(pathname) { var path = require("path"), backupPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","") ;
-backupPath = backupPath.replace(/\$filename\$/mgi,path.basename(pathname)) .replace(/\$filepath\$/mgi,pathname) ;
-backupPath = path.resolve(path.dirname(pathname),backupPath) return backupPath ;
+backupPathByPath = function(pathname) {
+	var path = require("path"),
+		backupPath = $tw.wiki.getTiddlerText("$:/TiddlyDesktop/BackupPath","") ;
+	backupPath = backupPath.replace(/\$filename\$/mgi,path.basename(pathname)) .replace(/\$filepath\$/mgi,pathname) ;
+	backupPath = path.resolve(path.dirname(pathname),backupPath);
+	return backupPath ;
 };
+
+
 enableSaving(document,)

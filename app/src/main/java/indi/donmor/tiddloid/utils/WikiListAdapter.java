@@ -1,42 +1,38 @@
 package indi.donmor.tiddloid.utils;
 
 import android.content.Context;
-import android.os.Environment;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.CardView;
+//import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
-import android.widget.AdapterView;
 import android.widget.Button;
-import android.widget.Toast;
+//import android.widget.Toast;
 
-import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import indi.donmor.tiddloid.MainActivity;
 import indi.donmor.tiddloid.R;
 
 public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
 
-	Context context;
-	JSONObject db;
-	int count;
-	ReloadListener rl;
+//	private Context context;
+	private JSONObject db;
+	private int count;
+	private ItemClickListener mItemClickListener;
+	private ReloadListener mReloadListener;
 	private LayoutInflater inflater;
 
-	Vibrator vibrator;
+	private Vibrator vibrator;
 
 	public WikiListAdapter(Context context, JSONObject db) {
-		this.context = context;
+//		this.context = context;
 		this.db = db;
 		vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 		try {
@@ -45,55 +41,54 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			e.printStackTrace();
 		}
 		inflater = LayoutInflater.from(context);
-//		mReloadListener.onReloaded(this.getItemCount());
 	}
 
-	public class WikiListHolder extends RecyclerView.ViewHolder {
+	class WikiListHolder extends RecyclerView.ViewHolder {
 		private Button btnWiki;
-		private CardView cvWiki;
-		private String id, path;
+//		private CardView cvWiki;
+		private String path;
 
-		public WikiListHolder(View itemView) {
+		WikiListHolder(View itemView) {
 			super(itemView);
-			btnWiki = (Button) itemView.findViewById(R.id.btnWiki);
-			cvWiki = (CardView) itemView.findViewById(R.id.cvWiki);
+			btnWiki = itemView.findViewById(R.id.btnWiki);
+//			cvWiki = itemView.findViewById(R.id.cvWiki);
 		}
 	}
 
 	@Override
+	@NonNull
 	public WikiListHolder onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
-		WikiListHolder holder = new WikiListHolder(inflater.inflate(R.layout.wiki_slot, parent, false));
-		return holder;
+		return new WikiListHolder(inflater.inflate(R.layout.wiki_slot, parent, false));
 	}
 
 	@Override
-	public void onBindViewHolder(@NonNull WikiListHolder holder, final int position) {
-
+	public void onBindViewHolder(@NonNull WikiListHolder holder, int position) {
 		try {
-			holder.id = db.getJSONArray("wiki").getJSONObject(position).getString("id");
+			final int pos = position;
+//			holder.id = db.getJSONArray("wiki").getJSONObject(pos).getString("id");
 			holder.btnWiki.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mItemClickListener.onItemClick(position);
+					mItemClickListener.onItemClick(pos);
 				}
 			});
 			holder.btnWiki.setOnLongClickListener(new View.OnLongClickListener() {
 				@Override
 				public boolean onLongClick(View v) {
 //                    mItemClickListener.onItemClick(position);
-					vibrator.vibrate(new long[]{0,1}, -1);
-					Toast.makeText(context, "e", Toast.LENGTH_SHORT).show();
-					mItemClickListener.onItemLongClick(position);
+					vibrator.vibrate(new long[]{0, 1}, -1);
+//					Toast.makeText(context, "e", Toast.LENGTH_SHORT).show();
+					mItemClickListener.onItemLongClick(pos);
 					return true;
 				}
 			});
-			holder.path = db.getJSONArray("wiki").getJSONObject(position).getString("path");
+			holder.path = db.getJSONArray("wiki").getJSONObject(pos).getString("path");
 			File f = new File(holder.path);
 			System.out.println(f.getAbsolutePath());
 			if (f.exists()) {
-				holder.cvWiki.setVisibility(View.VISIBLE);
-				holder.btnWiki.setText(Html.fromHtml("</b>" + db.getJSONArray("wiki").getJSONObject(position).getString("name") + "</b><br><font color=\"grey\">" + new SimpleDateFormat("yyyy-MM-dd HH:mm").format(new Date(f.lastModified())) + "</font>"));
-			} else holder.cvWiki.setVisibility(View.GONE);
+				holder.btnWiki.setVisibility(View.VISIBLE);
+				holder.btnWiki.setText(Html.fromHtml("</b>" + db.getJSONArray("wiki").getJSONObject(pos).getString("name") + "</b><br><font color=\"grey\">" + SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified())) + "</font>"));
+			} else holder.btnWiki.setVisibility(View.GONE);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -104,7 +99,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		return count;
 	}
 
-	private ItemClickListener mItemClickListener;
 
 	public interface ItemClickListener {
 		void onItemClick(int position);
@@ -116,10 +110,9 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		this.mItemClickListener = itemClickListener;
 	}
 
-	private ReloadListener mReloadListener;
 
 	public interface ReloadListener {
-		public void onReloaded(int count);
+		void onReloaded(int count);
 	}
 
 	public void setReloadListener(ReloadListener reloadListener) {

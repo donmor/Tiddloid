@@ -3,7 +3,7 @@ package indi.donmor.tiddloid.utils;
 import android.content.Context;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
-import android.support.v7.widget.CardView;
+//import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.view.LayoutInflater;
 import android.view.View;
@@ -40,13 +40,13 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Wi
 
 	public class WikiListHolder extends RecyclerView.ViewHolder {
 		private Button btnWiki;
-		private CardView cvWiki;
+//		private CardView cvWiki;
 		private String id, path;
 
 		public WikiListHolder(View itemView) {
 			super(itemView);
 			btnWiki = (Button) itemView.findViewById(R.id.btnWiki);
-			cvWiki = (CardView) itemView.findViewById(R.id.cvWiki);
+//			cvWiki = (CardView) itemView.findViewById(R.id.cvWiki);
 		}
 	}
 
@@ -80,8 +80,8 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Wi
 			holder.path = db.getJSONArray("wiki").getJSONObject(position).getString("path");
 			File f = new File(holder.path);
 			System.out.println(f.getAbsolutePath());
-			if (f.exists()) holder.cvWiki.setVisibility(View.VISIBLE);
-			else holder.cvWiki.setVisibility(View.GONE);
+//			if (f.exists()) holder.cvWiki.setVisibility(View.VISIBLE);
+//			else holder.cvWiki.setVisibility(View.GONE);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
