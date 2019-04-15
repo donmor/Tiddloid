@@ -5,48 +5,48 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:orientation="vertical">
-            <!--<LinearLayout-->
-                <!--android:layout_width="match_parent"-->
-                <!--android:layout_height="wrap_content"-->
-                <!--android:layout_marginStart="20dp"-->
-                <!--android:layout_marginEnd="20dp"-->
-                <!--android:orientation="horizontal"-->
-                <!--android:gravity="center_vertical">-->
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginStart="20dp"-->
+    <!--android:layout_marginEnd="20dp"-->
+    <!--android:orientation="horizontal"-->
+    <!--android:gravity="center_vertical">-->
 
-                <!--<ImageButton-->
-                    <!--android:id="@+id/btnChangeFile"-->
-                    <!--style="@style/Widget.AppCompat.Light.ActionButton"-->
-                    <!--android:layout_width="48dp"-->
-                    <!--android:layout_height="48dp"-->
-                    <!--android:contentDescription="@string/icon"-->
-                    <!--android:scaleType="centerCrop"-->
-                    <!--app:srcCompat="@drawable/ic_description_black_24dp" />-->
+    <!--<ImageButton-->
+    <!--android:id="@+id/btnChangeFile"-->
+    <!--style="@style/Widget.AppCompat.Light.ActionButton"-->
+    <!--android:layout_width="48dp"-->
+    <!--android:layout_height="48dp"-->
+    <!--android:contentDescription="@string/icon"-->
+    <!--android:scaleType="centerCrop"-->
+    <!--app:srcCompat="@drawable/ic_description_black_24dp" />-->
 
-                <!--<LinearLayout-->
-                    <!--android:layout_width="0dp"-->
-                    <!--android:layout_height="wrap_content"-->
-                    <!--android:layout_weight="1"-->
-                    <!--android:orientation="vertical">-->
+    <!--<LinearLayout-->
+    <!--android:layout_width="0dp"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_weight="1"-->
+    <!--android:orientation="vertical">-->
 
-                    <!--<TextView-->
-                        <!--android:id="@+id/lblWikiConfigTitle"-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:layout_margin="2dp"-->
-                        <!--android:contentDescription="Title"-->
-                        <!--android:textAppearance="@style/TextAppearance.AppCompat.Medium" />-->
+    <!--<TextView-->
+    <!--android:id="@+id/lblWikiConfigTitle"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_margin="2dp"-->
+    <!--android:contentDescription="Title"-->
+    <!--android:textAppearance="@style/TextAppearance.AppCompat.Medium" />-->
 
-                    <!--<TextView-->
-                        <!--android:id="@+id/lblWikiConfigPath"-->
-                        <!--android:layout_width="match_parent"-->
-                        <!--android:layout_height="wrap_content"-->
-                        <!--android:layout_margin="2dp"-->
-                        <!--android:contentDescription="Path"-->
-                        <!--android:textAppearance="@style/TextAppearance.AppCompat.Small" />-->
+    <!--<TextView-->
+    <!--android:id="@+id/lblWikiConfigPath"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_margin="2dp"-->
+    <!--android:contentDescription="Path"-->
+    <!--android:textAppearance="@style/TextAppearance.AppCompat.Small" />-->
 
-                <!--</LinearLayout>-->
+    <!--</LinearLayout>-->
 
-            <!--</LinearLayout>-->
+    <!--</LinearLayout>-->
     <Button
         android:id="@+id/btnWikiConfigPath"
         style="@style/Widget.AppCompat.Button.Borderless"
@@ -59,51 +59,52 @@
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
 
-            <ScrollView
+    <!--<ScrollView-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_marginStart="20dp"
+        android:layout_marginEnd="20dp"
+        android:orientation="vertical">
+
+        <CheckBox
+            android:id="@+id/cbBackup"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:text="Enable backup" />
+
+        <LinearLayout
+            android:id="@+id/frmBackupList"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:orientation="vertical"
+            android:visibility="gone">
+
+            <TextView
+                android:id="@+id/lblNoBackup"
                 android:layout_width="match_parent"
-                android:layout_height="match_parent"
-                android:layout_marginStart="20dp"
-                android:layout_marginEnd="20dp">
+                android:layout_height="wrap_content"
+                android:text="No backups"
+                android:textAlignment="center" />
 
-                <LinearLayout
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:orientation="vertical">
-                    <CheckBox
-                        android:id="@+id/cbBackup"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:text="Enable backup" />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvBackupList"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
+        </LinearLayout>
 
-                    <LinearLayout
-                        android:id="@+id/frmBackupList"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:orientation="vertical"
-                        android:visibility="gone">
+        <Button
+            android:id="@+id/btnRemoveWiki"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:text="Remove Wiki" />
 
-                        <TextView
-                            android:id="@+id/lblNoBackup"
-                            android:layout_width="match_parent"
-                            android:layout_height="wrap_content"
-                            android:text="No backups."
-                            android:textAlignment="center" />
-
-                        <android.support.v7.widget.RecyclerView
-                            android:id="@+id/rvBackupList"
-                            android:layout_width="match_parent"
-                            android:layout_height="0dp"
-                            android:layout_weight="1" />
-                    </LinearLayout>
-
-                    <Button
-                        android:id="@+id/btnRemoveWiki"
-                        style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-                        android:layout_width="match_parent"
-                        android:layout_height="wrap_content"
-                        android:layout_margin="2dp"
-                        android:text="Remove Wiki" />
-
-                </LinearLayout>
-            </ScrollView>
+    </LinearLayout>
+    <!--</ScrollView>-->
 </LinearLayout>

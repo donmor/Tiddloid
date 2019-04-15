@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string name="action_settings">设置</string>
+	<string name="there_is_no_wiki_here">这里还没有内容</string>
+	<string name="url">网址或关键字</string>
+	<string name="js"></string>
+	<!--<string name="remote">远程</string>-->
+	<string name="exist">存在</string>
+	<string name="not_exist">不存在</string>
+	<string name="google">谷歌</string>
+	<string name="search_engine">搜索引擎</string>
+</resources>

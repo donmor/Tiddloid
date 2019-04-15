@@ -108,6 +108,7 @@
                     android:layout_weight="1"
                     android:contentDescription="TemplateStatus"
                     android:gravity="center"
+                    android:text="@string/not_exist"
                     android:textAllCaps="false"
                     android:textAppearance="@style/TextAppearance.AppCompat.Large"
                     android:textColor="@android:color/holo_red_dark"

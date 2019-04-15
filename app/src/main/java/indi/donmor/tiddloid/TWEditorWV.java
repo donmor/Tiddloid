@@ -18,6 +18,7 @@ import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
+import android.widget.Toast;
 
 import org.json.JSONObject;
 
@@ -42,6 +43,9 @@ public class TWEditorWV extends AppCompatActivity {
 		wvProgress.setMax(100);
 		WebSettings wvs = wv.getSettings();
 		wvs.setJavaScriptEnabled(true);
+		wvs.setSupportZoom(true);
+		wvs.setBuiltInZoomControls(true);
+		wvs.setDisplayZoomControls(false);
 		wvs.setUseWideViewPort(true);
 		wvs.setLoadWithOverviewMode(true);
 		wv.setWebChromeClient(new WebChromeClient() {
@@ -120,6 +124,7 @@ public class TWEditorWV extends AppCompatActivity {
 
 	@Override
 	public void onBackPressed() {
+//		Toast.makeText(this, WebSettings.getDefaultUserAgent(this), Toast.LENGTH_LONG).show();
 		if (wv.canGoBack()) {
 			wv.goBack();
 		} else {
@@ -186,16 +191,16 @@ public class TWEditorWV extends AppCompatActivity {
 			String se = MainActivity.db.getString("searchEngine");
 			switch (se) {
 				case "Google":
-					ws = "https://google.com/search?q=" + arg;
+					ws = "https://www.google.com/search?q=" + arg;
 					break;
 				case "Bing":
-					ws = "https://bing.com/search?q=" + arg;
+					ws = "https://www.bing.com/search?q=" + arg;
 					break;
 				case "Baidu":
-					ws = "https://baidu.com/s?wd=" + arg;
+					ws = "https://www.baidu.com/s?wd=" + arg;
 					break;
 				case "Sogou":
-					ws = "https://sogou.com/s?q=" + arg;
+					ws = "https://www.sogou.com/web?query=" + arg;
 					break;
 				case "Custom":
 					ws = MainActivity.db.getString("customSearchEngine").replace("%s", arg);

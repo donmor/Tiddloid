@@ -36,10 +36,10 @@
         android:textSize="36sp" />
 
     <TextView
-        android:id="@+id/textView3"
+        android:id="@+id/textVersionSplash"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
-        android:layout_marginBottom="24dp"        android:text="@string/appVersion"
+        android:layout_marginBottom="24dp"
         android:textAlignment="center" />
 </LinearLayout>

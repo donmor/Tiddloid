@@ -1,18 +1,20 @@
 <resources>
-    <string name="app_name">Tiddloid</string>
+    <string name="app_name" translatable="false">Tiddloid</string>
     <string name="action_settings">Settings</string>
-    <string name="there_is_no_wiki_here">There is no wiki here.</string>
+    <string name="there_is_no_wiki_here">There is nothing here</string>
     <string name="url">URL or keyword</string>
-    <string name="js"></string>
-    <string name="remote">Remote</string>
-    <string name="efn">eFn</string>
-    <string name="dim">dim</string>
-    <string name="appVersion">v1.0.0@-1</string>
-    <string name="logo">logo</string>
+    <string name="js" translatable="false"></string>
+    <!--<string name="remote">Remote</string>-->
+    <string name="efn" translatable="false">eFn</string>
+    <string name="dim" translatable="false">dim</string>
+    <string name="logo" translatable="false">logo</string>
     <string name="exist">Exist</string>
     <string name="not_exist">Not Exist</string>
-    <string name="icon">icon</string>
+    <string name="icon" translatable="false">icon</string>
+    <!--<string name="google" translatable="false">Google</string>-->
     <string name="google">Google</string>
     <string name="search_engine">Search Engine</string>
-    <string name="backup_directory_path">./$filename$_backup/</string>
+    <string name="backup_directory_path" translatable="false">/$filename$_backup</string>
+    <!--<string name="fake_ua" translatable="false">Mozilla/5.0 (Linux; Android 6.0; Android SDK built for x86 Build/MASTER; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/44.0.2403.119 Mobile Safari/537.36</string>-->
+    <!--<string name="fake_ua_platform" translatable="false">X11; Linux x86_64</string>-->
 </resources>

@@ -69,15 +69,14 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			holder.btnWiki.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
+					;
 					mItemClickListener.onItemClick(pos);
 				}
 			});
 			holder.btnWiki.setOnLongClickListener(new View.OnLongClickListener() {
 				@Override
 				public boolean onLongClick(View v) {
-//                    mItemClickListener.onItemClick(position);
 					vibrator.vibrate(new long[]{0, 1}, -1);
-//					Toast.makeText(context, "e", Toast.LENGTH_SHORT).show();
 					mItemClickListener.onItemLongClick(pos);
 					return true;
 				}

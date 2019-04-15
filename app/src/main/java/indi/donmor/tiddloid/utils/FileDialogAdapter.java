@@ -21,11 +21,12 @@ public class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.Fi
 	private File[] dirs;
 	private File[] devices;
 	private boolean enRoot;
+	private int mimeIndex;
 	private Context context;
-	private String mimeTypes;
+	private String[] mimeTypes;
 	private LayoutInflater inflater;
 
-	public FileDialogAdapter(Context context, String mimeTypes, File dir) {
+	public FileDialogAdapter(Context context, String[] mimeTypes, File dir) {
 		this.context = context;
 		this.mimeTypes = mimeTypes;
 		inflater = LayoutInflater.from(context);
@@ -201,7 +202,7 @@ public class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.Fi
 					e.printStackTrace();
 				}
 //				return !((pathname.getName().startsWith(".") || pathname.getName().equals("LOST.DIR")) && showHidden) && !pathname.isDirectory() && MimeTypeUtil.meetsMimeTypes(pathname.getName(), mimeTypes);
-				return !(pathname.isHidden() && showHidden) && pathname.isFile() && MimeTypeUtil.meetsMimeTypes(pathname.getName(), mimeTypes);
+				return !(pathname.isHidden() && showHidden) && pathname.isFile() && MimeTypeUtil.meetsMimeTypes(pathname.getName(), mimeTypes[mimeIndex]);
 			}
 		});
 	}
@@ -230,6 +231,13 @@ public class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.Fi
 		return false;
 	}
 
+	public void setMimeIndex(int index){
+		mimeIndex = index;
+	}
+	public int getMimeIndex(){
+		return mimeIndex;
+	}
+
 	public File getFile(int position) {
 //		final int pos = position;
 //		final int pos = position - 1;
@@ -246,11 +254,13 @@ public class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.Fi
 //					return currentDir.getParentFile();
 //				} else
 					return dirs[position];
-			} else if (position < dirs.length + files.length) {
+			} else
+//				if (position < dirs.length + files.length)
+				{
 				return files[position - dirs.length];
 			}
 		}
-		return null;
+//		return null;
 	}
 
 	public File[] getDevices() {
@@ -289,5 +299,11 @@ public class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.Fi
 	public void setRoot() {
 		devices = MainActivity.getStorage(context.getApplicationContext());
 		enRoot = true;
+	}
+	public void reload(){
+		if (!enRoot) {
+			dirs = sortFile(getDirs());
+			files = sortFile(getFiles());
+		}
 	}
 }

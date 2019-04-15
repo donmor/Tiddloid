@@ -3,7 +3,7 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:id="@+id/llBackup"
-    android:layout_width="wrap_content"
+    android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:gravity="center"
     android:orientation="horizontal">
@@ -16,14 +16,14 @@
         app:srcCompat="@drawable/ic_description_black_24dp" />
 
     <TextView
-        android:id="@+id/wikiTitle"
+        android:id="@+id/lblBackupFile"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:contentDescription="Backup" />
+        android:contentDescription="backup" />
 
     <ImageButton
-        android:id="@+id/rollBack"
+        android:id="@+id/btnRollBack"
         style="@style/Widget.AppCompat.ActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -33,7 +33,7 @@
         app:srcCompat="@drawable/ic_reply_black_24dp" />
 
     <ImageButton
-        android:id="@+id/backupDelete"
+        android:id="@+id/btnDelBackup"
         style="@style/Widget.AppCompat.ActionButton"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
