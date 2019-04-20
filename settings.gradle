@@ -1,1 +1,3 @@
 include ':app'
+include ':filedialoglib'
+project(':filedialoglib').projectDir = new File(settingsDir, "../FileDialog/filedialoglib")

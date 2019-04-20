@@ -13,7 +13,7 @@ public class NoLeakHandler extends Handler {
     private MessageHandledListener listener;
 
     public interface MessageHandledListener {
-        public void onMessageHandled(Message msg);
+        void onMessageHandled(Message msg);
     }
 
     @Override

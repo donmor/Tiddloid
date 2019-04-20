@@ -1,8 +1,149 @@
 package indi.donmor.tiddloid.utils;
 
-import android.support.annotation.NonNull;
+//import android.support.annotation.NonNull;
+
+//import android.provider.Settings;
 
 public class MimeTypeUtil {
+	public class MimeX {
+		private String[][] priMimes;
+		private String[] srcMimes;
+
+		public MimeX(String[] mimes) {
+			srcMimes = trimMime(mimes);
+			String[][] pMimes = new String[MIME_MapTable.length][2];
+			int i = 0;
+			for (String[] mime : MIME_MapTable)
+				for (String mim : srcMimes) {
+					int x = mim.indexOf('/') + 1;
+					if (mim.charAt(x) == '*' && mime[0].startsWith(mim.substring(0, x))) {
+						pMimes[i] = mime;
+						i++;
+						break;
+					} else if (mime[0].equals(mim)) {
+						pMimes[i] = mime;
+						i++;
+						break;
+					}
+				}
+			priMimes = new String[i][2];
+			System.arraycopy(pMimes, 0, priMimes, 0, i);
+		}
+
+		public MimeX(String mime) {
+			srcMimes = trimMime(mime);
+			String[][] pMimes = new String[MIME_MapTable.length][2];
+			int i = 0;
+			for (String[] mime1 : MIME_MapTable)
+				for (String mim : srcMimes) {
+					int x = mim.indexOf('/') + 1;
+					if (mim.charAt(x) == '*' && mime1[0].startsWith(mim.substring(0, x))) {
+						pMimes[i] = mime1;
+						i++;
+						break;
+					} else if (mime1[0].equals(mim)) {
+						pMimes[i] = mime1;
+						i++;
+						break;
+					}
+				}
+			priMimes = new String[i][2];
+			System.arraycopy(pMimes, 0, priMimes, 0, i);
+		}
+
+		public int length() {
+			return srcMimes.length;
+		}
+
+		public boolean meets(String fn) {
+			return meets(fn, 0);
+		}
+
+		boolean meets(String fn, int index) {
+			if (index >= srcMimes.length || index < 0) index = 0;
+			for (String s : getExtensions(index))
+				if (s.equals(".*") || fn.toLowerCase().endsWith(s)) return true;
+			return false;
+		}
+
+		private String[] getExtensions(int index) {
+			if (index >= srcMimes.length || index < 0) index = 0;
+			String mime = srcMimes[index];
+			String[] m = new String[priMimes.length];
+			int k = 0;
+			int w = mime.indexOf('/') + 1;
+			if (mime.charAt(w) == '*')
+				for (String[] i : priMimes) {
+					if (i[0].startsWith(mime.substring(0, w))) {
+						m[k] = i[1];
+						k++;
+					}
+				}
+			else
+				for (String[] i : priMimes) {
+					if (i[0].equals(mime)) {
+						m[k] = i[1];
+						k++;
+					}
+				}
+			String[] x = new String[k];
+			System.arraycopy(m, 0, x, 0, k);
+			return x;
+		}
+
+		public String[] getDescriptions(int det) {
+			if (det == 0) return srcMimes;
+			String[] m = new String[srcMimes.length];
+			for (int k = 0; k < srcMimes.length; k++) {
+				String[] r = getExtensions(k);
+				StringBuilder t = new StringBuilder();
+				for (String i : r) {
+					t.append(i).append(';');
+				}
+				String v = t.toString();
+				if (det < 2) v = v.substring(0, v.length() - 1);
+				else v = v.substring(0, v.length() - 1) + "(" + srcMimes[k] + ")";
+				m[k] = v;
+			}
+			return m;
+		}
+
+		public String formatFilename(String fn) {
+			return formatFilename(fn, 0, 0);
+		}
+
+		public String formatFilename(String fn, int id) {
+			return formatFilename(fn, id, 0);
+		}
+
+		public String formatFilename(String fn, int id, int index) {
+			if (id >= srcMimes.length || id < 0) id = 0;
+			if (srcMimes[id].charAt(srcMimes[id].indexOf('/') + 1) == '*') return fn;
+			String[] ext = getExtensions(id);
+			for (String ex : ext)
+				if (fn.endsWith(ex)) return fn;
+			if (ext.length > 0) {
+				if (index < 0 && index + ext.length >= 0)
+					return fn + ext[ext.length + index];
+				else if (index >= 0 && index < ext.length)
+					return fn + ext[index];
+				else
+					return fn + ext[0];
+			}
+			return fn;
+		}
+
+		public void traceAll() {
+			for (String[] i : MIME_MapTable) {
+				System.out.println(i[0]);
+				System.out.println(i[1]);
+//			System.out.println(MIME_MapTable.length);
+			}
+		}
+
+
+	}
+
 	public static String getMIMEType(String filePath) {
 		String type = "*/*";
 		int dotIndex = filePath.lastIndexOf('.');
@@ -23,15 +164,88 @@ public class MimeTypeUtil {
 		return type;
 	}
 
-	private static String[] getExtensions(String mime) {
-		int e = MIME_MapTable.length;
-		String[] m = new String[e];
-		int k = 0;
-		for (String[] i : MIME_MapTable) {
-			if (i[0].equals(mime)) {
-				m[k] = i[1];
-				k++;
+	public static String[] trimMime(String[] mimes) {
+//		if (mimes == null || mimes.length == 0) return new String[]{"*/*"};
+		String[] u = new String[MIME_MapTable.length];
+		int i = 0;
+//		boolean haveAll = false;
+		for (String p : mimes) {
+			if (p != null) {
+				int x = p.indexOf('/') + 1;
+//			if (p.equals("*/*")) {
+//
+//				u[i] = p;
+//				i++;
+
+
+//			if (getExtensions(p).length > 0 && !getExtensions(p)[0].equals(".*")) {
+//			} else if () {
+//			if (getExtensions(p).length > 0 && !getExtensions(p)[0].equals(".*")) {
+//				u[i] = p;
+//				i++;
+//			} else
+				if (x < p.length() && p.charAt(x) == '*') {
+					for (String[] e : MIME_MapTable) {
+						if (e[0].startsWith(p.substring(0, x))) {
+							u[i] = p;
+							i++;
+							break;
+						}
+					}
+//			if (getExtensions(p).length > 0 && !getExtensions(p)[0].equals(".*")) {
+//			} else if () {
+//			if (getExtensions(p).length > 0 && !getExtensions(p)[0].equals(".*")) {
+//				u[i] = p;
+//				i++;
+				} else {
+					for (String[] e : MIME_MapTable) {
+						if (e[0].equals(p)) {
+							u[i] = p;
+							i++;
+							break;
+						}
+					}
+
+//				haveAll = true;
+				}
 			}
+		}
+//		if (haveAll) {
+//			u[i] = "*/*";
+//			i++;
+//		}
+		if (i == 0) return new String[]{"*/*"};
+		String[] v = new String[i];
+		System.arraycopy(u, 0, v, 0, i);
+		return v;
+	}
+
+	private static String[] trimMime(String mime) {
+		return trimMime(new String[]{mime});
+	}
+
+	private static String[] getExtensions(String mime) {
+//		if (mime != null && mime.equals("*/*")) return new String[]{".*"};
+//		int e = ;
+		String[] m = new String[MIME_MapTable.length];
+		int k = 0;
+		if (mime != null && !mime.equals("")) {
+			int w = mime.indexOf('/') + 1;
+//			String v = "";
+			if (mime.charAt(w) == '*')
+				for (String[] i : MIME_MapTable) {
+					if (i[0].startsWith(mime.substring(0, w))) {
+						m[k] = i[1];
+						k++;
+					}
+				}
+			else
+				for (String[] i : MIME_MapTable) {
+					if (i[0].equals(mime)) {
+						m[k] = i[1];
+						k++;
+					}
+				}
 		}
 		if (k == 0) return new String[]{".*"};
 		String[] x = new String[k];
@@ -43,53 +257,57 @@ public class MimeTypeUtil {
 		return x;
 	}
 
-	public static String[] trimMime(String[] mimes) {
-		if (mimes == null || mimes.length == 0) return new String[]{"*/*"};
-		String[] u = new String[mimes.length];
-		int i = 0;
-		boolean haveAll = false;
-		for (String p : mimes) {
-			if (getExtensions(p).length > 0 && !getExtensions(p)[0].equals(".*")) {
-				u[i] = p;
-				i++;
-			} else {
-				haveAll = true;
-			}
-		}
-		if (haveAll) {
-			u[i] = "*/*";
-			i++;
-		}
-		String[] v = new String[i];
-		System.arraycopy(u, 0, v, 0, i);
-		return v;
-	}
-
 	public static String[] getDescriptions(String[] mime, int det) {
+		if (det == 0) return mime;
 		String[] m = new String[mime.length];
 		int k = 0;
 		for (String mim : mime) {
 //			int e = MIME_MapTable.length;
-			String v = "";
 			if (mim != null && !mim.equals("")) {
+//				if (mim.equals("*/*"))
+//					v = ".*(*/*)";
+//				else {
+				String[] r = getExtensions(mim);
+//					if (!r[0].equals(".*")) {
 				StringBuilder t = new StringBuilder();
-				for (String[] i : MIME_MapTable)
-					if (i[0].equals(mim)) {
-						t.append(i[1]).append(';');
-						if (det == 0) break;
-					}
-				v = t.toString();
-				if (v.length() > 0 && det < 2) v = v.substring(0, v.length() - 1);
+				for (String i : r) {
+					t.append(i).append(';');
+				}
+				String v = t.toString();
+				if (v.length() > 0 && det < 2)
+					v = v.substring(0, v.length() - 1);
 				else if (v.length() > 0)
 					v = v.substring(0, v.length() - 1) + "(" + mim + ")";
-			}
-			if (v.length() > 0) {
-				m[k] = v;
-				k++;
+//					}
+//					int x = mim.indexOf('/') + 1;
+//					StringBuilder t = new StringBuilder();
+//					if (mim.charAt(x) == '*')
+//						for (String[] i : MIME_MapTable)
+//							if (i[0].startsWith(mim.substring(0, x)))
+//								t.append(i[1]).append(';');
+//							else
+//								for (String[] j : MIME_MapTable)
+//									if (j[0].equals(mim))
+//										t.append(j[1]).append(';');
+//
+//
+////					if (i[0].equals(mim)) {
+////						t.append(i[1]).append(';');
+//////								if (det == 0) break;
+////					}
+//					v = t.toString();
+//					if (v.length() > 0 && det < 2) v = v.substring(0, v.length() - 1);
+//					else if (v.length() > 0)
+//						v = v.substring(0, v.length() - 1) + "(" + mim + ")";
+//				}
+				if (v.length() > 0) {
+					m[k] = v;
+					k++;
+				}
 			}
 		}
-		if (k == 0 && det > 1) return new String[]{"*(*)"};
-		else if (k == 0) return new String[]{"*"};
+		if (k == 0 && det > 1) return new String[]{".*(*/*)"};
+		else if (k == 0) return new String[]{".*"};
 		String[] x = new String[k];
 //		for (int q = 0; q < k; q++) {
 //			x[q] = m[q];
@@ -98,34 +316,80 @@ public class MimeTypeUtil {
 //		if (x.length == 0) x =
 		return x;
 	}
+//	public static String[] getDescriptions(String[] mime, int det) {
+//		if (det == 0) return mime;
+//		String[] m = new String[mime.length];
+//		int k = 0;
+//		for (String mim : mime) {
+////			int e = MIME_MapTable.length;
+//			String v = "";
+//			if (mim != null && !mim.equals("")) {
+//				if (mim.equals("*/*"))
+//					v = ".*(*/*)";
+//				else {
+//					int x = mim.indexOf('/') + 1;
+//					StringBuilder t = new StringBuilder();
+//					if (mim.charAt(x) == '*')
+//						for (String[] i : MIME_MapTable)
+//							if (i[0].startsWith(mim.substring(0, x)))
+//								t.append(i[1]).append(';');
+//							else
+//								for (String[] j : MIME_MapTable)
+//									if (j[0].equals(mim))
+//										t.append(j[1]).append(';');
+//
+//
+////					if (i[0].equals(mim)) {
+////						t.append(i[1]).append(';');
+//////								if (det == 0) break;
+////					}
+//					v = t.toString();
+//					if (v.length() > 0 && det < 2) v = v.substring(0, v.length() - 1);
+//					else if (v.length() > 0)
+//						v = v.substring(0, v.length() - 1) + "(" + mim + ")";
+//				}
+//			}
+//			if (v.length() > 0) {
+//				m[k] = v;
+//				k++;
+//			}
+//		}
+//		if (k == 0 && det > 1) return new String[]{".*(*/*)"};
+//		else if (k == 0) return new String[]{"*"};
+//		String[] x = new String[k];
+////		for (int q = 0; q < k; q++) {
+////			x[q] = m[q];
+////		}
+//		System.array//copy(m, 0, x, 0, k);
+////		if (x.length == 0) x =
+//		return x;
+//	}
 
-	public static Boolean meetsMimeTypes(String fn, String mime) {
-		if (mime == null || mime.equals("") || mime.equals("*/*")) return true;
-		for (String s : getExtensions(mime)) if (fn.toLowerCase().endsWith(s)) return true;
+	public static boolean meetsMimeTypes(String fn, String mime) {
+//		if (mime == null || mime.equals("") || mime.equals("*/*")) return true;
+		for (String s : getExtensions(mime))
+			if (s.equals(".*") || fn.toLowerCase().endsWith(s)) return true;
 		return false;
 	}
 
-	public static String formatFilename(String fn, String mimes) {
-		if (mimes.equals("*/*")) return fn;
-		String[] exts = getExtensions(mimes);
-		for (String ext : exts)
-			if (fn.endsWith(ext)) return fn;
-		if (exts.length > 0) return fn + exts[0];
-		return fn;
-	}
+//	public static String formatFilename(String fn, String mimes) {
+//		return formatFilename(fn, mimes, 0);
+//	}
 
 	public static String formatFilename(String fn, String mimes, int index) {
-		if (mimes.equals("*/*")) return fn;
-		String[] exts = getExtensions(mimes);
-		for (String ext : exts)
-			if (fn.endsWith(ext)) return fn;
-		if (exts.length > 0) {
+//		if (mimes.equals("*/*")) return fn;
+//		int w = ;
+		if (mimes.charAt(mimes.indexOf('/') + 1) == '*') return fn;
+		String[] ext = getExtensions(mimes);
+		for (String ex : ext)
+			if (fn.endsWith(ex)) return fn;
+		if (ext.length > 0) {
 			if (index == -1)
-				return fn + exts[exts.length - 1];
-			else if (index >= 0 && index < exts.length)
-				return fn + exts[index];
+				return fn + ext[ext.length - 1];
+			else if (index >= 0 && index < ext.length)
+				return fn + ext[index];
 			else
-				return fn + exts[0];
+				return fn + ext[0];
 		}
 		return fn;
 	}

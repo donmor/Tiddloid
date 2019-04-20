@@ -62,18 +62,19 @@ import java.util.Locale;
 import java.util.UUID;
 
 import indi.donmor.tiddloid.utils.BackupListAdapter;
-import indi.donmor.tiddloid.utils.FileDialogAdapter;
+//import indi.donmor.tiddloid.utils.FileDialogAdapter;
 import indi.donmor.tiddloid.utils.MimeTypeUtil;
 import indi.donmor.tiddloid.utils.NoLeakHandler;
-import indi.donmor.tiddloid.utils.OnFileTouchedListener;
 import indi.donmor.tiddloid.utils.WikiListAdapter;
 
+import com.github.donmor3000.filedialog.lib.FileDialog;
+
 public class MainActivity extends AppCompatActivity {
-	FloatingActionsMenu f_menu;
-	RecyclerView rvWikiList;
-	TextView noWiki;
-	WikiListAdapter wikiListAdapter;
-	Handler vHandler;
+	private FloatingActionsMenu f_menu;
+	private RecyclerView rvWikiList;
+	private TextView noWiki;
+	private WikiListAdapter wikiListAdapter;
+	private Handler vHandler;
 	public static JSONObject db;
 
 	@Override
@@ -95,6 +96,7 @@ public class MainActivity extends AppCompatActivity {
 				}
 				db.put("showHidden", false);
 				db.put("wiki", new JSONArray());
+				db.put("lastDir",Environment.getExternalStorageDirectory().getAbsolutePath());
 				writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
 			} catch (Exception e1) {
 				e1.printStackTrace();
@@ -279,10 +281,17 @@ public class MainActivity extends AppCompatActivity {
 					btnWikiConfigPath.setOnClickListener(new View.OnClickListener() {
 						@Override
 						public void onClick(View v) {
-							fileDialog(wikiConfigDialog.getContext(), true, new String[]{"text/html"}, new OnFileTouchedListener() {
+							File lastDir = Environment.getExternalStorageDirectory();
+							try {
+								lastDir=new File(MainActivity.db.getString("lastDir"));
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							FileDialog.fileOpen(wikiConfigDialog.getContext(),lastDir, new String[]{"text/html"}, new FileDialog.OnFileTouchedListener() {
 								@Override
-								public void onFileTouched(DialogInterface dialog, File file) {
-									if (file != null) {
+								public void onFileTouched(File[] files) {
+									if (files != null && files.length > 0 && files[0] != null) {
+										File file = files[0];
 										try {
 											boolean exist = false;
 											for (int i = 0; i < db.getJSONArray("wiki").length(); i++) {
@@ -300,12 +309,18 @@ public class MainActivity extends AppCompatActivity {
 												btnWikiConfigPath.setText(p);
 												writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
 											}
+											db.put("lastDir",file.getParentFile().getAbsolutePath());
 										} catch (Exception e) {
 											e.printStackTrace();
 											Toast.makeText(wikiConfigDialog.getContext(), "Data error", Toast.LENGTH_SHORT).show();
 										}
 									} else
 										Toast.makeText(MainActivity.this, "Failed opening the file", Toast.LENGTH_SHORT).show();
+								}
+
+								@Override
+								public void onCanceled() {
+
 								}
 							});
 						}
@@ -511,10 +526,17 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onClick(View v) {
 				f_menu.collapse();
-				fileDialog(MainActivity.this, true, new String[]{"text/html"}, new OnFileTouchedListener() {
+				File lastDir = Environment.getExternalStorageDirectory();
+				try {
+					lastDir=new File(MainActivity.db.getString("lastDir"));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				FileDialog.fileOpen(MainActivity.this,lastDir, new String[]{"text/html"}, new FileDialog.OnFileTouchedListener() {
 					@Override
-					public void onFileTouched(DialogInterface dialog, File file) {
-						if (file != null) {
+					public void onFileTouched(File[] files) {
+						if (files != null && files.length > 0 && files[0] != null) {
+							File file = files[0];
 							String id = genId();
 							try {
 								boolean exist = false;
@@ -537,6 +559,7 @@ public class MainActivity extends AppCompatActivity {
 									if (!MainActivity.writeJson(openFileOutput("data.json", Context.MODE_PRIVATE), db))
 										throw new Exception();
 								}
+								db.put("lastDir",file.getParentFile().getAbsolutePath());
 							} catch (Exception e) {
 								e.printStackTrace();
 								Toast.makeText(MainActivity.this, "Data error", Toast.LENGTH_SHORT).show();
@@ -549,6 +572,10 @@ public class MainActivity extends AppCompatActivity {
 							Toast.makeText(MainActivity.this, "Failed opening the file", Toast.LENGTH_SHORT).show();
 					}
 
+					@Override
+					public void onCanceled() {
+
+					}
 				});
 			}
 		});
@@ -566,57 +593,69 @@ public class MainActivity extends AppCompatActivity {
 					e.printStackTrace();
 				}
 				if (validTemplate) {
-					fileDialog(MainActivity.this, false, new String[]{"text/html"}, new OnFileTouchedListener() {
+					File lastDir = Environment.getExternalStorageDirectory();
+					try {
+						lastDir=new File(MainActivity.db.getString("lastDir"));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					FileDialog.fileSave(MainActivity.this,lastDir, new String[]{"text/html"}, new FileDialog.OnFileTouchedListener() {
 						@Override
-						public void onFileTouched(DialogInterface dialog, File file) {
-//							boolean wroteFile = false;
+						public void onFileTouched(File[] files) {
 							try {
-								FileInputStream is = openFileInput("template.html");
-								byte[] b = new byte[is.available()];
-								int x = is.read(b);
-								is.close();
-								if (x == -1) throw new Exception();
-								FileOutputStream os = new FileOutputStream(file);
-								os.write(b);
-								os.flush();
-								os.close();
-//								wroteFile = true;
-//								boolean jsonWrote = false;
-								String id = genId();
-								try {
-									boolean exist = false;
-									for (int i = 0; i < db.getJSONArray("wiki").length(); i++) {
-										if (db.getJSONArray("wiki").getJSONObject(i).getString("path").equals(file.getAbsolutePath())) {
-											exist = true;
-											id = db.getJSONArray("wiki").getJSONObject(i).getString("id");
-											break;
+								if (files != null && files.length > 0 && files[0] != null) {
+									File file = files[0];
+									FileInputStream is = openFileInput("template.html");
+									byte[] b = new byte[is.available()];
+									int x = is.read(b);
+									is.close();
+									if (x == -1) throw new Exception();
+									FileOutputStream os = new FileOutputStream(file);
+									os.write(b);
+									os.flush();
+									os.close();
+									String id = genId();
+									try {
+										boolean exist = false;
+										for (int i = 0; i < db.getJSONArray("wiki").length(); i++) {
+											if (db.getJSONArray("wiki").getJSONObject(i).getString("path").equals(file.getAbsolutePath())) {
+												exist = true;
+												id = db.getJSONArray("wiki").getJSONObject(i).getString("id");
+												break;
+											}
 										}
-									}
-									if (exist) {
-										Toast.makeText(MainActivity.this, "The Wiki is already exist", Toast.LENGTH_SHORT).show();
+										if (exist) {
+											Toast.makeText(MainActivity.this, "The Wiki is already exist", Toast.LENGTH_SHORT).show();
 //										jsonWrote = false;
-									} else {
-										JSONObject w = new JSONObject();
-										w.put("name", "TiddlyWiki");
-										w.put("id", id);
-										w.put("path", file.getAbsolutePath());
-										w.put("backup", false);
-										db.getJSONArray("wiki").put(db.getJSONArray("wiki").length(), w);
-										if (!MainActivity.writeJson(openFileOutput("data.json", Context.MODE_PRIVATE), db))
-											throw new Exception();
+										} else {
+											JSONObject w = new JSONObject();
+											w.put("name", "TiddlyWiki");
+											w.put("id", id);
+											w.put("path", file.getAbsolutePath());
+											w.put("backup", false);
+											db.getJSONArray("wiki").put(db.getJSONArray("wiki").length(), w);
+											if (!MainActivity.writeJson(openFileOutput("data.json", Context.MODE_PRIVATE), db))
+												throw new Exception();
 //										jsonWrote = true;
+										}
+										db.put("lastDir",file.getParentFile().getAbsolutePath());
+									} catch (Exception e) {
+										e.printStackTrace();
+										Toast.makeText(MainActivity.this, "Data error", Toast.LENGTH_SHORT).show();
 									}
-								} catch (Exception e) {
-									e.printStackTrace();
-									Toast.makeText(MainActivity.this, "Data error", Toast.LENGTH_SHORT).show();
-								}
-								MainActivity.this.onResume();
-								if (!loadPage(id))
-									Toast.makeText(MainActivity.this, "Error loading the page", Toast.LENGTH_SHORT).show();
+									MainActivity.this.onResume();
+									if (!loadPage(id))
+										Toast.makeText(MainActivity.this, "Error loading the page", Toast.LENGTH_SHORT).show();
+								} else throw new Exception();
 							} catch (Exception e) {
 								e.printStackTrace();
 								Toast.makeText(MainActivity.this, "Failed creating the file", Toast.LENGTH_SHORT).show();
 							}
+						}
+
+						@Override
+						public void onCanceled() {
+
 						}
 					});
 				} else {
@@ -626,23 +665,38 @@ public class MainActivity extends AppCompatActivity {
 							.setPositiveButton("OK", new DialogInterface.OnClickListener() {
 								@Override
 								public void onClick(DialogInterface dialog, int which) {
-									fileDialog(MainActivity.this, true, new String[]{"text/html"}, new OnFileTouchedListener() {
+									File lastDir = Environment.getExternalStorageDirectory();
+									try {
+										lastDir=new File(MainActivity.db.getString("lastDir"));
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+									FileDialog.fileOpen(MainActivity.this,lastDir, new String[]{"text/html"}, new FileDialog.OnFileTouchedListener() {
 										@Override
-										public void onFileTouched(DialogInterface dialog, File file) {
+										public void onFileTouched(File[] files) {
 											try {
-												FileInputStream is = new FileInputStream(file);
-												byte[] b = new byte[is.available()];
-												if (is.read(b) < 0) throw new Exception();
-												is.close();
-												FileOutputStream os = openFileOutput("template.html", Context.MODE_PRIVATE);
-												os.write(b);
-												os.flush();
-												os.close();
-												Toast.makeText(MainActivity.this, "Successfully imported the template", Toast.LENGTH_SHORT).show();
+												if (files != null && files.length > 0 && files[0] != null) {
+													File file = files[0];
+													FileInputStream is = new FileInputStream(file);
+													byte[] b = new byte[is.available()];
+													if (is.read(b) < 0) throw new Exception();
+													is.close();
+													FileOutputStream os = openFileOutput("template.html", Context.MODE_PRIVATE);
+													os.write(b);
+													os.flush();
+													os.close();
+													Toast.makeText(MainActivity.this, "Successfully imported the template", Toast.LENGTH_SHORT).show();
+													db.put("lastDir",file.getParentFile().getAbsolutePath());
+												} else throw new Exception();
 											} catch (Exception e) {
 												e.printStackTrace();
 												Toast.makeText(MainActivity.this, "Failed opening the file", Toast.LENGTH_SHORT).show();
 											}
+										}
+
+										@Override
+										public void onCanceled() {
+
 										}
 									});
 
@@ -655,7 +709,7 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
-	Boolean loadPage(String id) {
+	private Boolean loadPage(String id) {
 		Intent in = new Intent();
 		try {
 			Bundle bu = new Bundle();
@@ -735,25 +789,40 @@ public class MainActivity extends AppCompatActivity {
 			view.findViewById(R.id.btnImport).setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					fileDialog(view.getContext(), true, new String[]{"text/html"}, new OnFileTouchedListener() {
+					File lastDir = Environment.getExternalStorageDirectory();
+					try {
+						lastDir=new File(MainActivity.db.getString("lastDir"));
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					FileDialog.fileOpen(view.getContext(),lastDir, new String[]{"text/html"}, new FileDialog.OnFileTouchedListener() {
 						@Override
-						public void onFileTouched(DialogInterface dialog, File file) {
+						public void onFileTouched(File[] files) {
 							try {
-								FileInputStream is = new FileInputStream(file);
-								byte[] b = new byte[is.available()];
-								if (is.read(b) < 0) throw new Exception();
-								is.close();
-								FileOutputStream os = openFileOutput("template.html", Context.MODE_PRIVATE);
-								os.write(b);
-								os.flush();
-								os.close();
-								Toast.makeText(MainActivity.this, "Successfully imported the template", Toast.LENGTH_SHORT).show();
-								tpStatus.setText(getResources().getString(R.string.exist));
-								tpStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+								if (files != null && files.length > 0 && files[0] != null) {
+									File file = files[0];
+									FileInputStream is = new FileInputStream(file);
+									byte[] b = new byte[is.available()];
+									if (is.read(b) < 0) throw new Exception();
+									is.close();
+									FileOutputStream os = openFileOutput("template.html", Context.MODE_PRIVATE);
+									os.write(b);
+									os.flush();
+									os.close();
+									Toast.makeText(MainActivity.this, "Successfully imported the template", Toast.LENGTH_SHORT).show();
+									tpStatus.setText(getResources().getString(R.string.exist));
+									tpStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
+									db.put("lastDir",file.getParentFile().getAbsolutePath());
+								} else throw new Exception();
 							} catch (Exception e) {
 								e.printStackTrace();
 								Toast.makeText(MainActivity.this, "Failed opening the file", Toast.LENGTH_SHORT).show();
 							}
+
+						}
+
+						@Override
+						public void onCanceled() {
 
 						}
 					});
@@ -952,7 +1021,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 
-	public static JSONObject readJson(FileInputStream is) {
+	private static JSONObject readJson(FileInputStream is) {
 		try {
 			byte[] b = new byte[is.available()];
 			if (is.read(b) < 0) throw new Exception();
@@ -978,7 +1047,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@TargetApi(23)
-	public void checkPermission() {
+	private void checkPermission() {
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
 			ActivityCompat.requestPermissions(this, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
 		}
@@ -1300,316 +1369,360 @@ public class MainActivity extends AppCompatActivity {
 	//	enum Mode {
 //		OPEN,SAVE;
 //	}
-	public static void fileDialog(final Context parent, final boolean ROMode, String[] mimes, final OnFileTouchedListener listener) {
-		final View view = LayoutInflater.from(parent).inflate(R.layout.file_dialog, null);
-		final String[] mimeTypes = MimeTypeUtil.trimMime(mimes);
-//		view.findViewById(R.id.saveFnFrame).setVisibility(View.VISIBLE);
-		final EditText fName = view.findViewById(R.id.save_f_name);
-		if (ROMode) fName.setVisibility(View.GONE);
+//	public interface OnFileTouchedListener {
+//
+//		void onFileTouched(DialogInterface dialog, File file);
+//
+//		void onCanceled();
+//
+//	}
+//
+//	public static void fileOpen(final Context parent, String[] mimes, final OnFileTouchedListener listener) {
+//		fileDialog(parent, true, mimes, listener);
+//	}
+//
+//	public static void fileSave(final Context parent, String[] mimes, final OnFileTouchedListener listener) {
+//		fileDialog(parent, false, mimes, listener);
+//	}
+//
+//	public static void fileDialog(final Context parent, final boolean ROMode, String[] mimes, final OnFileTouchedListener listener) {
+//		fileDialog(parent, ROMode, mimes, 1, listener);
+//	}
+
+//	public static void fileDialog(final Context parent, final boolean ROMode, String[] mimes, int det, final OnFileTouchedListener listener) {
+//		final View view = LayoutInflater.from(parent).inflate(R.layout.file_dialog, null);
+//		final String[] mimeTypes = MimeTypeUtil.trimMime(mimes);
+////		MimeTypeUtil util = ;
+////		final MimeTypeUtil.MimeX mimeX = new MimeTypeUtil().new MimeTypeUtil.MimeX(mimes);
+////		view.findViewById(R.id.saveFnFrame).setVisibility(View.VISIBLE);
+//		final EditText fName = view.findViewById(R.id.save_f_name);
+//		if (ROMode) fName.setVisibility(View.GONE);
+////		ImageButton btnNewFolder = view.findViewById(R.id.btnNewFolder);
+//		final TextView lblPath = view.findViewById(R.id.lblPath);
+//		lblPath.setText(Environment.getExternalStorageDirectory().getAbsolutePath());
+////		final TextView lblExt = view.findViewById(R.id.lblExt);
+//		final Spinner spnExt = view.findViewById(R.id.spnExt);
+////		final ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(view.getContext(), R.layout.ext_slot, mimeX.getDescriptions(det));
+//		final ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(view.getContext(), R.layout.ext_slot, MimeTypeUtil.getDescriptions(mimeTypes, det));
+//		spinnerAdapter.setDropDownViewResource(R.layout.ext_slot);
+//		spnExt.setAdapter(spinnerAdapter);
+////		if (mimeX.length() == 1) spnExt.setEnabled(false);
+//		if (mimeTypes.length == 1) spnExt.setEnabled(false);
+////		if (mimeTypes == null || mimeTypes.length == 0) spnExt.setVisibility(View.GONE);
+////			if (mimeTypes.length == 1) lblExt.setText(MimeTypeUtil.getExtensions(mimeTypes[0])[0]);
+//		final RecyclerView dir = view.findViewById(R.id.diFileList);
+//		dir.setLayoutManager(new LinearLayoutManager(view.getContext()));
+////		final FileDialogAdapter dirAdapter = new FileDialogAdapter(view.getContext(), mimeX, Environment.getExternalStorageDirectory());
+//		final FileDialogAdapter dirAdapter = new FileDialogAdapter(view.getContext(), mimeTypes, Environment.getExternalStorageDirectory());
+//		dir.setAdapter(dirAdapter);
+//		final Button btnBack = view.findViewById(R.id.btnBack);
+//		btnBack.setEnabled(dirAdapter.getDevices().length > 1);
 //		ImageButton btnNewFolder = view.findViewById(R.id.btnNewFolder);
-		final TextView lblPath = view.findViewById(R.id.lblPath);
-		lblPath.setText(Environment.getExternalStorageDirectory().getAbsolutePath());
-//		final TextView lblExt = view.findViewById(R.id.lblExt);
-		final Spinner spnExt = view.findViewById(R.id.spnExt);
-		final ArrayAdapter<String> spinnerAdapter = new ArrayAdapter<>(view.getContext(), R.layout.ext_slot, MimeTypeUtil.getDescriptions(mimeTypes, 1));
-		spinnerAdapter.setDropDownViewResource(R.layout.ext_slot);
-		spnExt.setAdapter(spinnerAdapter);
-		if (mimeTypes.length == 1) spnExt.setEnabled(false);
-//		if (mimeTypes == null || mimeTypes.length == 0) spnExt.setVisibility(View.GONE);
-//			if (mimeTypes.length == 1) lblExt.setText(MimeTypeUtil.getExtensions(mimeTypes[0])[0]);
-		final RecyclerView dir = view.findViewById(R.id.diFileList);
-		dir.setLayoutManager(new LinearLayoutManager(view.getContext()));
-		final FileDialogAdapter dirAdapter = new FileDialogAdapter(view.getContext(), mimeTypes, Environment.getExternalStorageDirectory());
-		dir.setAdapter(dirAdapter);
-		final Button btnBack = view.findViewById(R.id.btnBack);
-		btnBack.setEnabled(dirAdapter.getDevices().length > 1);
-		ImageButton btnNewFolder = view.findViewById(R.id.btnNewFolder);
-		if (ROMode) btnNewFolder.setVisibility(View.GONE);
-		else btnNewFolder.setOnClickListener(new View.OnClickListener() {
-			//		btnNewFolder.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				final View view1 = LayoutInflater.from(view.getContext()).inflate(R.layout.fn_slot, null);
-				final EditText editText = view1.findViewById(R.id.eFn);
-//				final AlertDialog newFolderDialog = new AlertDialog.Builder(parent)
-				final AlertDialog newFolderDialog = new AlertDialog.Builder(view.getContext())
-						.setTitle("New Folder")
-						.setView(view1)
-						.setNegativeButton("Cancel", null)
-						.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								File f = new File(dirAdapter.getCurrentDir().getAbsolutePath() + "/" + editText.getText().toString());
-								if (f.exists())
-									Toast.makeText(view.getContext(), "The folder is already exist", Toast.LENGTH_SHORT).show();
-								else {
-									boolean d = f.mkdir();
-									if (d && f.exists()) {
-										dirAdapter.setDir(f);
-										dir.setAdapter(dirAdapter);
-										lblPath.setText(f.getAbsolutePath());
-										btnBack.setEnabled(true);
-									}
-								}
-							}
-						})
-						.show();
-				final Button okx = newFolderDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-				okx.setEnabled(false);
-				editText.addTextChangedListener(new TextWatcher() {
-					@Override
-					public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-					}
-
-					@Override
-					public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-					}
-
-					@Override
-					public void afterTextChanged(Editable s) {
-						if (editText.getText().toString().startsWith(".")) {
-							try {
-								if (!db.getBoolean("showHidden")) {
-									okx.setEnabled(false);
-									Toast.makeText(view1.getContext(), "Hidden files could not be created under current settings", Toast.LENGTH_SHORT).show();
-								} else if (editText.getText().toString().substring(1).length() == 0)
-									okx.setEnabled(false);
-								else okx.setEnabled(true);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-						} else if (editText.getText().toString().startsWith("+") || editText.getText().toString().startsWith("-")) {
-							okx.setEnabled(false);
-							Toast.makeText(view1.getContext(), "These characters  are not allowed at the beginning of a filename:\n+ -", Toast.LENGTH_SHORT).show();
-						} else if (illegalFilename(editText.getText().toString())) {
-							okx.setEnabled(false);
-							Toast.makeText(view1.getContext(), "These characters  are not allowed in a filename:\n\" * / : < > ? \\ |", Toast.LENGTH_SHORT).show();
-						} else if (editText.getText().toString().length() > 0) okx.setEnabled(true);
-						else okx.setEnabled(false);
-					}
-				});
-				editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-					@Override
-					public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-						if (okx.isEnabled()) okx.callOnClick();
-						return true;
-					}
-				});
-			}
-		});
-		spnExt.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
-			@Override
-			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
-				dirAdapter.setMimeIndex(position);
-				dirAdapter.reload();
-				dir.setAdapter(dirAdapter);
-			}
-
-			@Override
-			public void onNothingSelected(AdapterView<?> parent) {
-
-			}
-		});
-		btnBack.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				File f = dirAdapter.getParentDir();
-				if (f != null && f.exists() && f.isDirectory()) {
-					dirAdapter.setDir(f);
-					dir.setAdapter(dirAdapter);
-					lblPath.setText(f.getAbsolutePath());
-					btnBack.setEnabled(dirAdapter.getDevices().length > 1 || !dirAdapter.getRootDir().getAbsolutePath().equals(f.getAbsolutePath()));
-				} else {
-					dirAdapter.setRoot();
-					dir.setAdapter(dirAdapter);
-					lblPath.setText("");
-					btnBack.setEnabled(false);
-				}
-			}
-		});
-		AlertDialog.Builder builder = new AlertDialog.Builder(parent).setView(view);
-		if (ROMode) builder.setTitle("Open");
-		else {
-			builder.setTitle("Save as")
-					.setNegativeButton("Cancel", null)
-					.setPositiveButton("Ok", null);
-		}
-//		builder.;/
-		final AlertDialog fileDialog = builder.create();
-//		final AlertDialog fileDialog = new AlertDialog.Builder(parent)
-//				.setView(view)
-//				.create();
-		fileDialog.setCanceledOnTouchOutside(false);
-		fileDialog.show();
-		final Button ok = fileDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-		ok.setEnabled(false);
-		ok.setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				String fn = fName.getText().toString();
-//				try {
-//					if (!(MimeTypeUtil.meetsMimeTypes(fn, mimeTypes[0])))
-////						fn = fn + lblExt.getText().toString()
-//						;
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-				fn = MimeTypeUtil.formatFilename(fn, mimeTypes[dirAdapter.getMimeIndex()], -1);
-				String fPath = dirAdapter.getCurrentDir().getAbsolutePath() + "/" + fn;
-				final File of = new File(fPath);
-				if (of.exists()) {
-					new AlertDialog.Builder(view.getContext())
-							.setTitle("Warning")
-							.setMessage("File already exists. Do you want to overwrite it?")
-							.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									listener.onFileTouched(fileDialog, of);
-									fileDialog.dismiss();
-								}
-							})
-							.setNegativeButton("Cancel", null)
-							.show();
-				} else {
-					listener.onFileTouched(fileDialog, of);
-					fileDialog.dismiss();
-				}
-
-			}
-		});
-		dirAdapter.setOnItemClickListener(new FileDialogAdapter.ItemClickListener() {
-			@Override
-			public void onItemClick(int position) {
-				File f = dirAdapter.getFile(position);
-//				if (f != null && f.exists()) {
-				if (f.isDirectory()) {
-					dirAdapter.setDir(f);
-					dir.setAdapter(dirAdapter);
-					lblPath.setText(f.getAbsolutePath());
-					btnBack.setEnabled(dirAdapter.getDevices().length > 1 || !dirAdapter.getRootDir().getAbsolutePath().equals(f.getAbsolutePath()));
-				} else if (f.isFile()) {
-					if (ROMode) {
-						listener.onFileTouched(fileDialog, f);
-						fileDialog.dismiss();
-					} else {
-						String fn = f.getName();
-						if (fn.equals(fName.getText().toString()))
-							ok.callOnClick();
-						else
-							fName.setText(fn);
-					}
-				}
+//		if (ROMode) btnNewFolder.setVisibility(View.GONE);
+//		else btnNewFolder.setOnClickListener(new View.OnClickListener() {
+//			//		btnNewFolder.setOnClickListener(new View.OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				final View view1 = LayoutInflater.from(view.getContext()).inflate(R.layout.fn_slot, null);
+//				final EditText editText = view1.findViewById(R.id.eFn);
+////				final AlertDialog newFolderDialog = new AlertDialog.Builder(parent)
+//				final AlertDialog newFolderDialog = new AlertDialog.Builder(view.getContext())
+//						.setTitle("New Folder")
+//						.setView(view1)
+//						.setNegativeButton("Cancel", null)
+//						.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
+//							@Override
+//							public void onClick(DialogInterface dialog, int which) {
+//								File f = new File(dirAdapter.getCurrentDir().getAbsolutePath() + "/" + editText.getText().toString());
+//								if (f.exists())
+//									Toast.makeText(view.getContext(), "The folder is already exist", Toast.LENGTH_SHORT).show();
+//								else {
+//									boolean d = f.mkdir();
+//									if (d && f.exists()) {
+//										dirAdapter.setDir(f);
+//										dir.setAdapter(dirAdapter);
+//										lblPath.setText(f.getAbsolutePath());
+//										btnBack.setEnabled(true);
+//									}
+//								}
+//							}
+//						})
+//						.show();
+//				final Button okx = newFolderDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+//				okx.setEnabled(false);
+//				editText.addTextChangedListener(new TextWatcher() {
+//					@Override
+//					public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//					}
+//
+//					@Override
+//					public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//					}
+//
+//					@Override
+//					public void afterTextChanged(Editable s) {
+//						if (editText.getText().toString().startsWith(".")) {
+//							try {
+//								if (!db.getBoolean("showHidden")) {
+//									okx.setEnabled(false);
+//									Toast.makeText(view1.getContext(), "Hidden files could not be created under current settings", Toast.LENGTH_SHORT).show();
+//								} else if (editText.getText().toString().substring(1).length() == 0)
+//									okx.setEnabled(false);
+//								else okx.setEnabled(true);
+//							} catch (Exception e) {
+//								e.printStackTrace();
+//							}
+//						} else if (editText.getText().toString().startsWith("+") || editText.getText().toString().startsWith("-")) {
+//							okx.setEnabled(false);
+//							Toast.makeText(view1.getContext(), "These characters  are not allowed at the beginning of a filename:\n+ -", Toast.LENGTH_SHORT).show();
+//						} else if (illegalFilename(editText.getText().toString())) {
+//							okx.setEnabled(false);
+//							Toast.makeText(view1.getContext(), "These characters  are not allowed in a filename:\n\" * / : < > ? \\ |", Toast.LENGTH_SHORT).show();
+//						} else if (editText.getText().toString().length() > 0) okx.setEnabled(true);
+//						else okx.setEnabled(false);
+//					}
+//				});
+//				editText.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//					@Override
+//					public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+//						if (okx.isEnabled()) okx.callOnClick();
+//						return true;
+//					}
+//				});
+//			}
+//		});
+//		spnExt.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
+//			@Override
+//			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
+//				dirAdapter.setMimeIndex(position);
+//				dirAdapter.reload();
+//				dir.setAdapter(dirAdapter);
+//			}
+//
+//			@Override
+//			public void onNothingSelected(AdapterView<?> parent) {
+//
+//			}
+//		});
+//		btnBack.setOnClickListener(new View.OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				File f = dirAdapter.getParentDir();
+//				if (f != null && f.exists() && f.isDirectory()) {
+//					dirAdapter.setDir(f);
+//					dir.setAdapter(dirAdapter);
+//					lblPath.setText(f.getAbsolutePath());
+//					btnBack.setEnabled(dirAdapter.getDevices().length > 1 || !dirAdapter.getRootDir().getAbsolutePath().equals(f.getAbsolutePath()));
 //				} else {
 //					dirAdapter.setRoot();
 //					dir.setAdapter(dirAdapter);
 //					lblPath.setText("");
+//					btnBack.setEnabled(false);
 //				}
-			}
-		});
-		fName.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//			}
+//		});
+//		AlertDialog.Builder builder = new AlertDialog.Builder(parent).setView(view);
+//		if (ROMode) builder.setTitle("Open");
+//		else {
+//			builder.setTitle("Save as")
+//					.setNegativeButton("Cancel", new DialogInterface.OnClickListener() {
+//						@Override
+//						public void onClick(DialogInterface dialog, int which) {
+//							dialog.cancel();
+//						}
+//					})
+//					.setPositiveButton("Ok", null);
+//		}
+////		builder.;/
+//		final AlertDialog fileDialog = builder.create();
+////		final AlertDialog fileDialog = new AlertDialog.Builder(parent)
+////				.setView(view)
+////				.create();
+//		fileDialog.setCanceledOnTouchOutside(false);
+//		fileDialog.setOnCancelListener(new DialogInterface.OnCancelListener() {
+//			@Override
+//			public void onCancel(DialogInterface dialog) {
+//				listener.onCanceled();
+//				System.out.println("CANCELLED");
+//			}
+//		});
+//		fileDialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
+//			@Override
+//			public void onDismiss(DialogInterface dialog) {
+//				System.out.println("DISMISSED");
+//			}
+//		});
+//		fileDialog.show();
+//		final Button ok = fileDialog.getButton(AlertDialog.BUTTON_POSITIVE);
+//		ok.setEnabled(false);
+//		ok.setOnClickListener(new View.OnClickListener() {
+//			@Override
+//			public void onClick(View v) {
+//				String fn = fName.getText().toString();
+////				try {
+////					if (!(MimeTypeUtil.meetsMimeTypes(fn, mimeTypes[0])))
+//////						fn = fn + lblExt.getText().toString()
+////						;
+////				} catch (Exception e) {
+////					e.printStackTrace();
+////				}
+////				fn = mimeX.formatFilename(fn,dirAdapter.getMimeIndex(),-1);
+//				fn = MimeTypeUtil.formatFilename(fn, mimeTypes[dirAdapter.getMimeIndex()], -1);
+//				String fPath = dirAdapter.getCurrentDir().getAbsolutePath() + "/" + fn;
+//				final File of = new File(fPath);
+//				if (of.exists()) {
+//					new AlertDialog.Builder(view.getContext())
+//							.setTitle("Warning")
+//							.setMessage("File already exists. Do you want to overwrite it?")
+//							.setPositiveButton("OK", new DialogInterface.OnClickListener() {
+//								@Override
+//								public void onClick(DialogInterface dialog, int which) {
+//									listener.onFileTouched(fileDialog, of);
+//									fileDialog.dismiss();
+//								}
+//							})
+//							.setNegativeButton("Cancel", null)
+//							.show();
+//				} else {
+//					listener.onFileTouched(fileDialog, of);
+//					fileDialog.dismiss();
+//				}
+//
+//			}
+//		});
+//		dirAdapter.setOnItemClickListener(new FileDialogAdapter.ItemClickListener() {
+//			@Override
+//			public void onItemClick(int position) {
+//				File f = dirAdapter.getFile(position);
+////				if (f != null && f.exists()) {
+//				if (f.isDirectory()) {
+//					dirAdapter.setDir(f);
+//					dir.setAdapter(dirAdapter);
+//					lblPath.setText(f.getAbsolutePath());
+//					btnBack.setEnabled(dirAdapter.getDevices().length > 1 || !dirAdapter.getRootDir().getAbsolutePath().equals(f.getAbsolutePath()));
+//				} else if (f.isFile()) {
+//					if (ROMode) {
+//						listener.onFileTouched(fileDialog, f);
+//						fileDialog.dismiss();
+//					} else {
+//						String fn = f.getName();
+//						if (fn.equals(fName.getText().toString()))
+//							ok.callOnClick();
+//						else
+//							fName.setText(fn);
+//					}
+//				}
+////				} else {
+////					dirAdapter.setRoot();
+////					dir.setAdapter(dirAdapter);
+////					lblPath.setText("");
+////				}
+//			}
+//		});
+//		fName.addTextChangedListener(new TextWatcher() {
+//			@Override
+//			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+//
+//			}
+//
+//			@Override
+//			public void onTextChanged(CharSequence s, int start, int before, int count) {
+//
+//			}
+//
+//			@Override
+//			public void afterTextChanged(Editable s) {
+//				if (fName.getText().toString().startsWith(".")) {
+//					try {
+//						if (!db.getBoolean("showHidden")) {
+//							ok.setEnabled(false);
+//							Toast.makeText(view.getContext(), "Hidden files could not be created under current settings", Toast.LENGTH_SHORT).show();
+//						} else if (fName.getText().toString().substring(1).length() == 0)
+//							ok.setEnabled(false);
+//						else ok.setEnabled(true);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				} else if (fName.getText().toString().startsWith("+") || fName.getText().toString().startsWith("-")) {
+//					ok.setEnabled(false);
+//					Toast.makeText(view.getContext(), "These characters  are not allowed at the beginning of a filename:\n+ -", Toast.LENGTH_SHORT).show();
+//				} else if (illegalFilename(fName.getText().toString())) {
+//					ok.setEnabled(false);
+//					Toast.makeText(view.getContext(), "These characters  are not allowed in a filename:\n\" * / : < > ? \\ |", Toast.LENGTH_SHORT).show();
+//				} else if (fName.getText().toString().length() > 0) ok.setEnabled(true);
+//				else ok.setEnabled(false);
+//			}
+//		});
+//		fName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+//			@Override
+//			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
+//				if (ok.isEnabled()) ok.callOnClick();
+//				return true;
+//			}
+//		});
+//	}
 
-			}
+//	public static File[] getStorage(Context context) {
+//		StorageManager storageManager = (StorageManager) context.getSystemService(STORAGE_SERVICE);
+//		try {
+//			Method method = StorageManager.class.getDeclaredMethod("getVolumePaths");
+//			method.setAccessible(true);
+//			Object result = method.invoke(storageManager);
+//			if (result instanceof String[]) {
+//				String[] pathArray = (String[]) result;
+//				StatFs statFs;
+//				File[] files = new File[pathArray.length];
+//				int i = 0;
+//				for (String path : pathArray) {
+//					File file = new File(path);
+//					System.out.println(file.getAbsolutePath());
+//					if (!TextUtils.isEmpty(path) && file.exists()) {
+//						statFs = new StatFs(path);
+//						if (statFs.getBlockCountLong() * statFs.getBlockSizeLong() != 0
+//								&& file.canWrite()
+//						) {
+//							System.out.println(file.canWrite());
+//							files[i] = file;
+//							i++;
+//						}
+//					}
+//				}
+//				File[] files1 = new File[i];
+//				System.arraycopy(files, 0, files1, 0, i);
+//				return files1;
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//			File externalFolder = Environment.getExternalStorageDirectory();
+//			if (externalFolder != null) {
+//				File[] d = new File[1];
+//				d[0] = externalFolder;
+//				return d;
+//			}
+//		}
+//		return null;
+//	}
 
-			@Override
-			public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-			}
-
-			@Override
-			public void afterTextChanged(Editable s) {
-				if (fName.getText().toString().startsWith(".")) {
-					try {
-						if (!db.getBoolean("showHidden")) {
-							ok.setEnabled(false);
-							Toast.makeText(view.getContext(), "Hidden files could not be created under current settings", Toast.LENGTH_SHORT).show();
-						} else if (fName.getText().toString().substring(1).length() == 0)
-							ok.setEnabled(false);
-						else ok.setEnabled(true);
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
-				} else if (fName.getText().toString().startsWith("+") || fName.getText().toString().startsWith("-")) {
-					ok.setEnabled(false);
-					Toast.makeText(view.getContext(), "These characters  are not allowed at the beginning of a filename:\n+ -", Toast.LENGTH_SHORT).show();
-				} else if (illegalFilename(fName.getText().toString())) {
-					ok.setEnabled(false);
-					Toast.makeText(view.getContext(), "These characters  are not allowed in a filename:\n\" * / : < > ? \\ |", Toast.LENGTH_SHORT).show();
-				} else if (fName.getText().toString().length() > 0) ok.setEnabled(true);
-				else ok.setEnabled(false);
-			}
-		});
-		fName.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-			@Override
-			public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-				if (ok.isEnabled()) ok.callOnClick();
-				return true;
-			}
-		});
-	}
-
-	public static File[] getStorage(Context context) {
-		StorageManager storageManager = (StorageManager) context.getSystemService(STORAGE_SERVICE);
-		try {
-			Method method = StorageManager.class.getDeclaredMethod("getVolumePaths");
-			method.setAccessible(true);
-			Object result = method.invoke(storageManager);
-			if (result instanceof String[]) {
-				String[] pathArray = (String[]) result;
-				StatFs statFs;
-				File[] files = new File[pathArray.length];
-				int i = 0;
-				for (String path : pathArray) {
-					File file = new File(path);
-					System.out.println(file.getAbsolutePath());
-					if (!TextUtils.isEmpty(path) && file.exists()) {
-						statFs = new StatFs(path);
-						if (statFs.getBlockCountLong() * statFs.getBlockSizeLong() != 0
-								&& file.canWrite()
-						) {
-							System.out.println(file.canWrite());
-							files[i] = file;
-							i++;
-						}
-					}
-				}
-				File[] files1 = new File[i];
-				System.arraycopy(files, 0, files1, 0, i);
-				return files1;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-			File externalFolder = Environment.getExternalStorageDirectory();
-			if (externalFolder != null) {
-				File[] d = new File[1];
-				d[0] = externalFolder;
-				return d;
-			}
-		}
-		return null;
-	}
-
-	public static String genId() {
+	private static String genId() {
 		return UUID.randomUUID().toString();
 	}
 
-	public static boolean illegalFilename(CharSequence e) {
-		String v = e.toString();
-		for (int i = 0; i < 32; i++) if (v.indexOf(i) >= 0) return true;
-		return v.indexOf('"') >= 0
-				|| v.indexOf('*') >= 0
-				|| v.indexOf('/') >= 0
-				|| v.indexOf(':') >= 0
-				|| v.indexOf('<') >= 0
-				|| v.indexOf('>') >= 0
-				|| v.indexOf('?') >= 0
-				|| v.indexOf('\\') >= 0
-				|| v.indexOf('|') >= 0
-				|| v.indexOf(127) >= 0;
-	}
+//	private static boolean illegalFilename(CharSequence e) {
+//		String v = e.toString();
+//		for (int i = 0; i < 32; i++) if (v.indexOf(i) >= 0) return true;
+//		return v.indexOf('"') >= 0
+//				|| v.indexOf('*') >= 0
+//				|| v.indexOf('/') >= 0
+//				|| v.indexOf(':') >= 0
+//				|| v.indexOf('<') >= 0
+//				|| v.indexOf('>') >= 0
+//				|| v.indexOf('?') >= 0
+//				|| v.indexOf('\\') >= 0
+//				|| v.indexOf('|') >= 0
+//				|| v.indexOf(127) >= 0;
+//	}
 
 	public static boolean isBackupFile(File main, File chk) {
 		String mfn = main.getName();

@@ -8,14 +8,14 @@ import android.os.Handler;
 import android.view.WindowManager;
 import android.widget.TextView;
 
-import net.danlew.android.joda.JodaTimeAndroid;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-import org.joda.time.LocalDateTime;
-import org.joda.time.format.DateTimeFormatter;
-
-import java.util.TimeZone;
+//import net.danlew.android.joda.JodaTimeAndroid;
+//
+//import org.joda.time.DateTime;
+//import org.joda.time.DateTimeZone;
+//import org.joda.time.LocalDateTime;
+//import org.joda.time.format.DateTimeFormatter;
+//
+//import java.util.TimeZone;
 
 public class SplashActivity extends Activity {
 	private static final int LOAD_DISPLAY_TIME = 2000;

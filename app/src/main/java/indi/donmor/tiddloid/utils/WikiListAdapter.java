@@ -69,7 +69,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			holder.btnWiki.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					;
 					mItemClickListener.onItemClick(pos);
 				}
 			});

@@ -1,16 +1,20 @@
 package indi.donmor.tiddloid;
 
 import android.annotation.SuppressLint;
+import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.net.Uri;
 import android.os.Build;
+import android.os.Environment;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.MenuItem;
+import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -20,15 +24,20 @@ import android.webkit.WebViewClient;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import com.github.donmor3000.filedialog.lib.FileDialog;
+
 import org.json.JSONObject;
+
+import java.io.File;
 
 @SuppressLint("SetJavaScriptEnabled")
 public class TWEditorWV extends AppCompatActivity {
 
 	private JSONObject wApp;
-
+	private ValueCallback<Uri[]> uploadMessage;
 	private WebView wv;
 	private ProgressBar wvProgress;
+
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -48,6 +57,7 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setDisplayZoomControls(false);
 		wvs.setUseWideViewPort(true);
 		wvs.setLoadWithOverviewMode(true);
+		wvs.setAllowUniversalAccessFromFileURLs(true);
 		wv.setWebChromeClient(new WebChromeClient() {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
@@ -64,12 +74,129 @@ public class TWEditorWV extends AppCompatActivity {
 			public void onReceivedTitle(WebView view, String title) {
 				TWEditorWV.this.setTitle(title);
 				try {
-					if (wApp!=null){
-					wApp.put("name", title);
-					MainActivity.writeJson(openFileOutput("data.json", MODE_PRIVATE), MainActivity.db);}
+					if (wApp != null) {
+						wApp.put("name", title);
+						MainActivity.writeJson(openFileOutput("data.json", MODE_PRIVATE), MainActivity.db);
+					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+			}
+
+			@Override
+			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
+//				fileChooserParams.getAcceptTypes();
+				File lastDir = Environment.getExternalStorageDirectory();
+				boolean showHidden = false;
+				try {
+					lastDir = new File(MainActivity.db.getString("lastDir"));
+					showHidden = MainActivity.db.getBoolean("showHidden");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				final int mode = fileChooserParams.getMode();
+				uploadMessage = filePathCallback;
+				FileDialog.fileDialog(TWEditorWV.this, lastDir, mode, fileChooserParams.getAcceptTypes(), 1, showHidden, false, new FileDialog.OnFileTouchedListener() {
+					//				MainActivity.fileOpen(TWEditorWV.this, new String[]{"*/*"}, new MainActivity.OnFileTouchedListener() {
+					@Override
+					public void onFileTouched(File[] files) {
+						if (uploadMessage == null) return;
+						Uri[] results = null;
+						try {
+							if (files != null && files.length > 0) {
+								switch (mode) {
+									case 0:
+										File file = files[0];
+										if (file != null && file.exists()) {
+											//							results = new Uri[]{Uri.fromFile(file)};
+											//							results = new Uri[]{Uri.parse(file.getAbsolutePath())};
+											//							results = new Uri[]{Uri.parse("file:///storage/emulated/0/DCIM/Camera/IMG_20190415_062536.jpg")};
+											System.out.println(file.getAbsolutePath());
+											System.out.println(file.toURI());
+											try {
+												results = new Uri[]{Uri.parse(file.toURI().toString())};
+												//							results = new Uri[]{Uri.parse("file://"+file.getAbsolutePath())};
+												//							results = new Uri[]{Uri.fromFile(file)};
+												//								Uri localUri = Uri.fromFile(file);
+												////								System.out.println();
+												//								Intent localIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, localUri);
+												//								sendBroadcast(localIntent);
+												//								Uri vUri = Uri.fromFile(file);
+												//								results = new Uri[]{vUri};
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+											System.out.println(Uri.parse("file://" + file.getAbsolutePath()));
+//											System.out.println(results);
+										} else throw new Exception();
+										break;
+									case 1:
+//										int v = files.length;
+//										for (int i=0;i<files.length;i++) {
+										for (File file1:files) {
+											try {
+												results = new Uri[]{Uri.parse(file1.toURI().toString())};
+//												results = new Uri[]{Uri.parse(files[i].toURI().toString())};
+												//							results = new Uri[]{Uri.parse("file://"+file.getAbsolutePath())};
+												//							results = new Uri[]{Uri.fromFile(file)};
+												//								Uri localUri = Uri.fromFile(file);
+												////								System.out.println();
+												//								Intent localIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, localUri);
+												//								sendBroadcast(localIntent);
+												//								Uri vUri = Uri.fromFile(file);
+												//								results = new Uri[]{vUri};
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+
+										}
+										break;
+									case 3:
+										File file3 = files[0];
+										if (file3 != null && file3.exists()) {
+											//							results = new Uri[]{Uri.fromFile(file)};
+											//							results = new Uri[]{Uri.parse(file.getAbsolutePath())};
+											//							results = new Uri[]{Uri.parse("file:///storage/emulated/0/DCIM/Camera/IMG_20190415_062536.jpg")};
+											System.out.println(file3.getAbsolutePath());
+											System.out.println(file3.toURI());
+											try {
+												results = new Uri[]{Uri.parse(file3.toURI().toString())};
+												//							results = new Uri[]{Uri.parse("file://"+file.getAbsolutePath())};
+												//							results = new Uri[]{Uri.fromFile(file)};
+												//								Uri localUri = Uri.fromFile(file);
+												////								System.out.println();
+												//								Intent localIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, localUri);
+												//								sendBroadcast(localIntent);
+												//								Uri vUri = Uri.fromFile(file);
+												//								results = new Uri[]{vUri};
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+											System.out.println(Uri.parse("file://" + file3.getAbsolutePath()));
+//											System.out.println(results);
+										} else throw new Exception();
+										break;
+								}
+								MainActivity.db.put("lastDir",files[0].getParentFile().getAbsolutePath());
+							} else throw new Exception();
+
+						} catch (Exception e) {
+							e.printStackTrace();
+							Toast.makeText(TWEditorWV.this, "Error processing the file", Toast.LENGTH_SHORT).show();
+						}
+//								results = new Uri[]{localUri};
+						uploadMessage.onReceiveValue(results);
+						uploadMessage = null;
+					}
+
+					@Override
+					public void onCanceled() {
+						if (uploadMessage == null) return;
+						uploadMessage.onReceiveValue(null);
+						uploadMessage = null;
+					}
+				});
+				return true;
 			}
 		});
 		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
@@ -82,7 +209,7 @@ public class TWEditorWV extends AppCompatActivity {
 		String ueu = "about:blank";
 		try {
 			String id = "";
-			if (bu!=null) id=bu.getString("id");
+			if (bu != null) id = bu.getString("id");
 			for (int i = 0; i < MainActivity.db.getJSONArray("wiki").length(); i++) {
 				if (MainActivity.db.getJSONArray("wiki").getJSONObject(i).getString("id").equals(id)) {
 					wApp = MainActivity.db.getJSONArray("wiki").getJSONObject(i);
@@ -95,7 +222,6 @@ public class TWEditorWV extends AppCompatActivity {
 				if (!wvTitle.equals("")) this.setTitle(wvTitle);
 			} else {
 				toolbar.setLogo(R.drawable.ic_internet_black_24dp);
-				wv.setWebViewClient(new WebViewClient());
 				if (bu != null) ueu = bu.getString("url");
 				if (ueu != null) {
 					if ((!ueu.contains(":")) && ueu.contains(".")) {
@@ -109,18 +235,44 @@ public class TWEditorWV extends AppCompatActivity {
 			e.printStackTrace();
 
 		}
+		wv.setWebViewClient(new WebViewClient() {
+			@Override
+			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+				if (Uri.parse(url).getHost().length() == 0) {
+					return false;
+				}
+
+				if (url != null && url.startsWith("tel:")) {
+					Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+					view.getContext().startActivity(intent);
+					return true;
+				}
+
+				if (url != null && url.startsWith("mailto:")) {
+					Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
+					view.getContext().startActivity(intent);
+					return true;
+				}
+				if (wApp != null) {
+					Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+					view.getContext().startActivity(intent);
+					return true;
+				}
+				return false;
+			}
+		});
 		System.out.println(ueu);
 		wv.loadUrl(ueu);
 	}
 
-	@Override
-	public boolean onOptionsItemSelected(MenuItem item) {
-		int id = item.getItemId();
-		if (id == R.id.action_settings) {
-			return true;
-		}
-		return super.onOptionsItemSelected(item);
-	}
+//	@Override
+//	public boolean onOptionsItemSelected(MenuItem item) {
+//		int id = item.getItemId();
+//		if (id == R.id.action_settings) {
+//			return true;
+//		}
+//		return super.onOptionsItemSelected(item);
+//	}
 
 	@Override
 	public void onBackPressed() {

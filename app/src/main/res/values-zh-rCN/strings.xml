@@ -1,5 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<string name="action_new">创建新的 Wiki</string>
+	<string name="action_import">导入已有 Wiki 文件</string>
+	<string name="action_fork">从 Wiki 站点创建副本</string>
 	<string name="action_settings">设置</string>
 	<string name="there_is_no_wiki_here">这里还没有内容</string>
 	<string name="url">网址或关键字</string>
