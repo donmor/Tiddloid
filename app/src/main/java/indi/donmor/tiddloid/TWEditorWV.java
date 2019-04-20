@@ -1,6 +1,7 @@
 package indi.donmor.tiddloid;
 
 import android.annotation.SuppressLint;
+import android.annotation.TargetApi;
 import android.content.Intent;
 import android.content.res.Configuration;
 import android.graphics.Color;
@@ -57,7 +58,9 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setDisplayZoomControls(false);
 		wvs.setUseWideViewPort(true);
 		wvs.setLoadWithOverviewMode(true);
-		wvs.setAllowUniversalAccessFromFileURLs(true);
+		wvs.setAllowFileAccess(true);
+		wvs.setAllowContentAccess(true);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) wvs.setAllowUniversalAccessFromFileURLs(true);
 		wv.setWebChromeClient(new WebChromeClient() {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
@@ -83,6 +86,7 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 			}
 
+			@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 			@Override
 			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
 //				fileChooserParams.getAcceptTypes();
@@ -133,7 +137,7 @@ public class TWEditorWV extends AppCompatActivity {
 									case 1:
 //										int v = files.length;
 //										for (int i=0;i<files.length;i++) {
-										for (File file1:files) {
+										for (File file1 : files) {
 											try {
 												results = new Uri[]{Uri.parse(file1.toURI().toString())};
 //												results = new Uri[]{Uri.parse(files[i].toURI().toString())};
@@ -177,7 +181,7 @@ public class TWEditorWV extends AppCompatActivity {
 										} else throw new Exception();
 										break;
 								}
-								MainActivity.db.put("lastDir",files[0].getParentFile().getAbsolutePath());
+								MainActivity.db.put("lastDir", files[0].getParentFile().getAbsolutePath());
 							} else throw new Exception();
 
 						} catch (Exception e) {
@@ -238,7 +242,10 @@ public class TWEditorWV extends AppCompatActivity {
 		wv.setWebViewClient(new WebViewClient() {
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
-				if (Uri.parse(url).getHost().length() == 0) {
+				int v = 0;
+				String host = Uri.parse(url).getHost();
+				if (host != null) v = host.length();
+				if (v == 0) {
 					return false;
 				}
 

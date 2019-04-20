@@ -1,112 +1,78 @@
-<?xml version="1.0" encoding="utf-8"?>
-<android.support.design.widget.CoordinatorLayout xmlns:android="http://schemas.android.com/apk/res/android"
+<?xml version="1.0" encoding="utf-8"?><!--<android.support.design.widget.CoordinatorLayout-->
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@android:color/background_light"
+    android:orientation="vertical"
     tools:context=".MainActivity">
 
-    <LinearLayout
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent"-->
+    <!--android:orientation="vertical">-->
+
+    <android.support.design.widget.AppBarLayout
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:orientation="vertical">
+        android:layout_height="wrap_content"
+        android:layout_weight="0"
+        android:theme="@style/AppTheme.AppBarOverlay">
 
-        <android.support.design.widget.AppBarLayout
+
+        <android.support.v7.widget.Toolbar
+            android:id="@+id/toolbar"
+            android:layout_width="match_parent"
+            android:layout_height="?attr/actionBarSize"
+            android:background="@android:color/background_light"
+            app:popupTheme="@style/AppTheme.PopupOverlay" />
+
+    </android.support.design.widget.AppBarLayout>
+
+    <android.support.v4.widget.SwipeRefreshLayout
+        android:id="@+id/refresh"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:layout_weight="1">
+
+        <LinearLayout
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_weight="0"
-            android:theme="@style/AppTheme.AppBarOverlay">
+            android:orientation="vertical">
 
-
-            <android.support.v7.widget.Toolbar
-                android:id="@+id/toolbar"
-                android:layout_width="match_parent"
-                android:layout_height="?attr/actionBarSize"
-                android:background="@android:color/background_light"
-                app:popupTheme="@style/AppTheme.PopupOverlay">
-            </android.support.v7.widget.Toolbar>
-
-        </android.support.design.widget.AppBarLayout>
-
-        <android.support.v4.widget.SwipeRefreshLayout
-            android:id="@+id/refresh"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
-
-            <LinearLayout
+            <TextView
+                android:id="@+id/t_noWiki"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:orientation="vertical">
+                android:layout_margin="8dp"
+                android:gravity="center"
+                android:text="@string/there_is_no_wiki_here"
+                android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
-                <TextView
-                    android:id="@+id/t_noWiki"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="8dp"
-                    android:gravity="center"
-                    android:text="@string/there_is_no_wiki_here"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+            <android.support.v7.widget.RecyclerView
+                android:id="@+id/rvWikiList"
+                android:layout_width="match_parent"
+                android:layout_height="0dp"
+                android:layout_weight="1" />
 
-                <android.support.v7.widget.RecyclerView
-                    android:id="@+id/rvWikiList"
-                    android:layout_width="match_parent"
-                    android:layout_height="0dp"
-                    android:layout_weight="1" >
+            <!--</android.support.v7.widget.RecyclerView>-->
+        </LinearLayout>
 
-                </android.support.v7.widget.RecyclerView>
-            </LinearLayout>
+    </android.support.v4.widget.SwipeRefreshLayout>
 
-        </android.support.v4.widget.SwipeRefreshLayout>
+</LinearLayout>
 
-    </LinearLayout>
+    <!--<ImageView--><!--android:id="@+id/dim"--><!--android:layout_width="match_parent"--><!--android:layout_height="match_parent"--><!--android:alpha="0"--><!--android:contentDescription="@string/dim"--><!--android:visibility="gone"--><!--app:srcCompat="@drawable/dim" />-->
 
-    <ImageView
-        android:id="@+id/dim"
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:alpha="0"
-        android:contentDescription="@string/dim"
-        android:visibility="gone"
-        app:srcCompat="@drawable/dim" />
-
-    <com.getbase.floatingactionbutton.FloatingActionsMenu
-        android:id="@+id/fab"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_gravity="bottom|end"
-        android:layout_margin="@dimen/fab_margin"
-        app:fab_expandDirection="up"
-        app:fab_labelStyle="@style/menu_labels_style"
-        app:fab_labelsPosition="left">
+    <!--<com.getbase.floatingactionbutton.FloatingActionsMenu--><!--android:id="@+id/fab"--><!--android:layout_width="wrap_content"--><!--android:layout_height="wrap_content"--><!--android:layout_gravity="bottom|end"--><!--android:layout_margin="@dimen/fab_margin"--><!--app:fab_expandDirection="up"--><!--app:fab_labelStyle="@style/menu_labels_style"--><!--app:fab_labelsPosition="left">-->
 
 
-        <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_new5"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_icon="@drawable/ic_note_add_white_24dp"
-            app:fab_size="mini"
-            app:fab_title="Create a new TiddlyWiki5 file" />
+    <!--<com.getbase.floatingactionbutton.FloatingActionButton--><!--android:id="@+id/fab_new5"--><!--android:layout_width="wrap_content"--><!--android:layout_height="wrap_content"--><!--app:fab_icon="@drawable/ic_note_add_white_24dp"--><!--app:fab_size="mini"--><!--app:fab_title="Create a new TiddlyWiki5 file" />-->
 
 
-        <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_import"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_icon="@drawable/ic_folder_open_white_24dp"
-            app:fab_size="mini"
-            app:fab_title="Import an existing wiki file" />
+    <!--<com.getbase.floatingactionbutton.FloatingActionButton--><!--android:id="@+id/fab_import"--><!--android:layout_width="wrap_content"--><!--android:layout_height="wrap_content"--><!--app:fab_icon="@drawable/ic_folder_open_white_24dp"--><!--app:fab_size="mini"--><!--app:fab_title="Import an existing wiki file" />-->
 
-        <com.getbase.floatingactionbutton.FloatingActionButton
-            android:id="@+id/fab_fork"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            app:fab_icon="@drawable/ic_fork_white_24dp"
-            app:fab_size="mini"
-            app:fab_title="Fork an existing wiki website" />
-    </com.getbase.floatingactionbutton.FloatingActionsMenu>
+    <!--<com.getbase.floatingactionbutton.FloatingActionButton--><!--android:id="@+id/fab_fork"--><!--android:layout_width="wrap_content"--><!--android:layout_height="wrap_content"--><!--app:fab_icon="@drawable/ic_fork_white_24dp"--><!--app:fab_size="mini"--><!--app:fab_title="Fork an existing wiki website" />--><!--</com.getbase.floatingactionbutton.FloatingActionsMenu>-->
 
 
-</android.support.design.widget.CoordinatorLayout>
+    <!--</android.support.design.widget.CoordinatorLayout>-->
