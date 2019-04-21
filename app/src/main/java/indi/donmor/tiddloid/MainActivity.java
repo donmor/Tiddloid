@@ -2,11 +2,19 @@ package indi.donmor.tiddloid;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.content.ContentResolver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
+import android.database.CharArrayBuffer;
+import android.database.ContentObserver;
+import android.database.Cursor;
+import android.database.DataSetObserver;
+import android.database.MatrixCursor;
+import android.database.sqlite.SQLiteDatabase;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
@@ -20,6 +28,9 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.Html;
+import android.text.InputType;
+import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -29,28 +40,37 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.content.DialogInterface;
 import android.app.AlertDialog;
+import android.view.ViewGroup;
+import android.view.inputmethod.EditorInfo;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
+import android.widget.CursorAdapter;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.LinearLayout;
 import android.widget.RadioButton;
 import android.widget.RadioGroup;
+import android.widget.ResourceCursorAdapter;
+import android.widget.SearchView;
+import android.widget.SimpleCursorAdapter;
+import android.widget.Switch;
 import android.widget.TextView;
 import android.widget.Toast;
 
-import com.getbase.floatingactionbutton.FloatingActionButton;
-import com.getbase.floatingactionbutton.FloatingActionsMenu;
-
 import org.json.JSONArray;
 import org.json.JSONObject;
+import org.jsoup.Connection;
+import org.jsoup.Jsoup;
+import org.jsoup.nodes.Document;
 
 import java.io.File;
 import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.IOException;
 import java.lang.reflect.Method;
+import java.util.List;
 import java.util.Locale;
 import java.util.UUID;
 
@@ -61,12 +81,11 @@ import indi.donmor.tiddloid.utils.WikiListAdapter;
 import com.github.donmor3000.filedialog.lib.FileDialog;
 
 public class MainActivity extends AppCompatActivity {
-//	private FloatingActionsMenu f_menu;
 	private RecyclerView rvWikiList;
 	private TextView noWiki;
 	private WikiListAdapter wikiListAdapter;
-//	private Handler vHandler;
 	public static JSONObject db;
+//	private NoLeakHandler handler;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -80,11 +99,12 @@ public class MainActivity extends AppCompatActivity {
 			e.printStackTrace();
 			db = new JSONObject();
 			try {
-				if (Locale.getDefault().toString().equals("zh_CN")) {
-					db.put("searchEngine", "Baidu");
-				} else {
-					db.put("searchEngine", "Google");
-				}
+//				if (Locale.getDefault().toString().equals("zh_CN")) {
+//					db.put("searchEngine", "Baidu");
+//				} else {
+//					db.put("searchEngine", "Google");
+//				}
+				db.put("searchEngine", R.string.default_se);
 				db.put("showHidden", false);
 				db.put("wiki", new JSONArray());
 				db.put("lastDir", Environment.getExternalStorageDirectory().getAbsolutePath());
@@ -93,6 +113,68 @@ public class MainActivity extends AppCompatActivity {
 				e1.printStackTrace();
 			}
 		}
+
+//		System.out.println(Uri.parse("a.b").normalizeScheme().toString());
+
+//		try {
+//			final NoLeakHandler handler = new NoLeakHandler(this, new NoLeakHandler.MessageHandledListener() {
+//				@Override
+//				public void onMessageHandled(Message msg) {
+//					String[] data = msg.getData().getStringArray("sug");
+//					if (data != null) for (String vv : data) System.out.println(vv);
+//				}
+//			});
+//			new Thread() {
+//				public void run() {
+//					try {
+////					Document wert = ;
+////						String res = Jsoup.connect("https://api.bing.com/qsonhs.aspx?q=123").ignoreContentType(true).get().body().html();
+////						Toast.makeText(MainActivity.this, "X", Toast.LENGTH_SHORT).show();
+//						String sd = Jsoup.connect("http://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q=123").get().toString();
+//						List<String> attrs = Jsoup.connect("https://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q=123").ignoreContentType(true).get().getElementsByTag("suggestion").eachAttr("data");
+//						String[] v = attrs.toArray(new String[attrs.size()]);
+////						Toast.makeText(MainActivity.this, Jsoup.connect("http://suggestqueries.google.com/complete/search?output=toolbar&hl=en&q=123").get().toString(), Toast.LENGTH_SHORT).show();
+////						Toast.makeText(MainActivity.this, "D", Toast.LENGTH_SHORT).show();
+////						JSONArray array =new JSONObject(res).getJSONObject("AS").getJSONArray("Results").getJSONObject(0).getJSONArray("Suggests");
+////						System.out.println(new JSONObject(res).getJSONObject("AS").getJSONArray("Results").getJSONObject(0).getJSONArray("Suggests").toString(2));
+////						JSONArray array4 = new JSONObject("{\"s\":[" + res4.substring(res4.indexOf('[') + 1, res4.lastIndexOf(']')) +"]"+ "}").getJSONArray("s").getJSONArray(1);
+////System.out.println("{\"k\":[" + res4.substring(res4.indexOf('[') + 1, res4.lastIndexOf(']')) +"]"+ "}");
+////System.out.println(new JSONObject("{\"s\":[" + res4.substring(res4.indexOf('[') + 1, res4.lastIndexOf(']')) +"]"+ "}").getJSONArray("s").getJSONArray(1).toString(2));
+////						System.out.println(new JSONObject("{s=").toString(2));
+////						System.out.println(new JSONObject( "{"+"["+ res4.substring(res4.indexOf('[') + 1, res4.lastIndexOf(']')) +"]"+ "}").toString(2));
+////						JSONArray array4 = new JSONObject( "{"+"["+ res4.substring(res4.indexOf('[') + 1, res4.lastIndexOf(']')) +"]"+ "}").getJSONArray("s");
+////					System.out.println(res);
+////					JSONObject xxx = ;
+////					System.out.println(xxx.toString(2));
+////					JSONArray array = new JSONObject(res.substring(res.indexOf('(') + 1, res.lastIndexOf(')'))).getJSONArray("s");
+//
+////						int k = array.length();
+////						String[] v = new String[k];
+////						for (int i = 0; i < k; i++)
+////							v[i] = array.getString(i);
+////					for (String vv:v) System.out.println(vv);
+////						int k = array.length();
+////						String[] v = new String[k];
+////						for (int i = 0; i < k; i++)
+////							v[i] = array.getJSONObject(i).getString("Txt");
+////					for (String vv:v) System.out.println(vv);
+//						String ee = "";
+//					for (String vv:v) {System.out.println(vv);ee+=vv;}
+////						Toast.makeText(MainActivity.this, ee, Toast.LENGTH_SHORT).show();
+//						Message msg = new Message();
+//						Bundle data = new Bundle();
+////						data.putStringArray("sug", v);
+//						msg.setData(data);
+//						handler.sendMessage(msg);
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+//				}
+//			}.start();
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 			MainActivity.this.getWindow().setStatusBarColor(Color.WHITE);
@@ -291,6 +373,7 @@ public class MainActivity extends AppCompatActivity {
 												writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
 											}
 											db.put("lastDir", file.getParentFile().getAbsolutePath());
+											writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
 										} catch (Exception e) {
 											e.printStackTrace();
 											Toast.makeText(wikiConfigDialog.getContext(), "Data error", Toast.LENGTH_SHORT).show();
@@ -330,7 +413,7 @@ public class MainActivity extends AppCompatActivity {
 											try {
 												final File f = new File(btnWikiConfigPath.getText().toString());
 												if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
-													db.put("wiki",removeUnderK(db.getJSONArray("wiki"),position));
+													db.put("wiki", removeUnderK(db.getJSONArray("wiki"), position));
 												else
 													db.getJSONArray("wiki").remove(position);
 												writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
@@ -377,321 +460,6 @@ public class MainActivity extends AppCompatActivity {
 				}
 			}
 		});
-
-//		final ImageView dim = findViewById(R.id.dim);
-//		dim.setOnClickListener(new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				f_menu.collapse();
-//			}
-//		});
-//		vHandler = new NoLeakHandler(this, new NoLeakHandler.MessageHandledListener() {
-//			@Override
-//			public void onMessageHandled(Message msg) {
-//				if (msg.what == 0 || msg.what == 1) {
-//					float a = Float.parseFloat((String) msg.obj);
-//					dim.setAlpha(a);
-//					if (dim.getAlpha() > 0) {
-//						dim.setVisibility(View.VISIBLE);
-//					} else {
-//						dim.setVisibility(View.GONE);
-//					}
-//					switch (msg.what) {
-//						case 0:
-//							dim.setClickable(false);
-//							break;
-//						case 1:
-//							dim.setClickable(true);
-//							break;
-//					}
-//				}
-//			}
-//		});
-//		f_menu = findViewById(R.id.fab);
-//		f_menu.setOnFloatingActionsMenuUpdateListener(new FloatingActionsMenu.OnFloatingActionsMenuUpdateListener() {
-//			@Override
-//			public void onMenuExpanded() {
-//				new Thread(new Runnable() {
-//					@Override
-//					public void run() {
-//						for (int i = 0; i <= 25; i++) {
-//							try {
-//								Thread.sleep(4);
-//							} catch (Exception e) {
-//								e.printStackTrace();
-//							}
-//							Message msg = vHandler.obtainMessage();
-//							msg.what = 1;
-//							msg.obj = String.valueOf(Math.pow(i * 0.04, 2) * 0.5);
-//							vHandler.sendMessage(msg);
-//						}
-//					}
-//				}).start();
-//			}
-//
-//			@Override
-//			public void onMenuCollapsed() {
-//				new Thread(new Runnable() {
-//					@Override
-//					public void run() {
-//						for (int i = 1; i <= 25; i++) {
-//							try {
-//								Thread.sleep(4);
-//							} catch (Exception e) {
-//								e.printStackTrace();
-//							}
-//							Message msg = vHandler.obtainMessage();
-//							msg.what = 0;
-//							msg.obj = String.valueOf((1 - Math.pow(i * 0.04, 2)) * 0.5);
-//							vHandler.sendMessage(msg);
-//						}
-//					}
-//				}).start();
-//			}
-//		});
-//		FloatingActionButton f_fork = findViewById(R.id.fab_fork);
-//		FloatingActionButton f_import = findViewById(R.id.fab_import);
-//		FloatingActionButton f_new5 = findViewById(R.id.fab_new5);
-//		f_fork.setOnClickListener(new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				f_menu.collapse();
-//				View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.url_dialog, null);
-//				final EditText vUrl = view.findViewById(R.id.t_url);
-//				AlertDialog URLDialog = new AlertDialog.Builder(MainActivity.this)
-//						.setTitle("Input URL or search:")
-//						.setView(view)
-//						.setNegativeButton("Cancel", null)
-//						.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-//							@Override
-//							public void onClick(DialogInterface dialog, int which) {
-//								String u = vUrl.getText().toString();
-//								Intent in = new Intent();
-//								Bundle bu = new Bundle();
-//								bu.putString("url", u);
-//								in.putExtras(bu)
-//										.setClass(MainActivity.this, TWEditorWV.class);
-//								startActivity(in);
-//							}
-//						})
-//						.create();
-//				URLDialog.setCanceledOnTouchOutside(false);
-//				URLDialog.show();
-//				final Button ok = URLDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-//				ok.setEnabled(false);
-//				vUrl.addTextChangedListener(new TextWatcher() {
-//					@Override
-//					public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-//
-//					}
-//
-//					@Override
-//					public void onTextChanged(CharSequence s, int start, int before, int count) {
-//
-//					}
-//
-//					@Override
-//					public void afterTextChanged(Editable s) {
-//						if (vUrl.getText().toString().length() > 0) ok.setEnabled(true);
-//						else ok.setEnabled(false);
-//					}
-//				});
-//				vUrl.setOnEditorActionListener(new TextView.OnEditorActionListener() {
-//					@Override
-//					public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-//						if (ok.isEnabled())
-//							if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-//								ok.performClick();
-//							else
-//								ok.callOnClick();
-//						return true;
-//					}
-//				});
-//			}
-//		});
-//		f_import.setOnClickListener(new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				f_menu.collapse();
-//				File lastDir = Environment.getExternalStorageDirectory();
-//				try {
-//					lastDir = new File(MainActivity.db.getString("lastDir"));
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//				FileDialog.fileOpen(MainActivity.this, lastDir, new String[]{"text/html"}, new FileDialog.OnFileTouchedListener() {
-//					@Override
-//					public void onFileTouched(File[] files) {
-//						if (files != null && files.length > 0 && files[0] != null) {
-//							File file = files[0];
-//							String id = genId();
-//							try {
-//								boolean exist = false;
-//								for (int i = 0; i < db.getJSONArray("wiki").length(); i++) {
-//									if (db.getJSONArray("wiki").getJSONObject(i).getString("path").equals(file.getAbsolutePath())) {
-//										exist = true;
-//										id = db.getJSONArray("wiki").getJSONObject(i).getString("id");
-//										break;
-//									}
-//								}
-//								if (exist) {
-//									Toast.makeText(MainActivity.this, "The Wiki is already exist", Toast.LENGTH_SHORT).show();
-//								} else {
-//									JSONObject w = new JSONObject();
-//									w.put("name", "TiddlyWiki");
-//									w.put("id", id);
-//									w.put("path", file.getAbsolutePath());
-//									w.put("backup", false);
-//									db.getJSONArray("wiki").put(db.getJSONArray("wiki").length(), w);
-//									if (!MainActivity.writeJson(openFileOutput("data.json", Context.MODE_PRIVATE), db))
-//										throw new Exception();
-//								}
-//								db.put("lastDir", file.getParentFile().getAbsolutePath());
-//							} catch (Exception e) {
-//								e.printStackTrace();
-//								Toast.makeText(MainActivity.this, "Data error", Toast.LENGTH_SHORT).show();
-//							}
-//							MainActivity.this.onResume();
-//							if (!loadPage(id))
-//								Toast.makeText(MainActivity.this, "Error loading the page", Toast.LENGTH_SHORT).show();
-//
-//						} else
-//							Toast.makeText(MainActivity.this, "Failed opening the file", Toast.LENGTH_SHORT).show();
-//					}
-//
-//					@Override
-//					public void onCanceled() {
-//
-//					}
-//				});
-//			}
-//		});
-//
-//		f_new5.setOnClickListener(new View.OnClickListener() {
-//			@Override
-//			public void onClick(View v) {
-//				f_menu.collapse();
-//				boolean validTemplate = false;
-//				try {
-//					FileInputStream tmpIs = openFileInput("template.html");
-//					validTemplate = tmpIs.available() >= 0;
-//					tmpIs.close();
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//				if (validTemplate) {
-//					File lastDir = Environment.getExternalStorageDirectory();
-//					try {
-//						lastDir = new File(MainActivity.db.getString("lastDir"));
-//					} catch (Exception e) {
-//						e.printStackTrace();
-//					}
-//					FileDialog.fileSave(MainActivity.this, lastDir, new String[]{"text/html"}, new FileDialog.OnFileTouchedListener() {
-//						@Override
-//						public void onFileTouched(File[] files) {
-//							try {
-//								if (files != null && files.length > 0 && files[0] != null) {
-//									File file = files[0];
-//									FileInputStream is = openFileInput("template.html");
-//									byte[] b = new byte[is.available()];
-//									int x = is.read(b);
-//									is.close();
-//									if (x == -1) throw new Exception();
-//									FileOutputStream os = new FileOutputStream(file);
-//									os.write(b);
-//									os.flush();
-//									os.close();
-//									String id = genId();
-//									try {
-//										boolean exist = false;
-//										for (int i = 0; i < db.getJSONArray("wiki").length(); i++) {
-//											if (db.getJSONArray("wiki").getJSONObject(i).getString("path").equals(file.getAbsolutePath())) {
-//												exist = true;
-//												id = db.getJSONArray("wiki").getJSONObject(i).getString("id");
-//												break;
-//											}
-//										}
-//										if (exist) {
-//											Toast.makeText(MainActivity.this, "The Wiki is already exist", Toast.LENGTH_SHORT).show();
-//										} else {
-//											JSONObject w = new JSONObject();
-//											w.put("name", "TiddlyWiki");
-//											w.put("id", id);
-//											w.put("path", file.getAbsolutePath());
-//											w.put("backup", false);
-//											db.getJSONArray("wiki").put(db.getJSONArray("wiki").length(), w);
-//											if (!MainActivity.writeJson(openFileOutput("data.json", Context.MODE_PRIVATE), db))
-//												throw new Exception();
-//										}
-//										db.put("lastDir", file.getParentFile().getAbsolutePath());
-//									} catch (Exception e) {
-//										e.printStackTrace();
-//										Toast.makeText(MainActivity.this, "Data error", Toast.LENGTH_SHORT).show();
-//									}
-//									MainActivity.this.onResume();
-//									if (!loadPage(id))
-//										Toast.makeText(MainActivity.this, "Error loading the page", Toast.LENGTH_SHORT).show();
-//								} else throw new Exception();
-//							} catch (Exception e) {
-//								e.printStackTrace();
-//								Toast.makeText(MainActivity.this, "Failed creating the file", Toast.LENGTH_SHORT).show();
-//							}
-//						}
-//
-//						@Override
-//						public void onCanceled() {
-//
-//						}
-//					});
-//				} else {
-//					AlertDialog alert = new AlertDialog.Builder(MainActivity.this)
-//							.setTitle("Notice")
-//							.setMessage("TiddlyWiki template is not exist. Click 'OK' and select a TiddlyWiki HTML file as template.")
-//							.setPositiveButton("OK", new DialogInterface.OnClickListener() {
-//								@Override
-//								public void onClick(DialogInterface dialog, int which) {
-//									File lastDir = Environment.getExternalStorageDirectory();
-//									try {
-//										lastDir = new File(MainActivity.db.getString("lastDir"));
-//									} catch (Exception e) {
-//										e.printStackTrace();
-//									}
-//									FileDialog.fileOpen(MainActivity.this, lastDir, new String[]{"text/html"}, new FileDialog.OnFileTouchedListener() {
-//										@Override
-//										public void onFileTouched(File[] files) {
-//											try {
-//												if (files != null && files.length > 0 && files[0] != null) {
-//													File file = files[0];
-//													FileInputStream is = new FileInputStream(file);
-//													byte[] b = new byte[is.available()];
-//													if (is.read(b) < 0) throw new Exception();
-//													is.close();
-//													FileOutputStream os = openFileOutput("template.html", Context.MODE_PRIVATE);
-//													os.write(b);
-//													os.flush();
-//													os.close();
-//													Toast.makeText(MainActivity.this, "Successfully imported the template", Toast.LENGTH_SHORT).show();
-//													db.put("lastDir", file.getParentFile().getAbsolutePath());
-//												} else throw new Exception();
-//											} catch (Exception e) {
-//												e.printStackTrace();
-//												Toast.makeText(MainActivity.this, "Failed opening the file", Toast.LENGTH_SHORT).show();
-//											}
-//										}
-//
-//										@Override
-//										public void onCanceled() {
-//
-//										}
-//									});
-//
-//								}
-//							}).create();
-//					alert.setCanceledOnTouchOutside(false);
-//					alert.show();
-//				}
-//			}
-//		});
 	}
 
 	private Boolean loadPage(String id) {
@@ -721,19 +489,8 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	protected void onDestroy() {
-//		vHandler.removeCallbacksAndMessages(null);
 		super.onDestroy();
 	}
-
-
-//	@Override
-//	public void onBackPressed() {
-//		if (f_menu.isExpanded()) {
-//			f_menu.collapse();
-//		} else {
-//			super.onBackPressed();
-//		}
-//	}
 
 	@Override
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -760,7 +517,7 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
 		int id = item.getItemId();
-		if (id==R.id.action_new){
+		if (id == R.id.action_new) {
 			boolean validTemplate = false;
 			try {
 				FileInputStream tmpIs = openFileInput("template.html");
@@ -814,6 +571,7 @@ public class MainActivity extends AppCompatActivity {
 											throw new Exception();
 									}
 									db.put("lastDir", file.getParentFile().getAbsolutePath());
+									writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
 								} catch (Exception e) {
 									e.printStackTrace();
 									Toast.makeText(MainActivity.this, "Data error", Toast.LENGTH_SHORT).show();
@@ -862,6 +620,7 @@ public class MainActivity extends AppCompatActivity {
 												os.close();
 												Toast.makeText(MainActivity.this, "Successfully imported the template", Toast.LENGTH_SHORT).show();
 												db.put("lastDir", file.getParentFile().getAbsolutePath());
+												writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
 											} else throw new Exception();
 										} catch (Exception e) {
 											e.printStackTrace();
@@ -880,7 +639,7 @@ public class MainActivity extends AppCompatActivity {
 				alert.setCanceledOnTouchOutside(false);
 				alert.show();
 			}
-		} else if (id==R.id.action_import){
+		} else if (id == R.id.action_import) {
 			File lastDir = Environment.getExternalStorageDirectory();
 			try {
 				lastDir = new File(MainActivity.db.getString("lastDir"));
@@ -915,6 +674,7 @@ public class MainActivity extends AppCompatActivity {
 									throw new Exception();
 							}
 							db.put("lastDir", file.getParentFile().getAbsolutePath());
+							writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
 						} catch (Exception e) {
 							e.printStackTrace();
 							Toast.makeText(MainActivity.this, "Data error", Toast.LENGTH_SHORT).show();
@@ -933,56 +693,183 @@ public class MainActivity extends AppCompatActivity {
 				}
 			});
 
-		} else if (id==R.id.action_fork){
-			View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.url_dialog, null);
-			final EditText vUrl = view.findViewById(R.id.t_url);
-			AlertDialog URLDialog = new AlertDialog.Builder(MainActivity.this)
-					.setTitle("Input URL or search:")
-					.setView(view)
-					.setNegativeButton("Cancel", null)
-					.setPositiveButton("Ok", new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							String u = vUrl.getText().toString();
-							Intent in = new Intent();
-							Bundle bu = new Bundle();
-							bu.putString("url", u);
-							in.putExtras(bu)
-									.setClass(MainActivity.this, TWEditorWV.class);
-							startActivity(in);
+		} else if (id == R.id.action_fork) {
+			final SearchView view = new SearchView(this);
+			view.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
+			view.setImeOptions(EditorInfo.IME_ACTION_GO);
+			view.setQueryHint(getResources().getString(R.string.url));
+			view.onActionViewExpanded();
+			view.setSubmitButtonEnabled(true);
+			final NoLeakHandler handler = new NoLeakHandler(MainActivity.this, new NoLeakHandler.MessageHandledListener() {
+				@Override
+				public void onMessageHandled(Message msg) {
+					Bundle data = msg.getData();
+					String src = data.getString("src");
+					String se = data.getString("se");
+//					String se = "";
+//					try {
+//						switch (db.getString("searchEngine")) {
+//							case "Google":
+//								se = getResources().getString(R.string.google);
+//								break;
+//							case "Bing":
+//								se = getResources().getString(R.string.bing);
+//								break;
+//							case "Baidu":
+//								se = getResources().getString(R.string.baidu);
+//								break;
+//							case "Sogou":
+//								se = getResources().getString(R.string.sogou);
+//								break;
+//							case "Custom":
+//								se = getResources().getString(R.string.search);
+//								break;
+//						}
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					}
+					Uri uri = Uri.parse(src);
+					String sch = uri.getScheme();
+					String scs = uri.getSchemeSpecificPart();
+					String aut = uri.getAuthority();
+					String fra = uri.getFragment();
+					String hos = uri.getHost();
+					String[] pts = uri.getPathSegments().toArray(new String[uri.getPathSegments().size()]);
+					String ptx = "";
+					for (String ee : pts) ptx += "<" + ee + ">";
+					String lps = uri.getLastPathSegment();
+					String pth = uri.getPath();
+					String que = uri.getQuery();
+					String usr = uri.getUserInfo();
+					int prt = uri.getPort();
+					System.out.println(sch);
+					System.out.println(scs);
+					System.out.println(aut);
+					System.out.println(fra);
+					System.out.println(hos);
+					System.out.println(ptx);
+					System.out.println(lps);
+					System.out.println(pth);
+					System.out.println(que);
+					System.out.println(usr);
+					System.out.println(prt);
+					System.out.println("=================");
+					String[] sug = data.getStringArray("sug");
+					String[] COLUMNS = {"_id", "name", "mark", "mark2", "mark3"};
+					MatrixCursor cursor = new MatrixCursor(COLUMNS);
+					int i = 0;
+					Uri uri1 = sch == null ? Uri.parse("http://" + src) : null;
+					String hos1 = uri1 != null ? uri1.getHost() : null;
+					if (sch != null && sch.length() > 0 || hos1 != null && hos1.indexOf('.') > 0 && hos1.length() > hos1.indexOf('.') + 1) {
+						cursor.addRow(new CharSequence[]{String.valueOf(i), src, getResources().getString(R.string.mark_Go), "", getResources().getString(R.string.mark_Return)});
+						i++;
+					}
+//					if (sch != null && sch.length() > 0 || hos1 != null && hos1.indexOf('.') > 0 && hos1.length() > hos1.indexOf('.') + 1)
+					cursor.addRow(new CharSequence[]{String.valueOf(i), src, getResources().getString(R.string.mark_Search), se, i > 0 ? "" : getResources().getString(R.string.mark_Return)});
+					i++;
+//					if (sug != null && !(sch != null && sch.length() > 0 && hos != null && hos.length() > 0))
+					if (sug != null)
+						for (String v : sug) {
+							cursor.addRow(new CharSequence[]{String.valueOf(i), v, getResources().getString(R.string.mark_Search), se, i > 0 ? "" : getResources().getString(R.string.mark_Return)});
+							i++;
 						}
-					})
-					.create();
-			URLDialog.setCanceledOnTouchOutside(false);
-			URLDialog.show();
-			final Button ok = URLDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-			ok.setEnabled(false);
-			vUrl.addTextChangedListener(new TextWatcher() {
-				@Override
-				public void beforeTextChanged(CharSequence s, int start, int count, int after) {
-
-				}
-
-				@Override
-				public void onTextChanged(CharSequence s, int start, int before, int count) {
-
-				}
-
-				@Override
-				public void afterTextChanged(Editable s) {
-					if (vUrl.getText().toString().length() > 0) ok.setEnabled(true);
-					else ok.setEnabled(false);
+					if (view.getSuggestionsAdapter() == null) {
+						view.setSuggestionsAdapter(new SimpleCursorAdapter(view.getContext(), R.layout.suggestion_slot, cursor, new String[]{"mark", "name", "mark3", "mark2"}, new int[]{R.id.t_sug_mark, R.id.t_sug, R.id.t_sug_first, R.id.t_sug_se}));
+					} else {
+						view.getSuggestionsAdapter().changeCursor(cursor);
+					}
 				}
 			});
-			vUrl.setOnEditorActionListener(new TextView.OnEditorActionListener() {
+			view.setOnSuggestionListener(new SearchView.OnSuggestionListener() {
 				@Override
-				public boolean onEditorAction(TextView v, int actionId, KeyEvent event) {
-					if (ok.isEnabled())
-						if (Build.VERSION.SDK_INT < Build.VERSION_CODES.ICE_CREAM_SANDWICH_MR1)
-							ok.performClick();
-						else
-							ok.callOnClick();
+				public boolean onSuggestionSelect(int position) {
+					MatrixCursor c = (MatrixCursor) view.getSuggestionsAdapter().getItem(position);
+					view.setQuery(c.getString(c.getColumnIndex("name")), false);
 					return true;
+				}
+
+				@Override
+				public boolean onSuggestionClick(int position) {
+					MatrixCursor c = (MatrixCursor) view.getSuggestionsAdapter().getItem(position);
+					view.setQuery(c.getString(c.getColumnIndex("name")), true);
+					return true;
+				}
+			});
+			final AlertDialog URLDialog = new AlertDialog.Builder(MainActivity.this)
+					.setView(view)
+					.show();
+
+			view.setOnQueryTextListener(new SearchView.OnQueryTextListener() {
+				@Override
+				public boolean onQueryTextSubmit(String query) {
+					Intent in = new Intent();
+					Bundle bu = new Bundle();
+					bu.putString("url", query);
+					in.putExtras(bu).setClass(MainActivity.this, TWEditorWV.class);
+					startActivity(in);
+					URLDialog.dismiss();
+					return false;
+				}
+
+				@Override
+				public boolean onQueryTextChange(final String newText) {
+					if (newText.length() > 0)
+						new Thread() {
+							public void run() {
+								try {
+									String se = "", res = "";
+									Message msg = new Message();
+									Bundle data = new Bundle();
+									JSONArray array = null;
+									try {
+										switch (db.getString("searchEngine")) {
+											case "Google":
+												se = getResources().getString(R.string.google);
+												List<String> attrs = Jsoup.connect(getResources().getString(R.string.su_google).replace("#content#",newText)).ignoreContentType(true).get().getElementsByTag("suggestion").eachAttr("data");
+												String[] vGoogle = attrs.toArray(new String[0]);
+												data.putStringArray("sug", vGoogle);
+												break;
+											case "Bing":
+												se = getResources().getString(R.string.bing);
+												res = Jsoup.connect(getResources().getString(R.string.su_bing).replace("#content#",newText)).ignoreContentType(true).get().body().html();
+												JSONArray arrayBing =new JSONObject(res).getJSONObject("AS").getJSONArray("Results").getJSONObject(0).getJSONArray("Suggests");
+												int k = arrayBing.length();
+												String[] vBing = new String[k];
+												for (int i = 0; i < k; i++)
+													vBing[i] = arrayBing.getJSONObject(i).getString("Txt");
+												data.putStringArray("sug", vBing);
+												break;
+											case "Baidu":
+												se = getResources().getString(R.string.baidu);
+												res = Jsoup.connect(getResources().getString(R.string.su_baidu).replace("#content#", newText)).get().body().html();
+												array = new JSONObject(res.substring(res.indexOf('(') + 1, res.lastIndexOf(')'))).getJSONArray("s");
+												break;
+											case "Sogou":
+												se = getResources().getString(R.string.sogou);
+												res = Jsoup.connect(getResources().getString(R.string.su_sogou).replace("#content#", newText)).ignoreContentType(true).get().body().html();
+												array = new JSONObject("{\"s\":[" + res.substring(res.indexOf('[') + 1, res.lastIndexOf(']')) +"]"+ "}").getJSONArray("s").getJSONArray(1);
+												break;
+										}
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+									if (array != null) {
+										int k = array.length();
+										String[] v = new String[k];
+										for (int i = 0; i < k; i++)
+											v[i] = array.getString(i);
+										data.putStringArray("sug", v);
+									}
+									data.putString("src", newText);
+									data.putString("se", se);
+									msg.setData(data);
+									handler.sendMessage(msg);
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							}
+						}.start();
+					return false;
 				}
 			});
 		} else if (id == R.id.action_settings) {
@@ -1023,6 +910,7 @@ public class MainActivity extends AppCompatActivity {
 									tpStatus.setText(getResources().getString(R.string.exist));
 									tpStatus.setTextColor(getResources().getColor(android.R.color.holo_green_dark));
 									db.put("lastDir", file.getParentFile().getAbsolutePath());
+									writeJson(openFileOutput("data.json", MODE_PRIVATE), db);
 								} else throw new Exception();
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -1300,4 +1188,32 @@ public class MainActivity extends AppCompatActivity {
 			}
 		return des;
 	}
+
+	private String wSearch(String arg) {
+		String ws = "https://google.com/search?q=" + arg;
+		try {
+			String se = MainActivity.db.getString("searchEngine");
+			switch (se) {
+				case "Google":
+					ws = "https://www.google.com/search?q=" + arg;
+					break;
+				case "Bing":
+					ws = "https://www.bing.com/search?q=" + arg;
+					break;
+				case "Baidu":
+					ws = "https://www.baidu.com/s?wd=" + arg;
+					break;
+				case "Sogou":
+					ws = "https://www.sogou.com/web?query=" + arg;
+					break;
+				case "Custom":
+					ws = MainActivity.db.getString("customSearchEngine").replace("%s", arg);
+					break;
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		return ws;
+	}
+
 }

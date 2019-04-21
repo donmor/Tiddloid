@@ -13,8 +13,19 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
+        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
-        android:theme="@style/AppTheme">
+        android:theme="@style/AppTheme"
+        tools:targetApi="m">
+        <provider
+            android:name="android.support.v4.content.FileProvider"
+            android:authorities="indi.donmor.tiddloid.fileprovider"
+            android:exported="false"
+            android:grantUriPermissions="true">
+            <meta-data
+                android:name="android.support.FILE_PROVIDER_PATHS"
+                android:resource="@xml/provider_paths"/>
+        </provider>
         <activity
             android:name=".SplashActivity"
             android:screenOrientation="portrait">
@@ -31,6 +42,7 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".TWEditorWV"
+            android:hardwareAccelerated="true"
             android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"

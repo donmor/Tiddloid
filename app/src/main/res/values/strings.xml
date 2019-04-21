@@ -14,9 +14,23 @@
     <string name="exist">Exist</string>
     <string name="not_exist">Not Exist</string>
     <string name="icon" translatable="false">icon</string>
+    <string name="mark_Go" translatable="false">&#127760;</string>
+    <string name="mark_Search" translatable="false">&#128269;</string>
+    <string name="mark_Return" translatable="false">&#9166;</string>
+    <!--<string name="mark_Search" translatable="false"&#128269;</string>-->
     <!--<string name="google" translatable="false">Google</string>-->
+    <string name="su_google" translatable="false">http://suggestqueries.google.com/complete/search?output=toolbar&amp;q=#content#</string>
+    <string name="su_bing" translatable="false">http://api.bing.com/qsonhs.aspx?q=#content#</string>
+    <string name="su_baidu" translatable="false">http://suggestion.baidu.com/su?wd=#content#&amp;cb=window.baidu.sug</string>
+    <string name="su_sogou" translatable="false">https://www.sogou.com/suggnew/ajajjson?type=web&amp;key=#content#</string>
     <string name="google">Google</string>
+    <string name="bing">Bing</string>
+    <string name="baidu">Baidu</string>
+    <string name="sogou">Sogou</string>
+    <string name="custom">Custom</string>
+    <string name="search">Search</string>
     <string name="search_engine">Search Engine</string>
+    <string name="default_se">Google</string>
     <string name="backup_directory_path" translatable="false">/$filename$_backup</string>
     <!--<string name="fake_ua" translatable="false">Mozilla/5.0 (Linux; Android 6.0; Android SDK built for x86 Build/MASTER; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/44.0.2403.119 Mobile Safari/537.36</string>-->
     <!--<string name="fake_ua_platform" translatable="false">X11; Linux x86_64</string>-->

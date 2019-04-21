@@ -3,6 +3,7 @@ package indi.donmor.tiddloid;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
@@ -14,7 +15,7 @@ import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.MenuItem;
+import android.view.WindowManager;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -22,6 +23,7 @@ import android.webkit.WebView;
 import android.app.AlertDialog;
 import android.content.DialogInterface;
 import android.webkit.WebViewClient;
+import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
@@ -35,7 +37,14 @@ import java.io.File;
 public class TWEditorWV extends AppCompatActivity {
 
 	private JSONObject wApp;
+	private WebChromeClient wcc;
+	private View mCustomView;
+	//	private int mOriginalSystemUiVisibility;
+	private int mOriginalOrientation;
+	private WebChromeClient.CustomViewCallback mCustomViewCallback;
+	protected FrameLayout mFullscreenContainer;
 	private ValueCallback<Uri[]> uploadMessage;
+	private ValueCallback<Uri> uploadMessageDep;
 	private WebView wv;
 	private ProgressBar wvProgress;
 
@@ -43,6 +52,7 @@ public class TWEditorWV extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		getWindow().setFormat(PixelFormat.RGBA_8888);
+		getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 		setContentView(R.layout.tweditor);
 		Toolbar toolbar = findViewById(R.id.wv_toolbar);
 		setSupportActionBar(toolbar);
@@ -53,15 +63,20 @@ public class TWEditorWV extends AppCompatActivity {
 		wvProgress.setMax(100);
 		WebSettings wvs = wv.getSettings();
 		wvs.setJavaScriptEnabled(true);
-		wvs.setSupportZoom(true);
-		wvs.setBuiltInZoomControls(true);
+//		wvs.setSupportZoom(true);
+		wvs.setDomStorageEnabled(true);
+		wvs.setBuiltInZoomControls(false);
 		wvs.setDisplayZoomControls(false);
 		wvs.setUseWideViewPort(true);
 		wvs.setLoadWithOverviewMode(true);
 		wvs.setAllowFileAccess(true);
 		wvs.setAllowContentAccess(true);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) wvs.setAllowUniversalAccessFromFileURLs(true);
-		wv.setWebChromeClient(new WebChromeClient() {
+		Toast.makeText(this, wvs.getUserAgentString(), Toast.LENGTH_SHORT).show();
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
+			wvs.setAllowFileAccessFromFileURLs(true);
+			wvs.setAllowUniversalAccessFromFileURLs(true);
+		}
+		wcc = new WebChromeClient() {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
 				if (newProgress == 100) {
@@ -86,10 +101,103 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 			}
 
+			@SuppressWarnings({"unused", "unchecked"})
+
+			public void openFileChooser(ValueCallback valueCallback, String acceptType) {
+				File lastDir = Environment.getExternalStorageDirectory();
+				boolean showHidden = false;
+				try {
+					lastDir = new File(MainActivity.db.getString("lastDir"));
+					showHidden = MainActivity.db.getBoolean("showHidden");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				uploadMessageDep = valueCallback;
+				FileDialog.fileOpen(TWEditorWV.this, lastDir, new String[]{acceptType}, showHidden, new FileDialog.OnFileTouchedListener() {
+					@Override
+					public void onFileTouched(File[] files) {
+						if (uploadMessage == null) return;
+						Uri result = null;
+						try {
+							if (files != null && files.length > 0) {
+								File file = files[0];
+								if (file != null && file.exists())
+									try {
+										result = Uri.parse(file.toURI().toString());
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+								else throw new Exception();
+								MainActivity.db.put("lastDir", files[0].getParentFile().getAbsolutePath());
+								MainActivity.writeJson(openFileOutput("data.json", MODE_PRIVATE), MainActivity.db);
+							} else throw new Exception();
+						} catch (Exception e) {
+							e.printStackTrace();
+							Toast.makeText(TWEditorWV.this, "Error processing the file", Toast.LENGTH_SHORT).show();
+						}
+						uploadMessageDep.onReceiveValue(result);
+						uploadMessageDep = null;
+					}
+
+					@Override
+					public void onCanceled() {
+						if (uploadMessageDep == null) return;
+						uploadMessageDep.onReceiveValue(null);
+						uploadMessageDep = null;
+					}
+				});
+			}
+
+			//For Android  >= 4.1
+			@SuppressWarnings("unused")
+			public void openFileChooser(ValueCallback<Uri> valueCallback, String acceptType, String capture) {
+				File lastDir = Environment.getExternalStorageDirectory();
+				boolean showHidden = false;
+				try {
+					lastDir = new File(MainActivity.db.getString("lastDir"));
+					showHidden = MainActivity.db.getBoolean("showHidden");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				uploadMessageDep = valueCallback;
+				FileDialog.fileOpen(TWEditorWV.this, lastDir, new String[]{acceptType}, showHidden, new FileDialog.OnFileTouchedListener() {
+					@Override
+					public void onFileTouched(File[] files) {
+						if (uploadMessage == null) return;
+						Uri result = null;
+						try {
+							if (files != null && files.length > 0) {
+								File file = files[0];
+								if (file != null && file.exists())
+									try {
+										result = Uri.parse(file.toURI().toString());
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+								else throw new Exception();
+								MainActivity.db.put("lastDir", files[0].getParentFile().getAbsolutePath());
+								MainActivity.writeJson(openFileOutput("data.json", MODE_PRIVATE), MainActivity.db);
+							} else throw new Exception();
+						} catch (Exception e) {
+							e.printStackTrace();
+							Toast.makeText(TWEditorWV.this, "Error processing the file", Toast.LENGTH_SHORT).show();
+						}
+						uploadMessageDep.onReceiveValue(result);
+						uploadMessageDep = null;
+					}
+
+					@Override
+					public void onCanceled() {
+						if (uploadMessageDep == null) return;
+						uploadMessageDep.onReceiveValue(null);
+						uploadMessageDep = null;
+					}
+				});
+			}
+
 			@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 			@Override
 			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
-//				fileChooserParams.getAcceptTypes();
 				File lastDir = Environment.getExternalStorageDirectory();
 				boolean showHidden = false;
 				try {
@@ -101,7 +209,6 @@ public class TWEditorWV extends AppCompatActivity {
 				final int mode = fileChooserParams.getMode();
 				uploadMessage = filePathCallback;
 				FileDialog.fileDialog(TWEditorWV.this, lastDir, mode, fileChooserParams.getAcceptTypes(), 1, showHidden, false, new FileDialog.OnFileTouchedListener() {
-					//				MainActivity.fileOpen(TWEditorWV.this, new String[]{"*/*"}, new MainActivity.OnFileTouchedListener() {
 					@Override
 					public void onFileTouched(File[] files) {
 						if (uploadMessage == null) return;
@@ -112,43 +219,27 @@ public class TWEditorWV extends AppCompatActivity {
 									case 0:
 										File file = files[0];
 										if (file != null && file.exists()) {
-											//							results = new Uri[]{Uri.fromFile(file)};
-											//							results = new Uri[]{Uri.parse(file.getAbsolutePath())};
-											//							results = new Uri[]{Uri.parse("file:///storage/emulated/0/DCIM/Camera/IMG_20190415_062536.jpg")};
-											System.out.println(file.getAbsolutePath());
-											System.out.println(file.toURI());
+//											System.out.println(file.getAbsolutePath());
+//											System.out.println(file.toURI());
+											System.out.println(Uri.fromFile(file));
+//											if (Build.VERSION.SDK_INT >= 24) {
+//												System.out.println(FileProvider.getUriForFile(TWEditorWV.this,"indi.donmor.tiddloid.fileprovider", file).toString());
+//											}
+
 											try {
-												results = new Uri[]{Uri.parse(file.toURI().toString())};
-												//							results = new Uri[]{Uri.parse("file://"+file.getAbsolutePath())};
-												//							results = new Uri[]{Uri.fromFile(file)};
-												//								Uri localUri = Uri.fromFile(file);
-												////								System.out.println();
-												//								Intent localIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, localUri);
-												//								sendBroadcast(localIntent);
-												//								Uri vUri = Uri.fromFile(file);
-												//								results = new Uri[]{vUri};
+												results = new Uri[]{Uri.fromFile(file)};
+//												results = new Uri[]{FileProvider.getUriForFile(TWEditorWV.this,"indi.donmor.tiddloid.fileprovider", file)};
+//												results = new Uri[]{Uri.parse(file.toURI().toString())};
 											} catch (Exception e) {
 												e.printStackTrace();
 											}
-											System.out.println(Uri.parse("file://" + file.getAbsolutePath()));
-//											System.out.println(results);
+//											System.out.println(Uri.parse("file://" + file.getAbsolutePath()));
 										} else throw new Exception();
 										break;
 									case 1:
-//										int v = files.length;
-//										for (int i=0;i<files.length;i++) {
 										for (File file1 : files) {
 											try {
 												results = new Uri[]{Uri.parse(file1.toURI().toString())};
-//												results = new Uri[]{Uri.parse(files[i].toURI().toString())};
-												//							results = new Uri[]{Uri.parse("file://"+file.getAbsolutePath())};
-												//							results = new Uri[]{Uri.fromFile(file)};
-												//								Uri localUri = Uri.fromFile(file);
-												////								System.out.println();
-												//								Intent localIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, localUri);
-												//								sendBroadcast(localIntent);
-												//								Uri vUri = Uri.fromFile(file);
-												//								results = new Uri[]{vUri};
 											} catch (Exception e) {
 												e.printStackTrace();
 											}
@@ -158,37 +249,25 @@ public class TWEditorWV extends AppCompatActivity {
 									case 3:
 										File file3 = files[0];
 										if (file3 != null && file3.exists()) {
-											//							results = new Uri[]{Uri.fromFile(file)};
-											//							results = new Uri[]{Uri.parse(file.getAbsolutePath())};
-											//							results = new Uri[]{Uri.parse("file:///storage/emulated/0/DCIM/Camera/IMG_20190415_062536.jpg")};
 											System.out.println(file3.getAbsolutePath());
 											System.out.println(file3.toURI());
 											try {
 												results = new Uri[]{Uri.parse(file3.toURI().toString())};
-												//							results = new Uri[]{Uri.parse("file://"+file.getAbsolutePath())};
-												//							results = new Uri[]{Uri.fromFile(file)};
-												//								Uri localUri = Uri.fromFile(file);
-												////								System.out.println();
-												//								Intent localIntent = new Intent(Intent.ACTION_MEDIA_SCANNER_SCAN_FILE, localUri);
-												//								sendBroadcast(localIntent);
-												//								Uri vUri = Uri.fromFile(file);
-												//								results = new Uri[]{vUri};
 											} catch (Exception e) {
 												e.printStackTrace();
 											}
 											System.out.println(Uri.parse("file://" + file3.getAbsolutePath()));
-//											System.out.println(results);
 										} else throw new Exception();
 										break;
 								}
 								MainActivity.db.put("lastDir", files[0].getParentFile().getAbsolutePath());
+								MainActivity.writeJson(openFileOutput("data.json", MODE_PRIVATE), MainActivity.db);
 							} else throw new Exception();
 
 						} catch (Exception e) {
 							e.printStackTrace();
 							Toast.makeText(TWEditorWV.this, "Error processing the file", Toast.LENGTH_SHORT).show();
 						}
-//								results = new Uri[]{localUri};
 						uploadMessage.onReceiveValue(results);
 						uploadMessage = null;
 					}
@@ -202,7 +281,34 @@ public class TWEditorWV extends AppCompatActivity {
 				});
 				return true;
 			}
-		});
+
+			@Override
+			public void onShowCustomView(View view,
+			                             WebChromeClient.CustomViewCallback callback) {
+				if (mCustomView != null) {
+					onHideCustomView();
+					return;
+				}
+				mCustomView = view;
+				mOriginalOrientation = getRequestedOrientation();
+				mCustomViewCallback = callback;
+				FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+				decor.addView(mCustomView, new FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.MATCH_PARENT));
+				setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_SENSOR_LANDSCAPE);
+			}
+
+			@Override
+			public void onHideCustomView() {
+				FrameLayout decor = (FrameLayout) getWindow().getDecorView();
+				decor.removeView(mCustomView);
+				mCustomView = null;
+				setRequestedOrientation(mOriginalOrientation);
+				mCustomViewCallback.onCustomViewHidden();
+				mCustomViewCallback = null;
+
+			}
+		};
+		wv.setWebChromeClient(wcc);
 		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
 			@Override
 			public void onClick(View v) {
@@ -228,9 +334,10 @@ public class TWEditorWV extends AppCompatActivity {
 				toolbar.setLogo(R.drawable.ic_internet_black_24dp);
 				if (bu != null) ueu = bu.getString("url");
 				if (ueu != null) {
-					if ((!ueu.contains(":")) && ueu.contains(".")) {
+//					if ((!ueu.contains(":")) && ueu.contains(".")) {
+					if (ueu.indexOf('.') > 0 && ueu.indexOf(':') < ueu.indexOf('.') + 1) {
 						ueu = "http://" + ueu;
-					} else if (!ueu.contains(":")) {
+					} else if (ueu.indexOf(':') < 1) {
 						ueu = wSearch(ueu);
 					}
 				}
@@ -272,19 +379,11 @@ public class TWEditorWV extends AppCompatActivity {
 		wv.loadUrl(ueu);
 	}
 
-//	@Override
-//	public boolean onOptionsItemSelected(MenuItem item) {
-//		int id = item.getItemId();
-//		if (id == R.id.action_settings) {
-//			return true;
-//		}
-//		return super.onOptionsItemSelected(item);
-//	}
-
 	@Override
 	public void onBackPressed() {
-//		Toast.makeText(this, WebSettings.getDefaultUserAgent(this), Toast.LENGTH_LONG).show();
-		if (wv.canGoBack()) {
+		if (mCustomView != null)
+			wcc.onHideCustomView();
+		else if (wv.canGoBack()) {
 			wv.goBack();
 		} else {
 			AlertDialog.Builder isExit = new AlertDialog.Builder(this);
@@ -317,14 +416,16 @@ public class TWEditorWV extends AppCompatActivity {
 				findViewById(R.id.wv_toolbar).setVisibility(View.GONE);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 					TWEditorWV.this.getWindow().setStatusBarColor(Color.WHITE);
-					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-				}
+					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+				} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 			} else if (config.orientation == Configuration.ORIENTATION_PORTRAIT) {
 				findViewById(R.id.wv_toolbar).setVisibility(View.VISIBLE);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
 					TWEditorWV.this.getWindow().setStatusBarColor(Color.WHITE);
 					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
-				}
+				} else
+					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
 			}
 		} catch (Exception e) {
 			e.printStackTrace();

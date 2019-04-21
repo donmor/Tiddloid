@@ -11,5 +11,11 @@
 	<string name="exist">存在</string>
 	<string name="not_exist">不存在</string>
 	<string name="google">谷歌</string>
+	<string name="bing">必应</string>
+	<string name="baidu">百度</string>
+	<string name="sogou">搜狗</string>
+	<string name="custom">自定义</string>
+	<string name="search">搜索</string>
 	<string name="search_engine">搜索引擎</string>
+	<string name="default_se">Baidu</string>
 </resources>
