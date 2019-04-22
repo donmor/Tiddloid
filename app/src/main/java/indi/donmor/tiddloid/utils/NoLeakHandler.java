@@ -6,7 +6,7 @@ import android.os.Message;
 import indi.donmor.tiddloid.MainActivity;
 
 public class NoLeakHandler extends Handler {
-	public NoLeakHandler(MainActivity activity, MessageHandledListener listener) {
+	public NoLeakHandler(MessageHandledListener listener) {
 		this.listener = listener;
 	}
 

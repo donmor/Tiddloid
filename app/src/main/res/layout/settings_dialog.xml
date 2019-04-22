@@ -1,130 +1,169 @@
-<?xml version="1.0" encoding="utf-8"?>
-<ScrollView xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
+<?xml version="1.0" encoding="utf-8"?><!--<ScrollView-->
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:paddingStart="20dp"
+    android:paddingEnd="20dp">
     <!--android:layout_width="wrap_content"-->
     <!--android:layout_height="wrap_content">-->
 
     <!--<ScrollView-->
-        <LinearLayout
+    <!--<LinearLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content"-->
+    <!--android:layout_marginStart="20dp"-->
+    <!--android:layout_marginEnd="20dp"-->
+    <!--android:layout_marginLeft="20dp"-->
+    <!--android:layout_marginRight="20dp"-->
+
+    <!--android:orientation="vertical">-->
+
+    <!--<TableLayout-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="match_parent" >-->
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/textViewSarch"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:layout_span="2"
+            android:layout_weight="1"
+            android:text="@string/search"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+    </TableRow>
+
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
+
+        <TextView
+            android:id="@+id/textViewSE"
             android:layout_width="match_parent"
             android:layout_height="wrap_content"
-            android:layout_marginStart="20dp"
-            android:layout_marginEnd="20dp"
-            android:layout_marginLeft="20dp"
-            android:layout_marginRight="20dp"
+            android:text="@string/search_engine" />
 
-            android:orientation="vertical">
+        <Spinner
+            android:id="@+id/spnSE"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_weight="1" />
+    </TableRow>
 
-            <TextView
-                android:id="@+id/textViewSE"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="2dp"
-                android:text="@string/search_engine"
-                android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+    <TableRow
+        android:id="@+id/rowCSE"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-            <RadioGroup
-                android:id="@+id/seGroup"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="2dp">
+        <EditText
+            android:id="@+id/customSE"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_span="2"
+            android:layout_weight="1"
+            android:autofillHints="custom_se"
+            android:ems="10"
+            android:hint="@string/e_g_cse"
+            android:inputType="textPersonName"
+            android:visibility="gone"
+            tools:targetApi="o" />
+    </TableRow>
 
-                <RadioButton
-                    android:id="@+id/seGoogle"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:text="@string/google" />
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-                <RadioButton
-                    android:id="@+id/seBing"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:text="Bing" />
+        <TextView
+            android:id="@+id/textViewFS"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_span="2"
+            android:layout_weight="1"
+            android:text="@string/filesystem"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+    </TableRow>
 
-                <RadioButton
-                    android:id="@+id/seBaidu"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:text="Baidu" />
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-                <RadioButton
-                    android:id="@+id/seSogou"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:text="Sogou" />
+        <CheckBox
+            android:id="@+id/cbHidden"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_span="2"
+            android:layout_weight="1"
+            android:text="@string/show_hidden_files" />
+    </TableRow>
 
-                <RadioButton
-                    android:id="@+id/seCustom"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:text="Custom" />
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-                <EditText
-                    android:id="@+id/customSE"
-                    android:layout_width="match_parent"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:ems="10"
-                    android:hint="e.g google.com/search?q=%s"
-                    android:inputType="textPersonName"
-                    android:autofillHints="custom_se" tools:targetApi="o"/>
+        <TextView
+            android:id="@+id/textViewTp"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_span="2"
+            android:layout_weight="1"
+            android:text="@string/template"
+            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+    </TableRow>
 
-            </RadioGroup>
+    <!--<TableRow-->
+        <!--android:layout_width="match_parent"-->
+        <!--android:layout_height="match_parent"-->
+        <!--android:paddingStart="20dp"-->
+        <!--android:paddingEnd="20dp">-->
 
-            <CheckBox
-                android:id="@+id/cbHidden"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:text="Show hidden(.) files" />
+        <!--<TextView-->
+            <!--android:id="@+id/t_tp"-->
+            <!--android:layout_width="match_parent"-->
+            <!--android:layout_height="wrap_content"-->
+            <!--android:layout_span="2"-->
+            <!--android:layout_weight="1"-->
+            <!--android:text="@string/template_required" />-->
+    <!--</TableRow>-->
 
-            <LinearLayout
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="2dp"
-                android:orientation="horizontal">
+    <TableRow
+        android:layout_width="match_parent"
+        android:layout_height="match_parent">
 
-                <TextView
-                    android:id="@+id/textViewTp"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="0"
-                    android:text="Template"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
+        <Button
+            android:id="@+id/btnUpdateTemplate"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_span="2"
+            android:layout_weight="1"
+            android:text="@string/update_template" />
+    </TableRow>
+</TableLayout>
 
-                <TextView
-                    android:id="@+id/tpStatus"
-                    android:layout_width="wrap_content"
-                    android:layout_height="wrap_content"
-                    android:layout_margin="2dp"
-                    android:layout_weight="1"
-                    android:contentDescription="TemplateStatus"
-                    android:gravity="center"
-                    android:text="@string/not_exist"
-                    android:textAllCaps="false"
-                    android:textAppearance="@style/TextAppearance.AppCompat.Large"
-                    android:textColor="@android:color/holo_red_dark"
-                    android:textStyle="bold"
-                    android:typeface="sans" />
-            </LinearLayout>
+    <!--<RadioGroup--><!--android:id="@+id/seGroup"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp">-->
 
-            <Button
-                android:id="@+id/btnImport"
-                style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-                android:layout_width="match_parent"
-                android:layout_height="wrap_content"
-                android:layout_margin="2dp"
-                android:text="Import a new template file" />
+    <!--<RadioButton--><!--android:id="@+id/seGoogle"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp"--><!--android:text="@string/google" />-->
 
-        </LinearLayout>
-    </ScrollView>
+    <!--<RadioButton--><!--android:id="@+id/seBing"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp"--><!--android:text="Bing" />-->
 
-<!--</RelativeLayout>-->
+    <!--<RadioButton--><!--android:id="@+id/seBaidu"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp"--><!--android:text="Baidu" />-->
+
+    <!--<RadioButton--><!--android:id="@+id/seSogou"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp"--><!--android:text="Sogou" />-->
+
+    <!--<RadioButton--><!--android:id="@+id/seCustom"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp"--><!--android:text="Custom" />-->
+
+    <!--</RadioGroup>-->
+
+    <!--<LinearLayout--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp"--><!--android:orientation="horizontal">-->
+
+    <!--<TextView--><!--android:id="@+id/tpStatus"--><!--android:layout_width="wrap_content"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp"--><!--android:layout_weight="1"--><!--android:contentDescription="TemplateStatus"--><!--android:gravity="center"--><!--android:text="@string/not_exist"--><!--android:textAllCaps="false"--><!--android:textAppearance="@style/TextAppearance.AppCompat.Large"--><!--android:textColor="@android:color/holo_red_dark"--><!--android:textStyle="bold"--><!--android:typeface="sans" />--><!--</LinearLayout>-->
+
+    <!--<Button--><!--android:id="@+id/btnImport"--><!--style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"--><!--android:layout_width="match_parent"--><!--android:layout_height="wrap_content"--><!--android:layout_margin="2dp"--><!--android:text="Import a new template file" />-->
+
+    <!--</LinearLayout>--><!--</TableLayout>-->
+
+    <!--</RelativeLayout>-->

@@ -2,6 +2,8 @@ package indi.donmor.tiddloid;
 
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
+//import android.app.Notification;
+//import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -10,12 +12,17 @@ import android.graphics.PixelFormat;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
+//import android.os.Message;
+//import android.support.v4.app.NotificationCompat;
+//import android.support.v4.app.NotificationManagerCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.Toolbar;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
+import android.webkit.DownloadListener;
+import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebSettings;
@@ -32,6 +39,15 @@ import com.github.donmor3000.filedialog.lib.FileDialog;
 import org.json.JSONObject;
 
 import java.io.File;
+//import java.io.FileInputStream;
+//import java.io.FileOutputStream;
+//import java.io.InputStream;
+//import java.net.HttpURLConnection;
+//import java.net.URL;
+
+//import javax.net.ssl.HttpsURLConnection;
+
+//import indi.donmor.tiddloid.utils.NoLeakHandler;
 
 @SuppressLint("SetJavaScriptEnabled")
 public class TWEditorWV extends AppCompatActivity {
@@ -208,7 +224,7 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				final int mode = fileChooserParams.getMode();
 				uploadMessage = filePathCallback;
-				FileDialog.fileDialog(TWEditorWV.this, lastDir, mode, fileChooserParams.getAcceptTypes(), 1, showHidden, false, new FileDialog.OnFileTouchedListener() {
+				FileDialog.fileDialog(TWEditorWV.this, lastDir, null, mode, fileChooserParams.getAcceptTypes(), 1,1, showHidden, false, new FileDialog.OnFileTouchedListener() {
 					@Override
 					public void onFileTouched(File[] files) {
 						if (uploadMessage == null) return;
@@ -332,15 +348,17 @@ public class TWEditorWV extends AppCompatActivity {
 				if (!wvTitle.equals("")) this.setTitle(wvTitle);
 			} else {
 				toolbar.setLogo(R.drawable.ic_internet_black_24dp);
+				String url = bu != null ? bu.getString("url") : null;
+				ueu = url != null ? url : "about:blank";
 				if (bu != null) ueu = bu.getString("url");
-				if (ueu != null) {
-//					if ((!ueu.contains(":")) && ueu.contains(".")) {
-					if (ueu.indexOf('.') > 0 && ueu.indexOf(':') < ueu.indexOf('.') + 1) {
-						ueu = "http://" + ueu;
-					} else if (ueu.indexOf(':') < 1) {
-						ueu = wSearch(ueu);
-					}
-				}
+//				if (ueu != null) {
+////					if ((!ueu.contains(":")) && ueu.contains(".")) {
+//					if (ueu.indexOf('.') > 0 && ueu.indexOf(':') < ueu.indexOf('.') + 1) {
+//						ueu = "http://" + ueu;
+//					} else if (ueu.indexOf(':') < 1) {
+//						ueu = wSearch(ueu);
+//					}
+//				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -349,20 +367,19 @@ public class TWEditorWV extends AppCompatActivity {
 		wv.setWebViewClient(new WebViewClient() {
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, String url) {
-				int v = 0;
-				String host = Uri.parse(url).getHost();
-				if (host != null) v = host.length();
-				if (v == 0) {
+				Uri uri = Uri.parse(url);
+				String host = uri.getHost();
+				String sch = uri.getScheme();
+				if (host == null || host.length() == 0 || sch == null || sch.length() == 0)
 					return false;
-				}
 
-				if (url != null && url.startsWith("tel:")) {
+				if (sch.equals("tel")) {
 					Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
 					view.getContext().startActivity(intent);
 					return true;
 				}
 
-				if (url != null && url.startsWith("mailto:")) {
+				if (sch.equals("mailto")) {
 					Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
 					view.getContext().startActivity(intent);
 					return true;
@@ -373,6 +390,37 @@ public class TWEditorWV extends AppCompatActivity {
 					return true;
 				}
 				return false;
+			}
+		});
+		wv.setDownloadListener(new DownloadListener() {
+			@Override
+			public void onDownloadStart(final String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
+				File lastDir = Environment.getExternalStorageDirectory();
+				boolean showHidden = false;
+				try {
+					lastDir = new File(MainActivity.db.getString("lastDir"));
+					showHidden = MainActivity.db.getBoolean("showHidden");
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				System.out.println("X:" + url);
+				System.out.println("X:" + userAgent);
+				System.out.println("X:" + contentDisposition);
+				System.out.println("X:" + mimeType);
+				System.out.println("X:" + contentLength);
+				String filenameProbable = URLUtil.guessFileName(url, contentDisposition, mimeType);
+				FileDialog.fileSave(TWEditorWV.this, lastDir, filenameProbable, new String[]{mimeType, "*/*"}, 1, showHidden, new FileDialog.OnFileTouchedListener() {
+					@Override
+					public void onFileTouched(File[] files) {
+						if (files != null && files.length > 0)
+							MainActivity.wGet(TWEditorWV.this, Uri.parse(url), files[0]);
+					}
+
+					@Override
+					public void onCanceled() {
+						Toast.makeText(TWEditorWV.this, "Cancelled", Toast.LENGTH_SHORT).show();
+					}
+				});
 			}
 		});
 		System.out.println(ueu);
@@ -445,30 +493,35 @@ public class TWEditorWV extends AppCompatActivity {
 		super.onDestroy();
 	}
 
-	private static String wSearch(String arg) {
-		String ws = "https://google.com/search?q=" + arg;
-		try {
-			String se = MainActivity.db.getString("searchEngine");
-			switch (se) {
-				case "Google":
-					ws = "https://www.google.com/search?q=" + arg;
-					break;
-				case "Bing":
-					ws = "https://www.bing.com/search?q=" + arg;
-					break;
-				case "Baidu":
-					ws = "https://www.baidu.com/s?wd=" + arg;
-					break;
-				case "Sogou":
-					ws = "https://www.sogou.com/web?query=" + arg;
-					break;
-				case "Custom":
-					ws = MainActivity.db.getString("customSearchEngine").replace("%s", arg);
-					break;
-			}
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		return ws;
+	interface OnDownloadCompleteListener {
+		void onDownloadComplete(File file);
+		void onDownloadFailed();
 	}
+
+//	private static String wSearch(String arg) {
+//		String ws = "https://google.com/search?q=" + arg;
+//		try {
+//			String se = MainActivity.db.getString("searchEngine");
+//			switch (se) {
+//				case "Google":
+//					ws = "https://www.google.com/search?q=" + arg;
+//					break;
+//				case "Bing":
+//					ws = "https://www.bing.com/search?q=" + arg;
+//					break;
+//				case "Baidu":
+//					ws = "https://www.baidu.com/s?wd=" + arg;
+//					break;
+//				case "Sogou":
+//					ws = "https://www.sogou.com/web?query=" + arg;
+//					break;
+//				case "Custom":
+//					ws = MainActivity.db.getString("customSearchEngine").replace("%s", arg);
+//					break;
+//			}
+//		} catch (Exception e) {
+//			e.printStackTrace();
+//		}
+//		return ws;
+//	}
 }

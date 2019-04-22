@@ -11,27 +11,54 @@
     <string name="efn" translatable="false">eFn</string>
     <string name="dim" translatable="false">dim</string>
     <string name="logo" translatable="false">logo</string>
-    <string name="exist">Exist</string>
-    <string name="not_exist">Not Exist</string>
     <string name="icon" translatable="false">icon</string>
+    <string name="template_repo">https://tiddlywiki.com/empty.html</string>
+    <!--JSON-->
+    <string name="default_se">Google</string>
+    <string name="customSearchEngine" translatable="false">customSearchEngine</string>
+    <!--Search-->
     <string name="mark_Go" translatable="false">&#127760;</string>
     <string name="mark_Search" translatable="false">&#128269;</string>
     <string name="mark_Return" translatable="false">&#9166;</string>
     <!--<string name="mark_Search" translatable="false"&#128269;</string>-->
     <!--<string name="google" translatable="false">Google</string>-->
+    <string name="se_google" translatable="false">Google</string>
+    <string name="se_bing" translatable="false">Bing</string>
+    <string name="se_baidu" translatable="false">Baidu</string>
+    <string name="se_sogou" translatable="false">Sogou</string>
+    <string name="se_custom" translatable="false">Custom</string>
+    <string name="s_google" translatable="false">https://www.google.com/search?q=%s</string>
+    <string name="s_bing" translatable="false">https://www.bing.com/search?q=%s</string>
+    <string name="s_baidu" translatable="false">https://www.baidu.com/s?wd=%s</string>
+    <string name="s_sogou" translatable="false">https://www.sogou.com/web?query=%s</string>
+    <string name="s_arg" translatable="false">%s</string>
     <string name="su_google" translatable="false">http://suggestqueries.google.com/complete/search?output=toolbar&amp;q=#content#</string>
     <string name="su_bing" translatable="false">http://api.bing.com/qsonhs.aspx?q=#content#</string>
-    <string name="su_baidu" translatable="false">http://suggestion.baidu.com/su?wd=#content#&amp;cb=window.baidu.sug</string>
+    <string name="su_baidu" translatable="false">http://suggestion.baidu.com/su?wd=#content#</string>
     <string name="su_sogou" translatable="false">https://www.sogou.com/suggnew/ajajjson?type=web&amp;key=#content#</string>
+    <string name="su_arg" translatable="false">#content#</string>
+    <!--Settings-->
+    <string name="backup_directory_path" translatable="false">$filename$_backup</string>
+    <!--UI-->
+    <string name="search_engine">Search Engine</string>
     <string name="google">Google</string>
     <string name="bing">Bing</string>
     <string name="baidu">Baidu</string>
     <string name="sogou">Sogou</string>
     <string name="custom">Custom</string>
     <string name="search">Search</string>
-    <string name="search_engine">Search Engine</string>
-    <string name="default_se">Google</string>
-    <string name="backup_directory_path" translatable="false">/$filename$_backup</string>
+    <string name="exist">Exist</string>
+    <string name="not_exist">Not Exist</string>
+    <string name="downloading">Downloading</string>
+    <string name="download_complete">Download complete</string>
+    <string name="download_failed">Download failed</string>
+    <string name="please_wait">Please wait&#8230;</string>
+    <string name="filesystem">Filesystem</string>
+    <string name="show_hidden_files">Show hidden(.) files</string>
+    <string name="template">Template</string>
+    <!--<string name="template_required">To create new Wikis, a template file is required.</string>-->
+    <string name="update_template">Update template</string>
+    <string name="e_g_cse">e.g google.com/search?q=%s</string>
     <!--<string name="fake_ua" translatable="false">Mozilla/5.0 (Linux; Android 6.0; Android SDK built for x86 Build/MASTER; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/44.0.2403.119 Mobile Safari/537.36</string>-->
     <!--<string name="fake_ua_platform" translatable="false">X11; Linux x86_64</string>-->
 </resources>
