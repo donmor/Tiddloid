@@ -1,21 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
-<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content">
-    <Button
+<!--<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"-->
+    <!--android:layout_width="match_parent"-->
+    <!--android:layout_height="wrap_content">-->
+    <Button xmlns:android="http://schemas.android.com/apk/res/android"
         android:id="@+id/btnWiki"
         style="@style/Widget.AppCompat.Button.Borderless"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:drawableStart="@drawable/ic_description_black_24dp"
+        android:drawableLeft="@drawable/ic_description"
+        android:drawableStart="@drawable/ic_description"
         android:gravity="start|center_vertical"
-        android:text="TiddlyWiki"
+        android:text="@string/tiddlywiki"
         android:textAppearance="@style/TextAppearance.AppCompat.Menu" />
-
-    <!--<android.support.v7.widget.CardView-->
-        <!--android:id="@+id/cvWiki"-->
-        <!--android:layout_width="match_parent"-->
-        <!--android:layout_height="wrap_content">-->
-
-    <!--</android.support.v7.widget.CardView>-->
-</RelativeLayout>
+<!--</RelativeLayout>-->

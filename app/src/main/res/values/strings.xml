@@ -1,27 +1,57 @@
 <resources>
     <string name="app_name" translatable="false">Tiddloid</string>
-    <string name="action_new">New Wiki</string>
-    <string name="action_import">Import a file</string>
-    <string name="action_fork">Fork a website</string>
-    <string name="action_settings">Settings</string>
-    <string name="there_is_no_wiki_here">There is nothing here</string>
-    <string name="url">URL or keyword</string>
-    <string name="js" translatable="false"></string>
-    <!--<string name="remote">Remote</string>-->
-    <string name="efn" translatable="false">eFn</string>
-    <string name="dim" translatable="false">dim</string>
+    <!--JS-->
+    <string name="js_save" translatable="false">
+        var enableSaving = function(doc) {
+            var messageBox = doc.createElement(\"div\");
+            messageBox.id = \"tiddlyfox-message-box\";
+            doc.body.appendChild(messageBox);
+            messageBox.addEventListener(\"tiddlyfox-save-file\",function(event) {
+                var message = event.target,
+                filepath = message.getAttribute(\"data-tiddlyfox-path\"),
+                content = message.getAttribute(\"data-tiddlyfox-content\");
+                window.client.saveWiki(filepath,content);
+                message.parentNode.removeChild(message);
+                var event = doc.createEvent(\"Events\");
+                event.initEvent(\"tiddlyfox-have-saved-file\",true,false);
+                event.savedFilePath = filepath; message.dispatchEvent(event);
+                return false;
+            },false);
+        };
+        enableSaving(document);
+    </string>
+    <string name="js_blob" translatable="false">
+        var reader = new FileReader();
+        reader.onload = function () {
+            window.client.getB64(reader.result.replace(/^data:.+;base64,/, \'\'),\'$dest$\');
+        };
+        var blobString = \'$blob$\';
+        var xhr = new XMLHttpRequest();
+        xhr.open(\'GET\', blobString, true);
+        xhr.responseType = \'blob\';
+        xhr.onload = function(e) {
+            if (this.status == 200) {
+                reader.readAsDataURL(this.response);
+            }
+        };
+        xhr.send();
+    </string>
+    <!--Misc-->
     <string name="logo" translatable="false">logo</string>
+    <string name="path" translatable="false">path</string>
     <string name="icon" translatable="false">icon</string>
-    <string name="template_repo">https://tiddlywiki.com/empty.html</string>
-    <!--JSON-->
+    <string name="rollback" translatable="false">rollback</string>
+    <string name="del_backup" translatable="false">del_backup</string>
+    <string name="blob_str" translatable="false">$blob$</string>
+    <string name="dest_str" translatable="false">$dest$</string>
+    <!--JSON and Settings-->
+    <string name="backup_directory_path" translatable="false">$filename$_backup</string>
     <string name="default_se">Google</string>
-    <string name="customSearchEngine" translatable="false">customSearchEngine</string>
+    <string name="template_repo">https://tiddlywiki.com/empty.html</string>
     <!--Search-->
     <string name="mark_Go" translatable="false">&#127760;</string>
     <string name="mark_Search" translatable="false">&#128269;</string>
     <string name="mark_Return" translatable="false">&#9166;</string>
-    <!--<string name="mark_Search" translatable="false"&#128269;</string>-->
-    <!--<string name="google" translatable="false">Google</string>-->
     <string name="se_google" translatable="false">Google</string>
     <string name="se_bing" translatable="false">Bing</string>
     <string name="se_baidu" translatable="false">Baidu</string>
@@ -37,18 +67,24 @@
     <string name="su_baidu" translatable="false">http://suggestion.baidu.com/su?wd=#content#</string>
     <string name="su_sogou" translatable="false">https://www.sogou.com/suggnew/ajajjson?type=web&amp;key=#content#</string>
     <string name="su_arg" translatable="false">#content#</string>
-    <!--Settings-->
-    <string name="backup_directory_path" translatable="false">$filename$_backup</string>
     <!--UI-->
+    <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
+    <string name="action_new">New Wiki</string>
+    <string name="action_import">Import a file</string>
+    <string name="action_fork">Fork a website</string>
+    <string name="action_settings">Settings</string>
+    <string name="there_is_no_wiki_here">There is nothing here</string>
+    <string name="url">URL or keyword</string>
+    <string name="search">Search</string>
     <string name="search_engine">Search Engine</string>
     <string name="google">Google</string>
     <string name="bing">Bing</string>
     <string name="baidu">Baidu</string>
     <string name="sogou">Sogou</string>
     <string name="custom">Custom</string>
-    <string name="search">Search</string>
-    <string name="exist">Exist</string>
-    <string name="not_exist">Not Exist</string>
+    <string name="enable_backup">Enable backup</string>
+    <string name="no_backups">No backups</string>
+    <string name="remove_wiki">Remove Wiki</string>
     <string name="downloading">Downloading</string>
     <string name="download_complete">Download complete</string>
     <string name="download_failed">Download failed</string>
@@ -56,9 +92,11 @@
     <string name="filesystem">Filesystem</string>
     <string name="show_hidden_files">Show hidden(.) files</string>
     <string name="template">Template</string>
-    <!--<string name="template_required">To create new Wikis, a template file is required.</string>-->
     <string name="update_template">Update template</string>
     <string name="e_g_cse">e.g google.com/search?q=%s</string>
-    <!--<string name="fake_ua" translatable="false">Mozilla/5.0 (Linux; Android 6.0; Android SDK built for x86 Build/MASTER; wv) AppleWebKit/537.36 (KHTML, like Gecko) Version/4.0 Chrome/44.0.2403.119 Mobile Safari/537.36</string>-->
-    <!--<string name="fake_ua_platform" translatable="false">X11; Linux x86_64</string>-->
+    <string name="ready_to_fork">Ready to fork this Wiki. Click \"Save changes\" to continue.</string>
+    <string name="failed">Failed</string>
+    <string name="cancelled">Cancelled</string>
+    <string name="wiki_replaced">Exiting Wiki Overwritten</string>
+    <string name="backup_failed">Backup failed</string>
 </resources>

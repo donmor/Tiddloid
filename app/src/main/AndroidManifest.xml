@@ -47,5 +47,6 @@
             android:label="@string/app_name"
             android:theme="@style/AppTheme.NoActionBar"
             tools:targetApi="n" />
+        <service android:name="indi.donmor.tiddloid.SplashActivity$OnClearFromRecentService" android:stopWithTask="false" />
     </application>
 </manifest>

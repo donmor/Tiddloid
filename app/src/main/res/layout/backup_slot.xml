@@ -13,14 +13,13 @@
         android:layout_height="wrap_content"
         android:layout_weight="0"
         android:contentDescription="@string/icon"
-        app:srcCompat="@drawable/ic_description_black_24dp" />
+        app:srcCompat="@drawable/ic_description" />
 
     <TextView
         android:id="@+id/lblBackupFile"
-        android:layout_width="wrap_content"
+        android:layout_width="0dp"
         android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:contentDescription="backup" />
+        android:layout_weight="1" />
 
     <ImageButton
         android:id="@+id/btnRollBack"
@@ -29,8 +28,8 @@
         android:layout_height="wrap_content"
         android:layout_weight="0"
         android:adjustViewBounds="true"
-        android:contentDescription="rollback"
-        app:srcCompat="@drawable/ic_reply_black_24dp" />
+        android:contentDescription="@string/rollback"
+        app:srcCompat="@drawable/ic_reply" />
 
     <ImageButton
         android:id="@+id/btnDelBackup"
@@ -39,6 +38,6 @@
         android:layout_height="wrap_content"
         android:layout_weight="0"
         android:adjustViewBounds="true"
-        android:contentDescription="rollback"
-        app:srcCompat="@drawable/ic_delete_black_24dp" />
+        android:contentDescription="@string/del_backup"
+        app:srcCompat="@drawable/ic_delete" />
 </LinearLayout><!--</RelativeLayout>-->

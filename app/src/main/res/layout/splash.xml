@@ -29,6 +29,7 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="24dp"
+        android:gravity="center"
         android:fontFamily="sans-serif-light"
         android:text="@string/app_name"
         android:textAlignment="center"
@@ -41,5 +42,6 @@
         android:layout_height="wrap_content"
         android:layout_marginTop="24dp"
         android:layout_marginBottom="24dp"
+        android:gravity="center"
         android:textAlignment="center" />
 </LinearLayout>

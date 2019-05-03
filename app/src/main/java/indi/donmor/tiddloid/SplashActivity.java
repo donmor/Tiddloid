@@ -1,21 +1,16 @@
 package indi.donmor.tiddloid;
 
 import android.app.Activity;
+import android.app.Service;
 import android.content.Intent;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
+import android.os.IBinder;
+import android.support.v4.app.NotificationManagerCompat;
+import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
-
-//import net.danlew.android.joda.JodaTimeAndroid;
-//
-//import org.joda.time.DateTime;
-//import org.joda.time.DateTimeZone;
-//import org.joda.time.LocalDateTime;
-//import org.joda.time.format.DateTimeFormatter;
-//
-//import java.util.TimeZone;
 
 public class SplashActivity extends Activity {
 	private static final int LOAD_DISPLAY_TIME = 2000;
@@ -28,16 +23,7 @@ public class SplashActivity extends Activity {
 		setContentView(R.layout.splash);
 		TextView ver = findViewById(R.id.textVersionSplash);
 		ver.setText(BuildConfig.VERSION_NAME);
-//		JodaTimeAndroid.init(this);
-//		String v = "20190413153145672";
-//		DateTime e = new DateTime(Integer.parseInt(v.substring(0, 4)),
-//				Integer.parseInt(v.substring(4, 6)),
-//				Integer.parseInt(v.substring(6, 8)),
-//				Integer.parseInt(v.substring(8, 10)),
-//				Integer.parseInt(v.substring(10, 12)),
-//				Integer.parseInt(v.substring(12, 14)),
-//				Integer.parseInt(v.substring(14, 17)),DateTimeZone.UTC);
-//		ver.setText(e.withZone(DateTimeZone.forTimeZone(TimeZone.getDefault())).toString());
+		startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
 		new Handler().postDelayed(new Runnable() {
 			public void run() {
 				Intent mainIntent = new Intent(SplashActivity.this, MainActivity.class);
@@ -47,5 +33,31 @@ public class SplashActivity extends Activity {
 			}
 		}, LOAD_DISPLAY_TIME);
 	}
+	public static class OnClearFromRecentService extends Service {
 
+		@Override
+		public IBinder onBind(Intent intent) {
+			return null;
+		}
+
+		@Override
+		public int onStartCommand(Intent intent, int flags, int startId) {
+			Log.i("ClearFromRecentService", "Service Started");
+			return START_NOT_STICKY;
+		}
+
+		@Override
+		public void onDestroy() {
+			super.onDestroy();
+			Log.d("ClearFromRecentService", "Service Destroyed");
+		}
+
+		@Override
+		public void onTaskRemoved(Intent rootIntent) {
+			Log.i("ClearFromRecentService", "END");
+			//Code here
+			NotificationManagerCompat.from(this).cancelAll();
+			stopSelf();
+		}
+	}
 }

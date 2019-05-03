@@ -4,9 +4,9 @@
     android:height="256dp"
     android:viewportWidth="256"
     android:viewportHeight="256">
-    <path
-        android:fillColor="#0099CC"
-        android:pathData="M128 128M42 128A86 86 0 1 0 214 128 86 86 0 1 0 42 128" />
+    <!--<path-->
+        <!--android:fillColor="#0099CC"-->
+        <!--android:pathData="M128 128M42 128A86 86 0 1 0 214 128 86 86 0 1 0 42 128" />-->
     <path
         android:fillType="evenOdd"
         android:pathData="M65 106 94 135 102 164 194 256 256 256 256 160 187 91 170 110 90 110 70 90Z"

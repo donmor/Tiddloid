@@ -22,17 +22,15 @@ import indi.donmor.tiddloid.R;
 
 public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
 
-//	private Context context;
 	private JSONObject db;
 	private int count;
 	private ItemClickListener mItemClickListener;
 	private ReloadListener mReloadListener;
-	private LayoutInflater inflater;
+	private final LayoutInflater inflater;
 
-	private Vibrator vibrator;
+	private final Vibrator vibrator;
 
 	public WikiListAdapter(Context context, JSONObject db) {
-//		this.context = context;
 		this.db = db;
 		vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 		try {
@@ -44,14 +42,12 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	}
 
 	class WikiListHolder extends RecyclerView.ViewHolder {
-		private Button btnWiki;
-//		private CardView cvWiki;
+		private final Button btnWiki;
 		private String path;
 
 		WikiListHolder(View itemView) {
 			super(itemView);
 			btnWiki = itemView.findViewById(R.id.btnWiki);
-//			cvWiki = itemView.findViewById(R.id.cvWiki);
 		}
 	}
 
@@ -65,7 +61,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	public void onBindViewHolder(@NonNull WikiListHolder holder, int position) {
 		try {
 			final int pos = position;
-//			holder.id = db.getJSONArray("wiki").getJSONObject(pos).getString("id");
 			holder.btnWiki.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
