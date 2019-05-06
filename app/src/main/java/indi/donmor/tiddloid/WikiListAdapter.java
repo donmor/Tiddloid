@@ -1,4 +1,4 @@
-package indi.donmor.tiddloid.utils;
+package indi.donmor.tiddloid;
 
 import android.content.Context;
 import android.os.Vibrator;
@@ -18,8 +18,6 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import indi.donmor.tiddloid.R;
-
 public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
 
 	private JSONObject db;
@@ -27,14 +25,16 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	private ItemClickListener mItemClickListener;
 	private ReloadListener mReloadListener;
 	private final LayoutInflater inflater;
-
 	private final Vibrator vibrator;
 
-	public WikiListAdapter(Context context, JSONObject db) {
+	// CONSTANT
+	private static final String HTML_ATTR_PART_1 = "<br><font color=\"grey\">",
+			HTML_ATTR_PART_2 = "</font>";
+	WikiListAdapter(Context context, JSONObject db) {
 		this.db = db;
 		vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 		try {
-			count = db.getJSONArray("wiki").length();
+			count = db.getJSONArray(MainActivity.DB_KEY_WIKI).length();
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -75,12 +75,12 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					return true;
 				}
 			});
-			holder.path = db.getJSONArray("wiki").getJSONObject(pos).getString("path");
+			holder.path = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(pos).getString(MainActivity.DB_KEY_PATH);
 			File f = new File(holder.path);
 			System.out.println(f.getAbsolutePath());
 			if (f.exists()) {
 				holder.btnWiki.setVisibility(View.VISIBLE);
-				holder.btnWiki.setText(Html.fromHtml("</b>" + db.getJSONArray("wiki").getJSONObject(pos).getString("name") + "</b><br><font color=\"grey\">" + SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified())) + "</font>"));
+				holder.btnWiki.setText(Html.fromHtml(db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(pos).getString(MainActivity.KEY_NAME) + HTML_ATTR_PART_1 + SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified())) + HTML_ATTR_PART_2));
 			} else holder.btnWiki.setVisibility(View.GONE);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -93,29 +93,29 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	}
 
 
-	public interface ItemClickListener {
+	interface ItemClickListener {
 		void onItemClick(int position);
 
 		void onItemLongClick(int position);
 	}
 
-	public void setOnItemClickListener(ItemClickListener itemClickListener) {
+	void setOnItemClickListener(ItemClickListener itemClickListener) {
 		this.mItemClickListener = itemClickListener;
 	}
 
 
-	public interface ReloadListener {
+	interface ReloadListener {
 		void onReloaded(int count);
 	}
 
-	public void setReloadListener(ReloadListener reloadListener) {
+	void setReloadListener(ReloadListener reloadListener) {
 		this.mReloadListener = reloadListener;
 	}
 
-	public void reload(JSONObject db) {
+	void reload(JSONObject db) {
 		this.db = db;
 		try {
-			count = this.db.getJSONArray("wiki").length();
+			count = this.db.getJSONArray(MainActivity.DB_KEY_WIKI).length();
 			System.out.println(count);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -123,10 +123,10 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		mReloadListener.onReloaded(this.getItemCount());
 	}
 
-	public String getId(int position) {
+	String getId(int position) {
 		String id = null;
 		try {
-			id = db.getJSONArray("wiki").getJSONObject(position).getString("id");
+			id = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(position).getString(MainActivity.KEY_ID);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

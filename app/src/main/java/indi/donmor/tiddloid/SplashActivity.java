@@ -8,7 +8,6 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.support.v4.app.NotificationManagerCompat;
-import android.util.Log;
 import android.view.WindowManager;
 import android.widget.TextView;
 
@@ -42,20 +41,11 @@ public class SplashActivity extends Activity {
 
 		@Override
 		public int onStartCommand(Intent intent, int flags, int startId) {
-			Log.i("ClearFromRecentService", "Service Started");
 			return START_NOT_STICKY;
 		}
 
 		@Override
-		public void onDestroy() {
-			super.onDestroy();
-			Log.d("ClearFromRecentService", "Service Destroyed");
-		}
-
-		@Override
 		public void onTaskRemoved(Intent rootIntent) {
-			Log.i("ClearFromRecentService", "END");
-			//Code here
 			NotificationManagerCompat.from(this).cancelAll();
 			stopSelf();
 		}

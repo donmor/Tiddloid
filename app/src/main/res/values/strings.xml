@@ -1,25 +1,64 @@
 <resources>
     <string name="app_name" translatable="false">Tiddloid</string>
+    <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
+    <string name="default_charset" translatable="false">UTF-8</string>
     <!--JS-->
     <string name="js_save" translatable="false">
-        var enableSaving = function(doc) {
-            var messageBox = doc.createElement(\"div\");
-            messageBox.id = \"tiddlyfox-message-box\";
-            doc.body.appendChild(messageBox);
-            messageBox.addEventListener(\"tiddlyfox-save-file\",function(event) {
-                var message = event.target,
-                filepath = message.getAttribute(\"data-tiddlyfox-path\"),
-                content = message.getAttribute(\"data-tiddlyfox-content\");
-                window.client.saveWiki(filepath,content);
-                message.parentNode.removeChild(message);
-                var event = doc.createEvent(\"Events\");
-                event.initEvent(\"tiddlyfox-have-saved-file\",true,false);
-                event.savedFilePath = filepath; message.dispatchEvent(event);
-                return false;
-            },false);
-        };
-        enableSaving(document);
+        var appName = typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\" ? version.title : undefined;
+        var verMajor = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\" ? version.major : undefined;
+        console.log(appName);
+        console.log(verMajor);
+        window.client.getVersion(appName,typeof(verMajor)==\"number\");
+        <!--window.client.getIsClassic(verMajor);-->
+        if (appName == \"TiddlyWiki\") {
+            var enableSaving = function(doc) {
+                var messageBox = doc.createElement(\"div\");
+                messageBox.id = \"tiddlyfox-message-box\";
+                doc.body.appendChild(messageBox);
+                if(appName == \"TiddlyWiki\" &amp;&amp; typeof(verMajor) == \"number\") {
+                    var injectedSaveFile = function(path,content) {
+                        var messageBox = document.getElementById(\"tiddlyfox-message-box\");
+                        if(messageBox) {
+                            var message = document.createElement(\"div\");
+                            message.setAttribute(\"data-tiddlyfox-path\",path);
+                            message.setAttribute(\"data-tiddlyfox-content\",content);
+                            messageBox.appendChild(message);
+                            var event = document.createEvent(\"Events\");
+                            event.initEvent(\"tiddlyfox-save-file\",true,false);
+                            message.dispatchEvent(event);
+                        }
+                        return true;
+                    };
+                    var injectedLoadFile = function(path) {
+                        if(getLocalPath(document.location.toString()) === path) {
+                            return this.tiddlywikiSourceText;
+                        } else {
+                            return false;
+                        }
+                    };
+
+                    window.mozillaSaveFile = injectedSaveFile;
+                    window.mozillaLoadFile = injectedLoadFile;
+                }
+                messageBox.addEventListener(\"tiddlyfox-save-file\",function(event) {
+                    var message = event.target,
+                    filepath = message.getAttribute(\"data-tiddlyfox-path\"),
+                    content = message.getAttribute(\"data-tiddlyfox-content\");
+                    window.client.saveWiki(filepath,content);
+                    message.parentNode.removeChild(message);
+                    var event = doc.createEvent(\"Events\");
+                    event.initEvent(\"tiddlyfox-have-saved-file\",true,false);
+                    event.savedFilePath = filepath; message.dispatchEvent(event);
+                    return false;
+                },false);
+            };
+            enableSaving(document);
+        }
     </string>
+    <!--<string name="js_get_type" translatable="false">-->
+        <!--var getVersionTitle = function() { return version.title };-->
+        <!--var getVersionMajor = function() { return version.major };-->
+    <!--</string>-->
     <string name="js_blob" translatable="false">
         var reader = new FileReader();
         reader.onload = function () {
@@ -42,10 +81,20 @@
     <string name="icon" translatable="false">icon</string>
     <string name="rollback" translatable="false">rollback</string>
     <string name="del_backup" translatable="false">del_backup</string>
+    <!--<string name="content" translatable="false">content</string>-->
+    <string name="name" translatable="false">name</string>
+    <!--<string name="application_name" translatable="false">application-name</string>-->
+    <!--<string name="id" translatable="false">id</string>-->
+    <string name="version_area" translatable="false">versionArea</string>
+    <string name="version" translatable="false">version</string>
+    <string name="title" translatable="false">title</string>
+    <string name="major" translatable="false">major</string>
+    <string name="get_tw_ver_pref1" translatable="false">var version</string>
+    <string name="get_tw_ver_pref2" translatable="false">};</string>
     <string name="blob_str" translatable="false">$blob$</string>
     <string name="dest_str" translatable="false">$dest$</string>
     <!--JSON and Settings-->
-    <string name="backup_directory_path" translatable="false">$filename$_backup</string>
+    <!--<string name="backup_directory_path" translatable="false">$filename$_backup</string>-->
     <string name="default_se">Google</string>
     <string name="template_repo">https://tiddlywiki.com/empty.html</string>
     <!--Search-->
@@ -68,7 +117,6 @@
     <string name="su_sogou" translatable="false">https://www.sogou.com/suggnew/ajajjson?type=web&amp;key=#content#</string>
     <string name="su_arg" translatable="false">#content#</string>
     <!--UI-->
-    <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
     <string name="action_new">New Wiki</string>
     <string name="action_import">Import a file</string>
     <string name="action_fork">Fork a website</string>
@@ -98,5 +146,26 @@
     <string name="failed">Failed</string>
     <string name="cancelled">Cancelled</string>
     <string name="wiki_replaced">Exiting Wiki Overwritten</string>
+    <string name="file_deleted">File deleted</string>
     <string name="backup_failed">Backup failed</string>
+    <string name="delete_backups_as_well">Delete backups as well</string>
+    <string name="delete_the_html_file">Delete the HTML file (Can\'t be reversed!)</string>
+    <string name="missing_template">Missing template. Tiddloid will now download a new template file from TiddlyWiki.com.</string>
+    <string name="not_a_wiki">The file selected is not a TiddlyWiki.</string>
+    <string name="failed_opening_file">Failed opening the file</string>
+    <string name="failed_creating_file">Failed creating the file</string>
+    <string name="failed_deleting_file">Failed deleting the file</string>
+    <string name="failed_writing_file">Failed writing the file</string>
+    <string name="error_loading_page">Error loading the page</string>
+    <string name="error_processing_file">"Error processing the file"</string>
+    <string name="wiki_already_exists">The wiki already exists</string>
+    <string name="data_error">Data error</string>
+    <string name="confirm_to_del_backup">Are you sure you want to delete this version?</string>
+    <string name="confirm_to_remove_wiki">Are you sure you want to remove this Wiki from Tiddloid?</string>
+    <string name="confirm_to_auto_remove_wiki">The item selected is not a TiddlyWiki. Do you want to remove it?</string>
+    <string name="confirm_to_rollback">Are you sure you want to replace this Wiki with the backup version? This operation cannot be reversed!</string>
+    <string name="confirm_to_exit">"Are you sure you want to quit?"</string>
+    <string name="confirm_to_exit_wiki">"Are you sure you want to quit? Please make sure all your modifications have been saved."</string>
+    <string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
+    <string name="backup_deleted">Backup deleted</string>
 </resources>

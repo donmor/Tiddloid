@@ -9,7 +9,7 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
         android:layout_marginEnd="18dp"
-        android:text="Delete the HTML file (Can't be reversed!)" />
+        android:text="@string/delete_the_html_file" />
 
     <CheckBox
         android:id="@+id/cbDelBackups"
@@ -17,5 +17,5 @@
         android:layout_height="wrap_content"
         android:layout_marginStart="18dp"
         android:layout_marginEnd="18dp"
-        android:text="Delete backups as well" />
+        android:text="@string/delete_backups_as_well" />
 </LinearLayout>

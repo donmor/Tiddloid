@@ -1,4 +1,4 @@
-package indi.donmor.tiddloid.utils;
+package indi.donmor.tiddloid;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -19,9 +19,6 @@ import java.io.FileFilter;
 import java.text.SimpleDateFormat;
 import java.util.TimeZone;
 
-import indi.donmor.tiddloid.MainActivity;
-import indi.donmor.tiddloid.R;
-
 public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.BackupListHolder> {
 
 	private File mf;
@@ -30,7 +27,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	private int count;
 	private final LayoutInflater inflater;
 
-	public BackupListAdapter(Context context) {
+	BackupListAdapter(Context context) {
 		count = 0;
 		inflater = LayoutInflater.from(context);
 	}
@@ -83,37 +80,38 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	private BtnClickListener mBtnClickListener;
 
-	public interface BtnClickListener {
+	interface BtnClickListener {
 		void onBtnClick(int position, int which);
 	}
 
-	public void setOnBtnClickListener(BtnClickListener btnClickListener) {
+	void setOnBtnClickListener(BtnClickListener btnClickListener) {
 		this.mBtnClickListener = btnClickListener;
 
 	}
 
 	private LoadListener mLoadListener;
 
-	public interface LoadListener {
+	interface LoadListener {
 		void onLoad(int count);
 	}
 
-	public void setOnLoadListener(LoadListener loadListener) {
+	void setOnLoadListener(LoadListener loadListener) {
 		this.mLoadListener = loadListener;
 
 	}
 
-	public File getBackupFile(int position) {
+	File getBackupFile(int position) {
 		if (position < count) return bk[position];
 		else return null;
 	}
 
-	public void reload(Context context, File mainFile) {
+	void reload(Context context, File mainFile) {
 		this.mf = mainFile;
 		count = 0;
 		try {
 			String mfp = mf.getParentFile().getAbsolutePath(), mfn = mf.getName();
-			File mfd = new File(mfp +'/'+ context.getResources().getString(R.string.backup_directory_path).replace("$filename$", mfn));
+			File mfd = new File(mfp +'/'+mfn+ MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
+//			File mfd = new File(mfp +'/'+ context.getResources().getString(R.string.backup_directory_path).replace("$filename$", mfn));
 			if (mfd.isDirectory())
 				bk = sortFile(mfd.listFiles(new FileFilter() {
 					@Override
