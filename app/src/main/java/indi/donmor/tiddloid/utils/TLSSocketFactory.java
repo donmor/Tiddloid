@@ -1,3 +1,10 @@
+/*
+ * indi.donmor.tiddloid.utils.TLSSocketFactory <= [P|Tiddloid]
+ * Last modified: 18:31:28 2019/05/10
+ * Publish code included. Visit https://blog.dev-area.net/2015/08/13/android-4-1-enable-tls-1-1-and-tls-1-2/ for details.
+ * Copyright (c) 2019 donmor
+ */
+
 package indi.donmor.tiddloid.utils;
 
 import java.io.IOException;
@@ -10,9 +17,6 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.SSLSocket;
 import javax.net.ssl.SSLSocketFactory;
 
-/*
- * visit https://blog.dev-area.net/2015/08/13/android-4-1-enable-tls-1-1-and-tls-1-2/ for details.
- */
 public class TLSSocketFactory extends SSLSocketFactory {
 
 	private SSLSocketFactory internalSSLSocketFactory;

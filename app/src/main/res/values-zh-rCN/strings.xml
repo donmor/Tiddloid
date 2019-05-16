@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--JSON and Settings-->
+    <string name="default_se">Baidu</string>
+	<string name="template_repo">https://tiddlywiki.com/languages/zh-Hans/empty.html</string>
+    <!--UI-->
+    <string name="action_new">创建新的Wiki</string>
+	<string name="action_import">导入已有Wiki文件</string>
+	<string name="action_fork">从Wiki站点创建副本</string>
+	<string name="action_settings">设置</string>
+	<string name="there_is_no_wiki_here">没有内容</string>
+	<string name="url">网址或关键字</string>
+	<string name="search">搜索</string>
+	<string name="search_engine">搜索引擎</string>
+	<string name="google">谷歌</string>
+	<string name="bing">必应</string>
+	<string name="baidu">百度</string>
+	<string name="sogou">搜狗</string>
+	<string name="custom">自定义</string>
+	<string name="enable_backup">启用备份</string>
+	<string name="no_backups">没有备份</string>
+	<string name="remove_wiki">移除Wiki</string>
+	<string name="downloading">正在下载</string>
+	<string name="download_complete">下载完成</string>
+	<string name="download_failed">下载失败</string>
+	<string name="please_wait">请稍候…</string>
+	<string name="filesystem">文件系统</string>
+	<string name="show_hidden_files">显示隐藏(.)文件</string>
+	<string name="template">模板</string>
+	<string name="update_template">更新模板</string>
+	<string name="e_g_cse">例: baidu.com/s?wd=％s</string>
+	<string name="ready_to_fork">已准备好创建这个Wiki的副本。点击“保存修改”以继续。</string>
+	<string name="failed">失败</string>
+	<string name="cancelled">取消</string>
+	<string name="wiki_replaced">已覆盖现有Wiki</string>
+	<string name="file_deleted">文件已删除</string>
+	<string name="backup_failed">备份失败</string>
+	<string name="delete_backups_as_well">同时删除备份</string>
+	<string name="delete_the_html_file">删除HTML源文件(无法撤销!)</string>
+	<string name="missing_template">模板不存在。Tiddloid将从TiddlyWiki.com下载一个新的模板。</string>
+	<string name="not_a_wiki">所选文件不是TiddlyWiki。</string>
+	<string name="failed_opening_file">打开文件失败</string>
+	<string name="failed_creating_file">创建文件失败</string>
+	<string name="failed_deleting_file">删除文件失败</string>
+	<string name="failed_writing_file">写入文件失败</string>
+	<string name="error_loading_page">加载页面时出错</string>
+	<string name="error_processing_file">“处理文件时出错”</string>
+	<string name="wiki_already_exists">Wiki已存在</string>
+	<string name="data_error">数据错误</string>
+	<string name="confirm_to_del_backup">您确定要删除此版本吗？</string>
+	<string name="confirm_to_remove_wiki">你确定要从Tiddloid中删除这个Wiki吗？</string>
+	<string name="confirm_to_auto_remove_wiki">所选项目不是TiddlyWiki。要从列表中移除它吗？</string>
+	<string name="confirm_to_rollback">您确定要用备份的版本替换此Wiki吗？</string>
+	<string name="confirm_to_exit">确定要退出吗？</string>
+	<string name="confirm_to_exit_wiki">确定要退出吗？请确认所有修改已经保存。</string>
+	<string name="wiki_rolled_back_successfully">Wiki成功还原</string>
+	<string name="third_part_rising">此页面正在请求打开另一个应用程序。要继续吗？</string>
+	<string name="backup_deleted">备份已删除</string>
+</resources>

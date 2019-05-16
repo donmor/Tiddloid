@@ -1,0 +1,59 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!--JSON and Settings-->
+    <string name="default_se">Google</string>
+	<string name="template_repo">https://tiddlywiki.com/empty.html</string>
+    <!--UI-->
+    <string name="action_new">新しいWikiを作成する</string>
+	<string name="action_import">ファイルをインポートする</string>
+	<string name="action_fork">ウェブサイトをフォークする</string>
+	<string name="action_settings">設定</string>
+	<string name="there_is_no_wiki_here">ここには何もありません</string>
+	<string name="url">URLまたはキーワード</string>
+	<string name="search">検索</string>
+	<string name="search_engine">検索エンジン</string>
+	<string name="google">Google</string>
+	<string name="bing">Bing</string>
+	<string name="baidu">Baidu</string>
+	<string name="sogou">Sogou</string>
+	<string name="custom">カスタム</string>
+	<string name="enable_backup">バックアップを有効にする</string>
+	<string name="no_backups">バックアップなし</string>
+	<string name="remove_wiki">Wikiを削除する</string>
+	<string name="downloading">ダウンロード中</string>
+	<string name="download_complete">ダウンロード完了</string>
+	<string name="download_failed">ダウンロード失敗</string>
+	<string name="please_wait">お待ちください…</string>
+	<string name="filesystem">ファイルシステム</string>
+	<string name="show_hidden_files">隠しファイル(.)を表示する</string>
+	<string name="template">テンプレート</string>
+	<string name="update_template">更新テンプレート</string>
+	<string name="e_g_cse">例: google.com/search?q=%s</string>
+	<string name="ready_to_fork">このWikiをフォークする準備ができました。[Save Changes]をクリックして続行します。</string>
+	<string name="failed">失敗しました</string>
+	<string name="cancelled">キャンセル</string>
+	<string name="wiki_replaced">既存のWikiを上書きされました</string>
+	<string name="file_deleted">ファイルが削除されました</string>
+	<string name="backup_failed">バックアップ失敗</string>
+	<string name="delete_backups_as_well">バックアップも削除する</string>
+	<string name="delete_the_html_file">HTMLファイルを削除します(元に戻せません!)。</string>
+	<string name="missing_template">テンプレートが見つかりません。TiddloidはTiddlyWiki.comから新しいテンプレートファイルをダウンロードします。</string>
+	<string name="not_a_wiki">選択されたファイルはTiddlyWikiではありません。</string>
+	<string name="failed_opening_file">ファイルを開けませんでした</string>
+	<string name="failed_creating_file">ファイルの作成に失敗しました</string>
+	<string name="failed_deleting_file">ファイルの削除に失敗しました</string>
+	<string name="failed_writing_file">ファイルの書き込みに失敗しました</string>
+	<string name="error_loading_page">ページの読み込み中にエラーが発生しました</string>
+	<string name="error_processing_file">ファイルの処理中にエラーが発生しました</string>
+	<string name="wiki_already_exists">Wikiは既に存在します</string>
+	<string name="data_error">データエラー</string>
+	<string name="confirm_to_del_backup">このバージョンを削除してもよろしいですか？</string>
+	<string name="confirm_to_remove_wiki">このWikiをTiddloidから削除しますか？</string>
+	<string name="confirm_to_auto_remove_wiki">選択した項目はTiddlyWikiのではありません。削除しますか？</string>
+	<string name="confirm_to_rollback">このWikiをバックアップバージョンに置き換えますか？この操作は元に戻せません。</string>
+	<string name="confirm_to_exit">本当に終了しますか？</string>
+	<string name="confirm_to_exit_wiki">本当に終了しますか？すべての変更が保存されたことを確認してください。</string>
+	<string name="wiki_rolled_back_successfully">Wikiはロールバックされました</string>
+	<string name="third_part_rising">このページから別のアプリケーションが開かれます。続行しますか？</string>
+	<string name="backup_deleted">バックアップを削除しました</string>
+</resources>

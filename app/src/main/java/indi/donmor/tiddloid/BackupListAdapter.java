@@ -1,3 +1,9 @@
+/*
+ * indi.donmor.tiddloid.BackupListAdapter <= [P|Tiddloid]
+ * Last modified: 03:43:00 2019/05/07
+ * Copyright (c) 2019 donmor
+ */
+
 package indi.donmor.tiddloid;
 
 import android.content.Context;
@@ -111,7 +117,6 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 		try {
 			String mfp = mf.getParentFile().getAbsolutePath(), mfn = mf.getName();
 			File mfd = new File(mfp +'/'+mfn+ MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
-//			File mfd = new File(mfp +'/'+ context.getResources().getString(R.string.backup_directory_path).replace("$filename$", mfn));
 			if (mfd.isDirectory())
 				bk = sortFile(mfd.listFiles(new FileFilter() {
 					@Override

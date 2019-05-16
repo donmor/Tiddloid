@@ -1,3 +1,9 @@
+/*
+ * indi.donmor.tiddloid.TWEditorWV <= [P|Tiddloid]
+ * Last modified: 18:33:05 2019/05/10
+ * Copyright (c) 2019 donmor
+ */
+
 package indi.donmor.tiddloid;
 
 import android.annotation.TargetApi;
@@ -7,8 +13,11 @@ import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
+import android.graphics.Matrix;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Environment;
@@ -31,7 +40,7 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
-import com.github.donmor3000.filedialog.lib.FileDialog;
+import com.github.donmor.filedialog.lib.FileDialog;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -46,6 +55,7 @@ import java.util.Locale;
 
 public class TWEditorWV extends AppCompatActivity {
 
+	private JSONObject db;
 	private JSONObject wApp;
 	private WebChromeClient wcc;
 	private View mCustomView;
@@ -55,12 +65,16 @@ public class TWEditorWV extends AppCompatActivity {
 	private ValueCallback<Uri[]> uploadMessage;
 	private WebView wv;
 	private ProgressBar wvProgress;
+	private Bitmap favicon;
 
 	// CONSTANT
 	private static final String F02D = "%02d",
 			F03D = "%03d",
 			F04D = "%04d",
+			SCH_ABOUT = "about",
 			SCH_BLOB = "blob",
+			SCH_HTTP = "http",
+			SCH_HTTPS = "https",
 			SCH_TEL = "tel",
 			SCH_MAILTO = "mailto",
 			SCH_JS = "javascript";
@@ -71,6 +85,16 @@ public class TWEditorWV extends AppCompatActivity {
 		getWindow().setFormat(PixelFormat.RGBA_8888);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 		setContentView(R.layout.tweditor);
+
+		try {
+			db = MainActivity.readJson(openFileInput(MainActivity.DB_FILE_NAME));
+			if (db == null) throw new Exception();
+		} catch (Exception e) {
+			e.printStackTrace();
+			finish();
+		}
+
+
 		final Toolbar toolbar = findViewById(R.id.wv_toolbar);
 		setSupportActionBar(toolbar);
 		this.setTitle(getResources().getString(R.string.app_name));
@@ -92,7 +116,6 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setAllowContentAccess(true);
 		wvs.setAllowFileAccessFromFileURLs(true);
 		wvs.setAllowUniversalAccessFromFileURLs(true);
-		Toast.makeText(this, wvs.getUserAgentString(), Toast.LENGTH_SHORT).show();
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
 			wvs.setAllowFileAccessFromFileURLs(true);
 			wvs.setAllowUniversalAccessFromFileURLs(true);
@@ -115,11 +138,42 @@ public class TWEditorWV extends AppCompatActivity {
 				try {
 					if (wApp != null) {
 						wApp.put(MainActivity.KEY_NAME, title);
-						MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), MainActivity.db);
+						MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), db);
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+			}
+
+			@Override
+			public void onReceivedIcon(WebView view, Bitmap icon) {
+				if (wApp != null) {
+					if (icon != null) {
+						FileOutputStream os = null;
+						try {
+							os = new FileOutputStream(new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)));
+							icon.compress(Bitmap.CompressFormat.PNG, 100, os);
+							os.flush();
+						} catch (Exception e) {
+							e.printStackTrace();
+						} finally {
+							if (os != null)
+								try {
+									os.close();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+						}
+						int width = icon.getWidth(), height = icon.getHeight();
+						float scale = getResources().getDisplayMetrics().density * 16f;
+						Matrix matrix = new Matrix();
+						matrix.postScale(scale / width, scale / height);
+						favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
+						toolbar.setLogo(new BitmapDrawable(getResources(), favicon));
+					}
+
+				}
+				super.onReceivedIcon(view, icon);
 			}
 
 			@TargetApi(Build.VERSION_CODES.LOLLIPOP)
@@ -128,8 +182,8 @@ public class TWEditorWV extends AppCompatActivity {
 				File lastDir = Environment.getExternalStorageDirectory();
 				boolean showHidden = false;
 				try {
-					lastDir = new File(MainActivity.db.getString(MainActivity.DB_KEY_LAST_DIR));
-					showHidden = MainActivity.db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
+					lastDir = new File(db.getString(MainActivity.DB_KEY_LAST_DIR));
+					showHidden = db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -174,8 +228,8 @@ public class TWEditorWV extends AppCompatActivity {
 										} else throw new Exception();
 										break;
 								}
-								MainActivity.db.put(MainActivity.DB_KEY_LAST_DIR, files[0].getParentFile().getAbsolutePath());
-								MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), MainActivity.db);
+								db.put(MainActivity.DB_KEY_LAST_DIR, files[0].getParentFile().getAbsolutePath());
+								MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), db);
 							} else throw new Exception();
 
 						} catch (Exception e) {
@@ -230,26 +284,29 @@ public class TWEditorWV extends AppCompatActivity {
 		});
 		Bundle bu = this.getIntent().getExtras();
 		String ueu = "about:blank";
+		String id = bu != null ? bu.getString(MainActivity.KEY_ID) : null;
 		try {
-			String id = bu != null ? bu.getString(MainActivity.KEY_ID) : null;
-			for (int i = 0; i < MainActivity.db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
-				if (MainActivity.db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.KEY_ID).equals(id)) {
-					wApp = MainActivity.db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
+			for (int i = 0; i < db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
+				if (db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.KEY_ID).equals(id)) {
+					wApp = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
 					break;
 				}
 			}
-			if (wApp != null) {
+		} catch (Exception e) {
+			e.printStackTrace();
+		}
+		if (wApp != null) {
+			try {
 				ueu = "file://" + wApp.getString(MainActivity.DB_KEY_PATH);
 				String wvTitle = wApp.getString(MainActivity.KEY_NAME);
 				if (!wvTitle.equals("")) this.setTitle(wvTitle);
-			} else {
-				String url = bu != null ? bu.getString(MainActivity.KEY_URL) : null;
-				if (url != null) ueu = url;
-				if (bu != null) ueu = bu.getString(MainActivity.KEY_URL);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
-
+		} else {
+			String url = bu != null ? bu.getString(MainActivity.KEY_URL) : null;
+			if (url != null) ueu = url;
+			if (bu != null) ueu = bu.getString(MainActivity.KEY_URL);
 		}
 
 		final class JavaScriptCallback {
@@ -259,26 +316,17 @@ public class TWEditorWV extends AppCompatActivity {
 			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void getVersion(String title, boolean classic) {
-				System.out.println(title);
-				System.out.println(classic);
-				if (title.equals(getResources().getString(R.string.app_name))) {
-					if (wApp == null)
-						if (!classic) {
-							Toast.makeText(TWEditorWV.this, R.string.ready_to_fork, Toast.LENGTH_SHORT).show();
+				if (title.equals(getResources().getString(R.string.tiddlywiki))) {
+					if (wApp == null) {
+						if (!classic)
 							runOnUiThread(new Runnable() {
 								@Override
 								public void run() {
+									Toast.makeText(TWEditorWV.this, R.string.ready_to_fork, Toast.LENGTH_SHORT).show();
 									toolbar.setLogo(R.drawable.ic_fork);
 								}
 							});
-						}
-					else
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								toolbar.setLogo(null);
-							}
-						});
+					}
 				}
 				if (classic) {
 					wvs.setBuiltInZoomControls(true);
@@ -287,26 +335,7 @@ public class TWEditorWV extends AppCompatActivity {
 					wvs.setBuiltInZoomControls(false);
 					wvs.setDisplayZoomControls(false);
 				}
-				runOnUiThread(new Runnable() {
-					@Override
-					public void run() {
-//						System.out.println(wv.getUrl());
-					}
-				});
 			}
-
-//			@SuppressWarnings("unused")
-//			@JavascriptInterface
-//			public void getIsClassic(String data) {
-//				System.out.println(data);
-//				if (!data.equals("undefined")) {
-//					wvs.setBuiltInZoomControls(true);
-//					wvs.setDisplayZoomControls(true);
-//				} else {
-//					wvs.setBuiltInZoomControls(false);
-//					wvs.setDisplayZoomControls(false);
-//				}
-//			}
 
 			@SuppressWarnings("unused")
 			@JavascriptInterface
@@ -319,15 +348,17 @@ public class TWEditorWV extends AppCompatActivity {
 			public void saveWiki(String filepath, String data) {
 				final ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(Charset.forName(CHARSET_NAME_UTF_8)));
 				if (wApp != null) {
+					FileOutputStream os = null;
 					try {
 						String fp = wApp.getString(MainActivity.DB_KEY_PATH);
 						if (fp.equals(filepath)) {
 							File file = new File(fp);
 							if (wApp.getBoolean(MainActivity.DB_KEY_BACKUP)) {
+								FileInputStream isb = null;
+								FileOutputStream osb = null;
 								try {
 									String mfn = file.getName();
 									File mfd = new File(file.getParentFile().getAbsolutePath() + '/' + mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
-//									File mfd = new File(file.getParentFile().getAbsolutePath() + '/' + getResources().getString(R.string.backup_directory_path).replace("$filename$", mfn));
 									if (!mfd.exists()) mfd.mkdir();
 									else if (!mfd.isDirectory()) throw new Exception();
 									DateTime dateTime = new DateTime(file.lastModified(), DateTimeZone.UTC);
@@ -339,8 +370,8 @@ public class TWEditorWV extends AppCompatActivity {
 											+ String.format(Locale.US, F02D, dateTime.minuteOfHour().get())
 											+ String.format(Locale.US, F02D, dateTime.secondOfMinute().get())
 											+ String.format(Locale.US, F03D, dateTime.millisOfSecond().get());
-									FileInputStream isb = new FileInputStream(file);
-									FileOutputStream osb = new FileOutputStream(new File(mfd.getAbsolutePath() + '/' + new StringBuilder(mfn).insert(mfn.lastIndexOf('.'), prefix).toString()));
+									isb = new FileInputStream(file);
+									osb = new FileOutputStream(new File(mfd.getAbsolutePath() + '/' + new StringBuilder(mfn).insert(mfn.lastIndexOf('.'), prefix).toString()));
 									int len = isb.available();
 									int length, lengthTotal = 0;
 									byte[] b = new byte[512];
@@ -348,16 +379,27 @@ public class TWEditorWV extends AppCompatActivity {
 										osb.write(b, 0, length);
 										lengthTotal += length;
 									}
-									isb.close();
 									osb.flush();
-									osb.close();
 									if (lengthTotal != len) throw new Exception();
 								} catch (Exception e) {
 									e.printStackTrace();
 									Toast.makeText(TWEditorWV.this, R.string.backup_failed, Toast.LENGTH_SHORT).show();
+								} finally {
+									if (isb != null)
+										try {
+											isb.close();
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
+									if (osb != null)
+										try {
+											osb.close();
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
 								}
 							}
-							FileOutputStream os = new FileOutputStream(file);
+							os = new FileOutputStream(file);
 							int len = is.available();
 							int length, lengthTotal = 0;
 							byte[] b = new byte[512];
@@ -366,31 +408,42 @@ public class TWEditorWV extends AppCompatActivity {
 								os.write(b, 0, length);
 								lengthTotal += length;
 							}
-							is.close();
 							os.flush();
-							os.close();
 							if (lengthTotal != len) throw new Exception();
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
 						Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
+					} finally {
+						try {
+							is.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						if (os != null)
+							try {
+								os.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 					}
 				} else {
 					File lastDir = Environment.getExternalStorageDirectory();
 					boolean showHidden = false;
 					try {
-						lastDir = new File(MainActivity.db.getString(MainActivity.DB_KEY_LAST_DIR));
-						showHidden = MainActivity.db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
+						lastDir = new File(db.getString(MainActivity.DB_KEY_LAST_DIR));
+						showHidden = db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
 					} catch (Exception e) {
 						e.printStackTrace();
 					}
 					FileDialog.fileSave(TWEditorWV.this, lastDir, MainActivity.HTML_FILTERS, showHidden, new FileDialog.OnFileTouchedListener() {
 						@Override
 						public void onFileTouched(File[] files) {
+							FileOutputStream os = null;
 							try {
 								if (files != null && files.length > 0 && files[0] != null) {
 									File file = files[0];
-									FileOutputStream os = new FileOutputStream(file);
+									os = new FileOutputStream(file);
 									int len = is.available();
 									int length, lengthTotal = 0;
 									byte[] b = new byte[512];
@@ -398,17 +451,15 @@ public class TWEditorWV extends AppCompatActivity {
 										os.write(b, 0, length);
 										lengthTotal += length;
 									}
-									is.close();
 									os.flush();
-									os.close();
 									if (lengthTotal != len) throw new Exception();
 									try {
 										boolean exist = false;
 										JSONObject w = new JSONObject();
-										for (int i = 0; i < MainActivity.db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
-											if (MainActivity.db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.DB_KEY_PATH).equals(file.getAbsolutePath())) {
+										for (int i = 0; i < db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
+											if (db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.DB_KEY_PATH).equals(file.getAbsolutePath())) {
 												exist = true;
-												w = MainActivity.db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
+												w = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
 												break;
 											}
 										}
@@ -420,25 +471,49 @@ public class TWEditorWV extends AppCompatActivity {
 											w.put(MainActivity.KEY_ID, MainActivity.genId());
 											w.put(MainActivity.DB_KEY_PATH, file.getAbsolutePath());
 											w.put(MainActivity.DB_KEY_BACKUP, false);
-											MainActivity.db.getJSONArray(MainActivity.DB_KEY_WIKI).put(MainActivity.db.getJSONArray(MainActivity.DB_KEY_WIKI).length(), w);
-											if (!MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, Context.MODE_PRIVATE), MainActivity.db))
+											db.getJSONArray(MainActivity.DB_KEY_WIKI).put(db.getJSONArray(MainActivity.DB_KEY_WIKI).length(), w);
+											if (!MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, Context.MODE_PRIVATE), db))
 												throw new Exception();
 										}
 										wApp = w;
-										MainActivity.db.put(MainActivity.DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-										if (!MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, Context.MODE_PRIVATE), MainActivity.db))
+										db.put(MainActivity.DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
+										if (!MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, Context.MODE_PRIVATE), db))
 											throw new Exception();
 									} catch (Exception e) {
 										e.printStackTrace();
 										Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
 									}
-//									System.out.println("==");
-//									System.out.println(wApp);
 									if (wApp != null) {
 										runOnUiThread(new Runnable() {
 											@Override
 											public void run() {
-												toolbar.setLogo(null);
+												Bitmap icon = wv.getFavicon();
+												if (wApp != null) {
+													if (icon != null) {
+														FileOutputStream os = null;
+														try {
+															os = new FileOutputStream(new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)));
+															icon.compress(Bitmap.CompressFormat.PNG, 100, os);
+															os.flush();
+														} catch (Exception e) {
+															e.printStackTrace();
+														} finally {
+															if (os != null)
+																try {
+																	os.close();
+																} catch (Exception e) {
+																	e.printStackTrace();
+																}
+														}
+														int width = icon.getWidth(), height = icon.getHeight();
+														float scale = getResources().getDisplayMetrics().density * 16f;
+														Matrix matrix = new Matrix();
+														matrix.postScale(scale / width, scale / height);
+														favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
+														toolbar.setLogo(new BitmapDrawable(getResources(), favicon));
+													}
+												}
+												if (icon != null) icon.recycle();
 												wv.clearHistory();
 											}
 										});
@@ -447,6 +522,18 @@ public class TWEditorWV extends AppCompatActivity {
 								} else throw new Exception();
 							} catch (Exception e) {
 								e.printStackTrace();
+							} finally {
+								try {
+									is.close();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+								if (os != null)
+									try {
+										os.close();
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
 							}
 						}
 
@@ -463,46 +550,72 @@ public class TWEditorWV extends AppCompatActivity {
 		wv.addJavascriptInterface(new JavaScriptCallback(), "client");
 		wv.setWebViewClient(new WebViewClient() {
 			@Override
-			public boolean shouldOverrideUrlLoading(WebView view, String url) {
+			public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
 				Uri uri = Uri.parse(url);
 				String sch = uri.getScheme();
-				if (sch == null || sch.length() == 0)
+				if (sch == null || sch.length() == 0 || wApp == null && (sch.equals(SCH_ABOUT) || sch.equals(SCH_HTTP) || sch.equals(SCH_HTTPS)))
 					return false;
 				try {
 					if (sch.equals(SCH_TEL)) {
 						Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
 						view.getContext().startActivity(intent);
-						return true;
-					}
-
-					if (sch.equals(SCH_MAILTO)) {
+					} else if (sch.equals(SCH_MAILTO)) {
 						Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
 						view.getContext().startActivity(intent);
-						return true;
-					}
-					if (wApp != null) {
-						Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-						view.getContext().startActivity(intent);
-						return true;
+					} else {
+						new AlertDialog.Builder(TWEditorWV.this)
+								.setTitle(android.R.string.dialog_alert_title)
+								.setMessage(R.string.third_part_rising)
+								.setNegativeButton(android.R.string.no, null)
+								.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										try {
+											Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+											view.getContext().startActivity(intent);
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
+									}
+								}).show();
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
-					return true;
 				}
-				return false;
+				return true;
 			}
 
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
-				if (wApp != null) {
-					toolbar.setLogo(null);
-				} else {
+				if (wApp == null) {
 					toolbar.setLogo(R.drawable.ic_language);
+				} else {
+					FileInputStream is = null;
+					try {
+						is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)));
+						Bitmap icon = BitmapFactory.decodeStream(is);
+						if (icon != null) {
+							int width = icon.getWidth(), height = icon.getHeight();
+							float scale = getResources().getDisplayMetrics().density * 16f;
+							Matrix matrix = new Matrix();
+							matrix.postScale(scale / width, scale / height);
+							TWEditorWV.this.favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
+							toolbar.setLogo(new BitmapDrawable(getResources(), TWEditorWV.this.favicon));
+						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						if (is != null) try {
+							is.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+
 				}
 			}
 
 			public void onPageFinished(WebView view, String url) {
-				view.getFavicon();
 				view.loadUrl(SCH_JS + ':' + getResources().getString(R.string.js_save));
 			}
 		});
@@ -512,8 +625,8 @@ public class TWEditorWV extends AppCompatActivity {
 				File lastDir = Environment.getExternalStorageDirectory();
 				boolean showHidden = false;
 				try {
-					lastDir = new File(MainActivity.db.getString(MainActivity.DB_KEY_LAST_DIR));
-					showHidden = MainActivity.db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
+					lastDir = new File(db.getString(MainActivity.DB_KEY_LAST_DIR));
+					showHidden = db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
@@ -537,7 +650,6 @@ public class TWEditorWV extends AppCompatActivity {
 				});
 			}
 		});
-		System.out.println(ueu);
 		wv.loadUrl(ueu);
 	}
 

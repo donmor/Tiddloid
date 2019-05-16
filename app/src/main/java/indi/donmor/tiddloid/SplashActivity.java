@@ -1,3 +1,9 @@
+/*
+ * indi.donmor.tiddloid.SplashActivity <= [P|Tiddloid]
+ * Last modified: 03:43:55 2019/05/07
+ * Copyright (c) 2019 donmor
+ */
+
 package indi.donmor.tiddloid;
 
 import android.app.Activity;

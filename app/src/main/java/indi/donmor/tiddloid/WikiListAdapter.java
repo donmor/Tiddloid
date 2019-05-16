@@ -1,25 +1,35 @@
+/*
+ * indi.donmor.tiddloid.WikiListAdapter <= [P|Tiddloid]
+ * Last modified: 05:03:14 2019/05/07
+ * Copyright (c) 2019 donmor
+ */
+
 package indi.donmor.tiddloid;
 
 import android.content.Context;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
+import android.graphics.Matrix;
+import android.graphics.drawable.BitmapDrawable;
 import android.os.Vibrator;
 import android.support.annotation.NonNull;
-//import android.support.v7.widget.CardView;
 import android.support.v7.widget.RecyclerView;
 import android.text.Html;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-//import android.widget.Toast;
 
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileInputStream;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
 public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
 
+	private final Context context;
 	private JSONObject db;
 	private int count;
 	private ItemClickListener mItemClickListener;
@@ -30,7 +40,9 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	// CONSTANT
 	private static final String HTML_ATTR_PART_1 = "<br><font color=\"grey\">",
 			HTML_ATTR_PART_2 = "</font>";
+
 	WikiListAdapter(Context context, JSONObject db) {
+		this.context = context;
 		this.db = db;
 		vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 		try {
@@ -61,6 +73,30 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	public void onBindViewHolder(@NonNull WikiListHolder holder, int position) {
 		try {
 			final int pos = position;
+			FileInputStream is = null;
+			try {
+				File iconFile = new File(context.getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), getId(pos));
+				if (iconFile.exists() && iconFile.length() > 0) {
+					is = new FileInputStream(iconFile);
+					Bitmap icon = BitmapFactory.decodeStream(is);
+					if (icon != null) {
+						int width = icon.getWidth(), height = icon.getHeight();
+						float scale = context.getResources().getDisplayMetrics().density * 24f;
+						Matrix matrix = new Matrix();
+						matrix.postScale(scale / width, scale / height);
+						Bitmap favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
+						holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(new BitmapDrawable(context.getResources(), favicon), null, null, null);
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (is != null) try {
+					is.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
 			holder.btnWiki.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -77,7 +113,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			});
 			holder.path = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(pos).getString(MainActivity.DB_KEY_PATH);
 			File f = new File(holder.path);
-			System.out.println(f.getAbsolutePath());
 			if (f.exists()) {
 				holder.btnWiki.setVisibility(View.VISIBLE);
 				holder.btnWiki.setText(Html.fromHtml(db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(pos).getString(MainActivity.KEY_NAME) + HTML_ATTR_PART_1 + SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified())) + HTML_ATTR_PART_2));
@@ -116,7 +151,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		this.db = db;
 		try {
 			count = this.db.getJSONArray(MainActivity.DB_KEY_WIKI).length();
-			System.out.println(count);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

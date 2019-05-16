@@ -1,3 +1,9 @@
+/*
+ * indi.donmor.tiddloid.MainActivity <= [P|Tiddloid]
+ * Last modified: 18:18:25 2019/05/10
+ * Copyright (c) 2019 donmor
+ */
+
 package indi.donmor.tiddloid;
 
 import android.Manifest;
@@ -8,8 +14,11 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.MatrixCursor;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.PixelFormat;
+import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -64,6 +73,7 @@ import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.InputStream;
+import java.io.OutputStream;
 import java.lang.reflect.Method;
 import java.net.HttpURLConnection;
 import java.net.URL;
@@ -73,8 +83,8 @@ import java.util.UUID;
 import indi.donmor.tiddloid.utils.NoLeakHandler;
 import indi.donmor.tiddloid.utils.TLSSocketFactory;
 
-import com.github.donmor3000.filedialog.lib.FileDialog;
-import com.github.donmor3000.filedialog.lib.FileDialogFilter;
+import com.github.donmor.filedialog.lib.FileDialog;
+import com.github.donmor.filedialog.lib.FileDialogFilter;
 
 import javax.net.ssl.HttpsURLConnection;
 
@@ -82,13 +92,14 @@ public class MainActivity extends AppCompatActivity {
 	private RecyclerView rvWikiList;
 	private TextView noWiki;
 	private WikiListAdapter wikiListAdapter;
-	public static JSONObject db;
+	private JSONObject db;
 
 	// CONSTANT
 	static final FileDialogFilter[] HTML_FILTERS = {new FileDialogFilter(".html;.htm", new String[]{".html", ".htm"})};
 	static final String SCHEME_BLOB_B64 = "blob-b64",
 			BACKUP_DIRECTORY_PATH_PREFIX = "_backup",
 			KEY_NAME = "name",
+			KEY_FAVICON = "favicon",
 			KEY_ID = "id",
 			KEY_URL = "url",
 			DB_FILE_NAME = "data.json",
@@ -222,7 +233,6 @@ public class MainActivity extends AppCompatActivity {
 					for (int i = 0; i < ep; i++) {
 						if (db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(KEY_ID).equals(id)) {
 							vp = db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(DB_KEY_PATH);
-//							mp = i;
 							break;
 						}
 						mp++;
@@ -266,7 +276,7 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onItemLongClick(final int position) {
 				try {
-					final JSONObject wikiData = MainActivity.db.getJSONArray(DB_KEY_WIKI).getJSONObject(position);
+					final JSONObject wikiData = db.getJSONArray(DB_KEY_WIKI).getJSONObject(position);
 					View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.wikiconfig_dialog, null);
 					final Button btnWikiConfigPath = view.findViewById(R.id.btnWikiConfigPath);
 					btnWikiConfigPath.setText(wikiData.getString(DB_KEY_PATH));
@@ -291,6 +301,22 @@ public class MainActivity extends AppCompatActivity {
 								}
 							})
 							.create();
+					FileInputStream is = null;
+					try {
+						is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), wikiListAdapter.getId(position)));
+						Bitmap icon = BitmapFactory.decodeStream(is);
+						if (icon != null)
+							wikiConfigDialog.setIcon(new BitmapDrawable(getResources(), icon));
+					} catch (Exception e) {
+						e.printStackTrace();
+					} finally {
+						if (is != null) try {
+							is.close();
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+					}
+
 					final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
 					backupListAdapter.setOnBtnClickListener(new BackupListAdapter.BtnClickListener() {
 						@Override
@@ -306,9 +332,11 @@ public class MainActivity extends AppCompatActivity {
 												.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 													@Override
 													public void onClick(DialogInterface dialog, int which) {
+														FileInputStream is = null;
+														FileOutputStream os = null;
 														try {
-															FileInputStream is = new FileInputStream(f);
-															FileOutputStream os = new FileOutputStream(new File(btnWikiConfigPath.getText().toString()));
+															is = new FileInputStream(f);
+															os = new FileOutputStream(new File(btnWikiConfigPath.getText().toString()));
 															int len = is.available();
 															int length, lengthTotal = 0;
 															byte[] b = new byte[512];
@@ -316,9 +344,7 @@ public class MainActivity extends AppCompatActivity {
 																os.write(b, 0, length);
 																lengthTotal += length;
 															}
-															is.close();
 															os.flush();
-															os.close();
 															if (lengthTotal != len)
 																throw new Exception();
 															wikiConfigDialog.dismiss();
@@ -327,6 +353,19 @@ public class MainActivity extends AppCompatActivity {
 														} catch (Exception e) {
 															e.printStackTrace();
 															Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
+														} finally {
+															if (is != null)
+																try {
+																	is.close();
+																} catch (Exception e) {
+																	e.printStackTrace();
+																}
+															if (os != null)
+																try {
+																	os.close();
+																} catch (Exception e) {
+																	e.printStackTrace();
+																}
 														}
 													}
 												})
@@ -391,8 +430,8 @@ public class MainActivity extends AppCompatActivity {
 							File lastDir = Environment.getExternalStorageDirectory();
 							boolean showHidden = false;
 							try {
-								lastDir = new File(MainActivity.db.getString(DB_KEY_LAST_DIR));
-								showHidden = MainActivity.db.getBoolean(DB_KEY_SHOW_HIDDEN);
+								lastDir = new File(db.getString(DB_KEY_LAST_DIR));
+								showHidden = db.getBoolean(DB_KEY_SHOW_HIDDEN);
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
@@ -472,7 +511,6 @@ public class MainActivity extends AppCompatActivity {
 															@Override
 															public boolean accept(File pathname) {
 																return pathname.exists() && pathname.isDirectory() && pathname.getName().equals(f.getName() + BACKUP_DIRECTORY_PATH_PREFIX);
-//																return pathname.exists() && pathname.isDirectory() && pathname.getName().equals(BACKUP_DIRECTORY_PATH.replace(BACKUP_DIRECTORY_PATH_REPLACE_TGT, f.getName()));
 															}
 														});
 														for (File fb : fbx)
@@ -567,19 +605,21 @@ public class MainActivity extends AppCompatActivity {
 				File lastDir = Environment.getExternalStorageDirectory();
 				boolean showHidden = false;
 				try {
-					lastDir = new File(MainActivity.db.getString(DB_KEY_LAST_DIR));
-					showHidden = MainActivity.db.getBoolean(DB_KEY_SHOW_HIDDEN);
+					lastDir = new File(db.getString(DB_KEY_LAST_DIR));
+					showHidden = db.getBoolean(DB_KEY_SHOW_HIDDEN);
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
 				FileDialog.fileSave(MainActivity.this, lastDir, HTML_FILTERS, showHidden, new FileDialog.OnFileTouchedListener() {
 					@Override
 					public void onFileTouched(File[] files) {
+						FileInputStream is = null;
+						FileOutputStream os = null;
 						try {
 							if (files != null && files.length > 0 && files[0] != null) {
 								File file = files[0];
-								FileInputStream is = new FileInputStream(template);
-								FileOutputStream os = new FileOutputStream(file);
+								is = new FileInputStream(template);
+								os = new FileOutputStream(file);
 								int len = is.available();
 								int length, lengthTotal = 0;
 								byte[] b = new byte[512];
@@ -587,9 +627,7 @@ public class MainActivity extends AppCompatActivity {
 									os.write(b, 0, length);
 									lengthTotal += length;
 								}
-								is.close();
 								os.flush();
-								os.close();
 								if (lengthTotal != len) throw new Exception();
 								String id = genId();
 								try {
@@ -625,6 +663,19 @@ public class MainActivity extends AppCompatActivity {
 						} catch (Exception e) {
 							e.printStackTrace();
 							Toast.makeText(MainActivity.this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+						} finally {
+							if (is != null)
+								try {
+									is.close();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							if (os != null)
+								try {
+									os.close();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
 						}
 					}
 
@@ -678,8 +729,8 @@ public class MainActivity extends AppCompatActivity {
 			File lastDir = Environment.getExternalStorageDirectory();
 			boolean showHidden = false;
 			try {
-				lastDir = new File(MainActivity.db.getString(DB_KEY_LAST_DIR));
-				showHidden = MainActivity.db.getBoolean(DB_KEY_SHOW_HIDDEN);
+				lastDir = new File(db.getString(DB_KEY_LAST_DIR));
+				showHidden = db.getBoolean(DB_KEY_SHOW_HIDDEN);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -801,8 +852,6 @@ public class MainActivity extends AppCompatActivity {
 					MatrixCursor c = (MatrixCursor) view.getSuggestionsAdapter().getItem(position);
 					String res = c.getString(c.getColumnIndex(MainActivity.KEY_NAME));
 					boolean direct = c.getString(c.getColumnIndex(KEY_DIRECT)).length() == 0;
-					System.out.println(res);
-					System.out.println(direct);
 					String vScheme = Uri.parse(res).getScheme();
 					Intent in = new Intent();
 					Bundle bu = new Bundle();
@@ -850,13 +899,11 @@ public class MainActivity extends AppCompatActivity {
 									try {
 										switch (se) {
 											case "Google":
-//												se = getResources().getString(R.string.google);
 												List<String> attrs = Jsoup.connect(getResources().getString(R.string.su_google).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().getElementsByTag(KEY_SUGGESTION).eachAttr(KEY_DATA);
 												String[] vGoogle = attrs.toArray(new String[0]);
 												data.putStringArray(KEY_SUG, vGoogle);
 												break;
 											case "Bing":
-//												se = getResources().getString(R.string.bing);
 												res = Jsoup.connect(getResources().getString(R.string.su_bing).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().body().html();
 												JSONArray arrayBing = new JSONObject(res).getJSONObject(KEY_AS).getJSONArray(KEY_RESULTS).getJSONObject(0).getJSONArray(KEY_SUGGESTS);
 												int k = arrayBing.length();
@@ -866,15 +913,12 @@ public class MainActivity extends AppCompatActivity {
 												data.putStringArray(KEY_SUG, vBing);
 												break;
 											case "Baidu":
-//												se = getResources().getString(R.string.baidu);
 												res = Jsoup.connect(getResources().getString(R.string.su_baidu).replace(getResources().getString(R.string.su_arg), newText)).get().body().html();
 												array = new JSONObject(res.substring(res.indexOf('(') + 1, res.lastIndexOf(')'))).getJSONArray(KEY_S);
 												break;
 											case "Sogou":
-//												se = getResources().getString(R.string.sogou);
 												res = Jsoup.connect(getResources().getString(R.string.su_sogou).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().body().html();
 												array = new JSONObject(STR_EMPTY + '{' + '"' + 's' + '"' + ':' + res.substring(res.indexOf('['), res.lastIndexOf(']') + 1) + '}').getJSONArray(KEY_S).getJSONArray(1);
-//												array = new JSONObject("{\"s\":" + res.substring(res.indexOf('['), res.lastIndexOf(']') + 1) + '}').getJSONArray(KEY_S).getJSONArray(1);
 												break;
 										}
 									} catch (Exception e) {
@@ -1067,44 +1111,6 @@ public class MainActivity extends AppCompatActivity {
 					else ok.setEnabled(true);
 				}
 			});
-
-			//			if (Build.VERSION.SDK_INT >= 26) {
-//			try {
-////				Bitmap bitmap = BitmapFactory.decodeResource(getResources(),R.mipmap.ic_launcher,null);
-//				Bitmap bitmap = null;
-//				Drawable drawable = getResources().getDrawable(R.mipmap.ic_splash,getTheme());
-//				if (drawable instanceof BitmapDrawable) {
-////					return ((BitmapDrawable) drawable).getBitmap();
-//				} else if (drawable instanceof AdaptiveIconDrawable) {
-//					Drawable backgroundDr = ((AdaptiveIconDrawable) drawable).getBackground();
-//					Drawable foregroundDr = ((AdaptiveIconDrawable) drawable).getForeground();
-//
-//					Drawable[] drr = new Drawable[2];
-//					drr[0] = backgroundDr;
-//					drr[1] = foregroundDr;
-//
-//					LayerDrawable layerDrawable = new LayerDrawable(drr);
-//
-//					int width = layerDrawable.getIntrinsicWidth();
-//					int height = layerDrawable.getIntrinsicHeight();
-//
-//					bitmap = Bitmap.createBitmap(width, height, Bitmap.Config.ARGB_8888);
-//
-//					Canvas canvas = new Canvas(bitmap);
-//
-//					layerDrawable.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
-//					layerDrawable.draw(canvas);
-//
-////					return bitmap;
-//				}
-//System.out.println(bitmap.getByteCount());
-//System.out.println(bitmap.getWidth());
-//System.out.println(bitmap.getHeight());
-//				FileOutputStream fileOutputStream = new FileOutputStream(new File("/sdcard/icon0.png"));
-//				bitmap.compress(Bitmap.CompressFormat.PNG,100,fileOutputStream);
-//				fileOutputStream.flush();
-//				fileOutputStream.close();
-
 			return true;
 		}
 		return super.onOptionsItemSelected(item);
@@ -1132,7 +1138,6 @@ public class MainActivity extends AppCompatActivity {
 							}
 						else i++;
 					} while (i < db.getJSONArray(DB_KEY_WIKI).length());
-				System.out.println(db.toString(2));
 			}
 			writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
 			wikiListAdapter.reload(db);
@@ -1150,29 +1155,45 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	private static JSONObject readJson(FileInputStream is) {
+	static JSONObject readJson(FileInputStream is) {
+		byte[] b;
+		JSONObject jsonObject = null;
 		try {
-			byte[] b = new byte[is.available()];
+			b = new byte[is.available()];
 			if (is.read(b) < 0) throw new Exception();
-			is.close();
-			return new JSONObject(new String(b));
+			jsonObject = new JSONObject(new String(b));
 		} catch (Exception e) {
 			e.printStackTrace();
+		} finally {
+			if (is != null)
+				try {
+					is.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
-		return null;
+		return jsonObject;
 	}
 
-	public static boolean writeJson(FileOutputStream os, JSONObject vdb) {
+	static boolean writeJson(FileOutputStream os, JSONObject vdb) {
+		boolean v;
 		try {
 			byte[] b = vdb.toString(2).getBytes();
 			os.write(b);
 			os.flush();
-			os.close();
+			v = true;
 		} catch (Exception e) {
 			e.printStackTrace();
-			return false;
+			v = false;
+		} finally {
+			if (os != null)
+				try {
+					os.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 		}
-		return true;
+		return v;
 	}
 
 	@TargetApi(23)
@@ -1196,7 +1217,6 @@ public class MainActivity extends AppCompatActivity {
 			if (c == null || c.length() == 0) {
 				Element ele2 = doc.getElementsByAttributeValue(KEY_ID, context.getResources().getString(R.string.version_area)).first();
 				String js = ele2 != null ? ele2.html().substring(ele2.html().indexOf(context.getResources().getString(R.string.get_tw_ver_pref1)), ele2.html().indexOf(context.getResources().getString(R.string.get_tw_ver_pref2)) + 2) : null;
-				System.out.println(js);
 				if (js != null) {
 					org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
 					rhino.setOptimizationLevel(-1);
@@ -1215,7 +1235,6 @@ public class MainActivity extends AppCompatActivity {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		System.out.println(v);
 		if (c != null && c.equals(context.getResources().getString(R.string.tiddlywiki)))
 			return v ? 2 : 1;
 		return 0;
@@ -1259,7 +1278,7 @@ public class MainActivity extends AppCompatActivity {
 	private String wSearch(String arg) {
 		String ws = getResources().getString(R.string.s_google).replace(getResources().getString(R.string.s_arg), arg);
 		try {
-			String se = MainActivity.db.getString(DB_KEY_SEARCH_ENGINE);
+			String se = db.getString(DB_KEY_SEARCH_ENGINE);
 			switch (se) {
 				case "Google":
 					ws = getResources().getString(R.string.s_google).replace(getResources().getString(R.string.s_arg), arg);
@@ -1274,7 +1293,7 @@ public class MainActivity extends AppCompatActivity {
 					ws = getResources().getString(R.string.s_sogou).replace(getResources().getString(R.string.s_arg), arg);
 					break;
 				case "Custom":
-					ws = MainActivity.db.getString(DB_KEY_CSE).replace(getResources().getString(R.string.s_arg), arg);
+					ws = db.getString(DB_KEY_CSE).replace(getResources().getString(R.string.s_arg), arg);
 					break;
 			}
 		} catch (Exception e) {
@@ -1317,9 +1336,9 @@ public class MainActivity extends AppCompatActivity {
 					if (msg != null) {
 						Bundle data = msg.getData();
 						if (data != null) {
-							String toast = data.getString(KEY_TOAST);
+							int toast = data.getInt(KEY_TOAST, -1);
 							String filepath = data.getString(KEY_FILEPATH);
-							if (toast != null)
+							if (toast != -1)
 								Toast.makeText(parent, toast, Toast.LENGTH_SHORT).show();
 							if (data.getBoolean(KEY_COMPLETE) && filepath != null && listener != null)
 								listener.onDownloadComplete(new File(filepath));
@@ -1334,10 +1353,11 @@ public class MainActivity extends AppCompatActivity {
 				public void run() {
 					Message msg;
 					Bundle bundle = new Bundle();
+					InputStream is = null, is2 = null;
+					OutputStream os = null, os2 = null;
 					try {
 						final HttpURLConnection httpURLConnection;
 						int len;
-						InputStream is;
 						if (uriX.getScheme() != null && uriX.getScheme().equals(SCHEME_BLOB_B64)) {
 							String b64 = uriX.getSchemeSpecificPart();
 							byte[] bytes = Base64.decode(b64, Base64.NO_PADDING);
@@ -1357,24 +1377,22 @@ public class MainActivity extends AppCompatActivity {
 							len = httpURLConnection.getContentLength();
 							is = httpURLConnection.getInputStream();
 						}
-						FileOutputStream os = new FileOutputStream(cacheFile);
-						FileOutputStream os2 = new FileOutputStream(dest);
+						os = new FileOutputStream(cacheFile);
+						os2 = new FileOutputStream(dest);
 						int length;
 						int lengthTotal = 0;
 						byte[] bytes = new byte[128];
 						if (!noToast) {
-							bundle.putString(KEY_TOAST, parent.getResources().getString(R.string.downloading));
+							bundle.putInt(KEY_TOAST, R.string.downloading);
 							msg = new Message();
 							msg.setData(bundle);
 							handler.sendMessage(msg);
 						}
 						Notification notification;
-						System.out.println(len);
 						while ((length = is.read(bytes)) != -1) {
 							os.write(bytes, 0, length);
 							lengthTotal += length;
 							int p = Math.round((float) lengthTotal / (float) len * 100);
-							System.out.println(lengthTotal);
 							if (!noNotification) {
 								notification = new NotificationCompat.Builder(parent, id)
 										.setSmallIcon(R.drawable.ic_download)
@@ -1388,9 +1406,7 @@ public class MainActivity extends AppCompatActivity {
 							}
 
 						}
-						is.close();
 						os.flush();
-						os.close();
 						if (len > 0 && lengthTotal < len || checker != null && checker.checkNg(cacheFile))
 							throw new Exception();
 						if (!noNotification) {
@@ -1403,20 +1419,18 @@ public class MainActivity extends AppCompatActivity {
 									.build();
 							NotificationManagerCompat.from(parent).notify(id, idt, notification);
 						}
-						FileInputStream is2 = new FileInputStream(cacheFile);
+						is2 = new FileInputStream(cacheFile);
 						byte[] b2 = new byte[512];
 						int l2, lt2 = 0;
 						while ((l2 = is2.read(b2)) != -1) {
 							os2.write(b2, 0, l2);
 							lt2 += l2;
 						}
-						is.close();
 						os2.flush();
-						os2.close();
 						if (lt2 != lengthTotal) throw new Exception();
 						if (!noNotification) NotificationManagerCompat.from(parent).cancel(id, idt);
 						if (!noToast)
-							bundle.putString(KEY_TOAST, parent.getResources().getString(R.string.download_complete));
+							bundle.putInt(KEY_TOAST, R.string.download_complete);
 						bundle.putBoolean(KEY_COMPLETE, true);
 						bundle.putString(KEY_FILEPATH, dest.getAbsolutePath());
 						msg = new Message();
@@ -1426,13 +1440,38 @@ public class MainActivity extends AppCompatActivity {
 					} catch (Exception e) {
 						e.printStackTrace();
 						if (!noToast) {
-							bundle.putString(KEY_TOAST, parent.getResources().getString(R.string.download_failed));
+							bundle.putInt(KEY_TOAST, R.string.download_failed);
 						}
 						bundle.putBoolean(KEY_FAILED, true);
 						msg = new Message();
 						msg.setData(bundle);
 						handler.sendMessage(msg);
 						cacheFile.delete();
+					} finally {
+						if (is != null)
+							try {
+								is.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						if (os != null)
+							try {
+								os.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						if (is2 != null)
+							try {
+								is2.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+						if (os2 != null)
+							try {
+								os2.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
 					}
 				}
 
@@ -1440,7 +1479,7 @@ public class MainActivity extends AppCompatActivity {
 			}).start();
 		} catch (Exception e) {
 			e.printStackTrace();
-			Toast.makeText(parent, parent.getResources().getString(R.string.download_failed), Toast.LENGTH_SHORT).show();
+			Toast.makeText(parent, R.string.download_failed, Toast.LENGTH_SHORT).show();
 		}
 	}
 }
