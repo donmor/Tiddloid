@@ -36,10 +36,11 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
-import android.text.Html;
 import android.text.InputType;
+import android.text.SpannableString;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
+import android.text.util.Linkify;
 import android.util.Base64;
 import android.view.View;
 import android.view.LayoutInflater;
@@ -55,7 +56,6 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.ScrollView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
@@ -115,8 +115,22 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_SEARCH_ENGINE = "searchEngine",
 			KEY_APPLICATION_NAME = "application-name",
 			KEY_CONTENT = "content",
+			KEY_VERSION = "version",
+			KEY_VERSION_AREA = "versionArea",
+			KEY_TITLE = "title",
+			KEY_MAJOR = "major",
+			SE_GOOGLE = "Google",
+			SE_BING = "Bing",
+			SE_BAIDU = "Baidu",
+			SE_SOGOU = "Sogou",
+			SE_CUSTOM = "Custom",
+			PREF_VER_1 = "var version",
+			PREF_VER_2 = "};",
+			PREF_S = "%s",
+			PREF_SU = "#content#",
 			SCHEME_WITH_SLASHES_HTTP = "http://",
 			TEMPLATE_FILE_NAME = "template.html",
+			CHARSET_DEFAULT = "UTF-8",
 			CLASS_MENU_BUILDER = "MenuBuilder",
 			METHOD_SET_OPTIONAL_ICONS_VISIBLE = "setOptionalIconsVisible";
 
@@ -252,7 +266,6 @@ public class MainActivity extends AppCompatActivity {
 						final int p = mp;
 						new AlertDialog.Builder(MainActivity.this)
 								.setTitle(android.R.string.dialog_alert_title)
-								.setIcon(R.drawable.ic_warning)
 								.setMessage(R.string.confirm_to_auto_remove_wiki)
 								.setNegativeButton(android.R.string.no, null)
 								.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
@@ -494,7 +507,6 @@ public class MainActivity extends AppCompatActivity {
 							});
 							AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(wikiConfigDialog.getContext())
 									.setTitle(android.R.string.dialog_alert_title)
-									.setIcon(R.drawable.ic_warning)
 									.setMessage(R.string.confirm_to_remove_wiki)
 									.setView(view1)
 									.setNegativeButton(android.R.string.cancel, null)
@@ -903,14 +915,14 @@ public class MainActivity extends AppCompatActivity {
 									String ses = null;
 									try {
 										switch (se) {
-											case "Google":
-												List<String> attrs = Jsoup.connect(getResources().getString(R.string.su_google).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().getElementsByTag(KEY_SUGGESTION).eachAttr(KEY_DATA);
+											case SE_GOOGLE:
+												List<String> attrs = Jsoup.connect(getResources().getString(R.string.su_google).replace(PREF_SU, newText)).ignoreContentType(true).get().getElementsByTag(KEY_SUGGESTION).eachAttr(KEY_DATA);
 												String[] vGoogle = attrs.toArray(new String[0]);
 												data.putStringArray(KEY_SUG, vGoogle);
 												ses = getResources().getString(R.string.google);
 												break;
-											case "Bing":
-												res = Jsoup.connect(getResources().getString(R.string.su_bing).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().body().html();
+											case SE_BING:
+												res = Jsoup.connect(getResources().getString(R.string.su_bing).replace(PREF_SU, newText)).ignoreContentType(true).get().body().html();
 												JSONArray arrayBing = new JSONObject(res).getJSONObject(KEY_AS).getJSONArray(KEY_RESULTS).getJSONObject(0).getJSONArray(KEY_SUGGESTS);
 												int k = arrayBing.length();
 												String[] vBing = new String[k];
@@ -919,13 +931,13 @@ public class MainActivity extends AppCompatActivity {
 												data.putStringArray(KEY_SUG, vBing);
 												ses = getResources().getString(R.string.bing);
 												break;
-											case "Baidu":
-												res = Jsoup.connect(getResources().getString(R.string.su_baidu).replace(getResources().getString(R.string.su_arg), newText)).get().body().html();
+											case SE_BAIDU:
+												res = Jsoup.connect(getResources().getString(R.string.su_baidu).replace(PREF_SU, newText)).get().body().html();
 												array = new JSONObject(res.substring(res.indexOf('(') + 1, res.lastIndexOf(')'))).getJSONArray(KEY_S);
 												ses = getResources().getString(R.string.baidu);
 												break;
-											case "Sogou":
-												res = Jsoup.connect(getResources().getString(R.string.su_sogou).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().body().html();
+											case SE_SOGOU:
+												res = Jsoup.connect(getResources().getString(R.string.su_sogou).replace(PREF_SU, newText)).ignoreContentType(true).get().body().html();
 												array = new JSONObject(STR_EMPTY + '{' + '"' + 's' + '"' + ':' + res.substring(res.indexOf('['), res.lastIndexOf(']') + 1) + '}').getJSONArray(KEY_S).getJSONArray(1);
 												ses = getResources().getString(R.string.sogou);
 												break;
@@ -967,19 +979,19 @@ public class MainActivity extends AppCompatActivity {
 			try {
 				String seStr = db.getString(DB_KEY_SEARCH_ENGINE);
 				switch (seStr) {
-					case "Google":
+					case SE_GOOGLE:
 						spnSE.setSelection(0);
 						break;
-					case "Bing":
+					case SE_BING:
 						spnSE.setSelection(1);
 						break;
-					case "Baidu":
+					case SE_BAIDU:
 						spnSE.setSelection(2);
 						break;
-					case "Sogou":
+					case SE_SOGOU:
 						spnSE.setSelection(3);
 						break;
-					case "Custom":
+					case SE_CUSTOM:
 						spnSE.setSelection(4);
 						break;
 				}
@@ -1005,22 +1017,22 @@ public class MainActivity extends AppCompatActivity {
 						@Override
 						public void onClick(DialogInterface dialog, int which) {
 							try {
-								String vse = getResources().getString(R.string.se_google);
+								String vse = SE_GOOGLE;
 								switch (spnSE.getSelectedItemPosition()) {
 									case 0:
-										vse = getResources().getString(R.string.se_google);
+										vse = SE_GOOGLE;
 										break;
 									case 1:
-										vse = getResources().getString(R.string.se_bing);
+										vse = SE_BING;
 										break;
 									case 2:
-										vse = getResources().getString(R.string.se_baidu);
+										vse = SE_BAIDU;
 										break;
 									case 3:
-										vse = getResources().getString(R.string.se_sogou);
+										vse = SE_SOGOU;
 										break;
 									case 4:
-										vse = getResources().getString(R.string.se_custom);
+										vse = SE_CUSTOM;
 										break;
 								}
 								db.put(DB_KEY_SEARCH_ENGINE, vse);
@@ -1122,19 +1134,14 @@ public class MainActivity extends AppCompatActivity {
 			});
 			return true;
 		} else if (id == R.id.action_about) {
-			ScrollView scrollView = new ScrollView(this);
-			TextView view = new TextView(scrollView.getContext());
-			int padding = (int) (getResources().getDisplayMetrics().density * 20);
-			view.setPadding(padding, padding, padding, padding);
-			view.setLinksClickable(true);
-			view.setMovementMethod(LinkMovementMethod.getInstance());
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) view.setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
-			view.setText(Html.fromHtml(getResources().getString(R.string.about)));
-			scrollView.addView(view);
-			new AlertDialog.Builder(this)
+			final SpannableString spannableString = new SpannableString(getResources().getString(R.string.about));
+			Linkify.addLinks(spannableString,Linkify.ALL);
+			final AlertDialog aboutDialog = new AlertDialog.Builder(this)
 					.setTitle(R.string.action_about)
-					.setView(scrollView)
+					.setMessage(spannableString)
 					.show();
+			((TextView)aboutDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) ((TextView)aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -1234,20 +1241,20 @@ public class MainActivity extends AppCompatActivity {
 		String c = null;
 		boolean v = false;
 		try {
-			Document doc = Jsoup.parse(file, context.getResources().getString(R.string.default_charset));
-			Element ele = doc.getElementsByAttributeValue(context.getResources().getString(R.string.name), KEY_APPLICATION_NAME).first();
+			Document doc = Jsoup.parse(file, CHARSET_DEFAULT);
+			Element ele = doc.getElementsByAttributeValue(KEY_NAME, KEY_APPLICATION_NAME).first();
 			c = ele != null ? ele.attributes().get(KEY_CONTENT) : null;
 			if (c == null || c.length() == 0) {
-				Element ele2 = doc.getElementsByAttributeValue(KEY_ID, context.getResources().getString(R.string.version_area)).first();
-				String js = ele2 != null ? ele2.html().substring(ele2.html().indexOf(context.getResources().getString(R.string.get_tw_ver_pref1)), ele2.html().indexOf(context.getResources().getString(R.string.get_tw_ver_pref2)) + 2) : null;
+				Element ele2 = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
+				String js = ele2 != null ? ele2.html().substring(ele2.html().indexOf(PREF_VER_1), ele2.html().indexOf(PREF_VER_2) + 2) : null;
 				if (js != null) {
 					org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
 					rhino.setOptimizationLevel(-1);
 					try {
 						Scriptable scope = rhino.initStandardObjects();
 						rhino.evaluateString(scope, js, context.getResources().getString(R.string.app_name), 1, null);
-						c = (String) ((Scriptable) scope.get(context.getResources().getString(R.string.version), scope)).get(context.getResources().getString(R.string.title), scope);
-						v = c.equals(context.getResources().getString(R.string.tiddlywiki)) && ((Scriptable) scope.get(context.getResources().getString(R.string.version), scope)).get(context.getResources().getString(R.string.major), scope) != UniqueTag.NOT_FOUND;
+						c = (String) ((Scriptable) scope.get(KEY_VERSION, scope)).get(KEY_TITLE, scope);
+						v = c.equals(context.getResources().getString(R.string.tiddlywiki)) && ((Scriptable) scope.get(KEY_VERSION, scope)).get(KEY_MAJOR, scope) != UniqueTag.NOT_FOUND;
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
@@ -1299,24 +1306,24 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private String wSearch(String arg) {
-		String ws = getResources().getString(R.string.s_google).replace(getResources().getString(R.string.s_arg), arg);
+		String ws = getResources().getString(R.string.s_google).replace(PREF_S, arg);
 		try {
 			String se = db.getString(DB_KEY_SEARCH_ENGINE);
 			switch (se) {
-				case "Google":
-					ws = getResources().getString(R.string.s_google).replace(getResources().getString(R.string.s_arg), arg);
+				case SE_GOOGLE:
+					ws = getResources().getString(R.string.s_google).replace(PREF_S, arg);
 					break;
-				case "Bing":
-					ws = getResources().getString(R.string.s_bing).replace(getResources().getString(R.string.s_arg), arg);
+				case SE_BING:
+					ws = getResources().getString(R.string.s_bing).replace(PREF_S, arg);
 					break;
-				case "Baidu":
-					ws = getResources().getString(R.string.s_baidu).replace(getResources().getString(R.string.s_arg), arg);
+				case SE_BAIDU:
+					ws = getResources().getString(R.string.s_baidu).replace(PREF_S, arg);
 					break;
-				case "Sogou":
-					ws = getResources().getString(R.string.s_sogou).replace(getResources().getString(R.string.s_arg), arg);
+				case SE_SOGOU:
+					ws = getResources().getString(R.string.s_sogou).replace(PREF_S, arg);
 					break;
-				case "Custom":
-					ws = db.getString(DB_KEY_CSE).replace(getResources().getString(R.string.s_arg), arg);
+				case SE_CUSTOM:
+					ws = db.getString(DB_KEY_CSE).replace(PREF_S, arg);
 					break;
 			}
 		} catch (Exception e) {

@@ -1,7 +1,7 @@
 <resources>
     <string name="app_name" translatable="false">Tiddloid</string>
     <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
-    <string name="default_charset" translatable="false">UTF-8</string>
+    <!--<string name="default_charset" translatable="false">UTF-8</string>-->
     <!--JS-->
     <string name="js_save" translatable="false">
         var appName = typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\" ? version.title : undefined;
@@ -77,15 +77,15 @@
     <string name="icon" translatable="false">icon</string>
     <string name="rollback" translatable="false">rollback</string>
     <string name="del_backup" translatable="false">del_backup</string>
-    <string name="name" translatable="false">name</string>
-    <string name="version_area" translatable="false">versionArea</string>
-    <string name="version" translatable="false">version</string>
-    <string name="title" translatable="false">title</string>
-    <string name="major" translatable="false">major</string>
-    <string name="get_tw_ver_pref1" translatable="false">var version</string>
-    <string name="get_tw_ver_pref2" translatable="false">};</string>
-    <string name="blob_str" translatable="false">$blob$</string>
-    <string name="dest_str" translatable="false">$dest$</string>
+    <!--<string name="name" translatable="false">name</string>-->
+    <!--<string name="version_area" translatable="false">versionArea</string>-->
+    <!--<string name="version" translatable="false">version</string>-->
+    <!--<string name="title" translatable="false">title</string>-->
+    <!--<string name="major" translatable="false">major</string>-->
+    <!--<string name="get_tw_ver_pref1" translatable="false">var version</string>-->
+    <!--<string name="get_tw_ver_pref2" translatable="false">};</string>-->
+    <!--<string name="blob_str" translatable="false">$blob$</string>-->
+    <!--<string name="dest_str" translatable="false">$dest$</string>-->
     <!--JSON and Settings-->
     <string name="default_se">Google</string>
     <string name="template_repo">https://tiddlywiki.com/empty.html</string>
@@ -93,21 +93,21 @@
     <string name="mark_Go" translatable="false">&#127760;</string>
     <string name="mark_Search" translatable="false">&#128269;</string>
     <string name="mark_Return" translatable="false">&#9166;</string>
-    <string name="se_google" translatable="false">Google</string>
-    <string name="se_bing" translatable="false">Bing</string>
-    <string name="se_baidu" translatable="false">Baidu</string>
-    <string name="se_sogou" translatable="false">Sogou</string>
-    <string name="se_custom" translatable="false">Custom</string>
+    <!--<string name="se_google" translatable="false">Google</string>-->
+    <!--<string name="se_bing" translatable="false">Bing</string>-->
+    <!--<string name="se_baidu" translatable="false">Baidu</string>-->
+    <!--<string name="se_sogou" translatable="false">Sogou</string>-->
+    <!--<string name="se_custom" translatable="false">Custom</string>-->
     <string name="s_google" translatable="false">https://www.google.com/search?q=%s</string>
     <string name="s_bing" translatable="false">https://www.bing.com/search?q=%s</string>
     <string name="s_baidu" translatable="false">https://www.baidu.com/s?wd=%s</string>
     <string name="s_sogou" translatable="false">https://www.sogou.com/web?query=%s</string>
-    <string name="s_arg" translatable="false">%s</string>
+    <!--<string name="s_arg" translatable="false">%s</string>-->
     <string name="su_google" translatable="false">http://suggestqueries.google.com/complete/search?output=toolbar&amp;q=#content#</string>
     <string name="su_bing" translatable="false">http://api.bing.com/qsonhs.aspx?q=#content#</string>
     <string name="su_baidu" translatable="false">http://suggestion.baidu.com/su?wd=#content#</string>
     <string name="su_sogou" translatable="false">https://www.sogou.com/suggnew/ajajjson?type=web&amp;key=#content#</string>
-    <string name="su_arg" translatable="false">#content#</string>
+    <!--<string name="su_arg" translatable="false">#content#</string>-->
     <!--UI-->
     <string name="action_new">New Wiki</string>
     <string name="action_import">Import a file</string>
@@ -163,8 +163,26 @@
     <string name="third_part_rising">The page is trying to start another application. Do you want to continue?</string>
     <string name="backup_deleted">Backup deleted</string>
     <string name="about">
-        Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere.&lt;br&gt;
-        This app is under GPL v2 license,
-        See &lt;a href=&quot;https://tiddlywiki.com/&quot;&gt;https://tiddlywiki.com/&lt;/a&gt; for more details of TiddlyWiki. And furthermore, for more details about this app, please visit&lt;a href=&quot;https://github.com/donmor/Tiddloid&quot;&gt;https://github.com/donmor/Tiddloid&lt;/a&gt;.&lt;br&gt;
+        Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down so that you can access them anywhere. For more details of TiddlyWiki, please see https://tiddlywiki.com/ .\n
+        \n
+        This app is under GPL v2 license,\n
+        (1)Commercial usage\n
+        (2)Modification\n
+        (3)Distribution\n
+        (4)Private usage\n
+        is permitted UNDER THESE CONDITIONS:\n
+        (1)Provide this license and copyright notice\n
+        (2)State changes\n
+        (3)Disclose source\n
+        (4)Under same license\n
+        \n
+        The completion of this app is inseparable from the help of these open source projects:\n
+        FileDialog - https://github.com/donmor/FileDialog ,\n
+        Json - https://json.org/ ,\n
+        Jsoup - https://jsoup.org/ ,\n
+        Rhino - https://developer.mozilla.org/Rhino .\n
+        License files provided with source codes.\n
+        \n
+        For more details about this app, please visit https://github.com/donmor/Tiddloid .
     </string>
 </resources>

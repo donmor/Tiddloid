@@ -57,4 +57,27 @@
 	<string name="third_part_rising">另一個應用程序將由此頁面打開。你想繼續嗎？</string>
 	<string name="backup_deleted">備份已刪除</string>
 	<string name="action_about">關於Tiddloid</string>
+	<string name="about">
+		Tiddloid是一款適用於本地存儲的TiddlyWiki的應用程序。一旦有了一些想法，您可以立即將它們寫下來，以便您可以隨時隨地訪問這些想法。有關TiddlyWiki的更多詳細信息，請參閱https://tiddlywiki.com/。 \n
+        \n
+        本應用程序遵循GPLv2許可發布，\n
+        （1）商業用途\n
+        （2）修改\n
+        （3）分發\n
+        （4）私人使用\n
+        在這些條件下是允許的:\n
+        （1）提供此許可和版權聲明\n
+        （2）聲明改動\n
+        （3）開放源代碼，\n
+        （4）使用相同的許可證\n
+        \n
+        本應用程序的完成離不開這些開源項目的幫助：\n
+        FileDialog - https://github.com/donmor/FileDialog ,\n
+        Json - https://json.org/ ,\n
+        Jsoup - https://jsoup.org/ ,\n
+        Rhino - https://developer.mozilla.org/Rhino .\n
+        許可證文件隨源代碼提供。 \n
+        \n
+        有關本應用程序的更多詳細信息，請訪問https://github.com/donmor/Tiddloid。
+	</string>
 </resources>

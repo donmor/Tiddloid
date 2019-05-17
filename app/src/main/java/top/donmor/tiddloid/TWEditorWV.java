@@ -77,7 +77,9 @@ public class TWEditorWV extends AppCompatActivity {
 			SCH_HTTPS = "https",
 			SCH_TEL = "tel",
 			SCH_MAILTO = "mailto",
-			SCH_JS = "javascript";
+			SCH_JS = "javascript",
+			PREF_BLOB = "$blob$",
+			PREF_DEST = "$dest$";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -553,31 +555,42 @@ public class TWEditorWV extends AppCompatActivity {
 			public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
 				Uri uri = Uri.parse(url);
 				String sch = uri.getScheme();
-				if (sch == null || sch.length() == 0 || wApp == null && (sch.equals(SCH_ABOUT) || sch.equals(SCH_HTTP) || sch.equals(SCH_HTTPS)))
+				boolean browse = sch != null && (sch.equals(SCH_ABOUT) || sch.equals(SCH_HTTP) || sch.equals(SCH_HTTPS));
+				if (sch == null || sch.length() == 0 || wApp == null && browse)
 					return false;
 				try {
-					if (sch.equals(SCH_TEL)) {
-						Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
-						view.getContext().startActivity(intent);
-					} else if (sch.equals(SCH_MAILTO)) {
-						Intent intent = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
-						view.getContext().startActivity(intent);
-					} else {
-						new AlertDialog.Builder(TWEditorWV.this)
-								.setTitle(android.R.string.dialog_alert_title)
-								.setMessage(R.string.third_part_rising)
-								.setNegativeButton(android.R.string.no, null)
-								.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										try {
-											Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-											view.getContext().startActivity(intent);
-										} catch (Exception e) {
-											e.printStackTrace();
+					switch (sch){
+						case SCH_TEL:
+							Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+							view.getContext().startActivity(intent);
+							break;
+						case SCH_MAILTO:
+							Intent intent2 = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
+							view.getContext().startActivity(intent2);
+							break;
+						case SCH_ABOUT:
+						case SCH_HTTP:
+						case SCH_HTTPS:
+							Intent intent3 = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+							view.getContext().startActivity(intent3);
+							break;
+						default:
+							new AlertDialog.Builder(TWEditorWV.this)
+									.setTitle(android.R.string.dialog_alert_title)
+									.setMessage(R.string.third_part_rising)
+									.setNegativeButton(android.R.string.no, null)
+									.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(DialogInterface dialog, int which) {
+											try {
+												Intent intent4 = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
+												view.getContext().startActivity(intent4);
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
 										}
-									}
-								}).show();
+									}).show();
+							break;
 					}
 				} catch (Exception e) {
 					e.printStackTrace();
@@ -637,7 +650,7 @@ public class TWEditorWV extends AppCompatActivity {
 						if (files != null && files.length > 0) {
 							String scheme = Uri.parse(url) != null ? Uri.parse(url).getScheme() : null;
 							if (scheme != null && scheme.equals(SCH_BLOB)) {
-								wv.loadUrl(SCH_JS + ':' + getResources().getString(R.string.js_blob).replace(getResources().getString(R.string.blob_str), url).replace(getResources().getString(R.string.dest_str), files[0].getAbsolutePath()));
+								wv.loadUrl(SCH_JS + ':' + getResources().getString(R.string.js_blob).replace(PREF_BLOB, url).replace(PREF_DEST, files[0].getAbsolutePath()));
 							} else
 								MainActivity.wGet(TWEditorWV.this, Uri.parse(url), files[0]);
 						}

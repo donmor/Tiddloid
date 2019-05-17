@@ -57,4 +57,27 @@
 	<string name="third_part_rising">このページから別のアプリケーションが開かれます。続行しますか？</string>
 	<string name="backup_deleted">バックアップを削除しました</string>
     <string name="action_about">Tiddloidについて</string>
+    <string name="about">
+		Tiddloidは、ローカルに保存されているTiddlyWikisを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めて、どこからでもこれらのアイデアにアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com/を参照してください。\n
+        \n
+        このアプリはGPLv2ライセンスの下でリリースされています、\n
+        （1）商用利用\n
+        （2）修正する\n
+        （3）配付\n
+        （4）私的使用\n
+        は、これらの条件で許可されています：\n
+        （1）このライセンスと著作権表示の提供\n
+        （2）変更の宣言\n
+        （3）同じライセンスを使用して\n
+        （4）ソースコードを公開します\n
+        \n
+        このアプリの完成は、これらのオープンソースプロジェクトの助けを借りることと不可分です：\n
+        FileDialog - https://github.com/donmor/FileDialog ,\n
+        Json - https://json.org/ ,\n
+        Jsoup - https://jsoup.org/ ,\n
+        Rhino - https://developer.mozilla.org/Rhino .\n
+        ライセンスファイルはソースコードとともに提供されます。\n
+        \n
+        このアプリの詳細については、https://github.com/donmor/Tiddloidをご覧ください。
+	</string>
 </resources>
