@@ -1,10 +1,10 @@
 /*
- * indi.donmor.tiddloid.WikiListAdapter <= [P|Tiddloid]
+ * top.donmor.tiddloid.WikiListAdapter <= [P|Tiddloid]
  * Last modified: 05:03:14 2019/05/07
  * Copyright (c) 2019 donmor
  */
 
-package indi.donmor.tiddloid;
+package top.donmor.tiddloid;
 
 import android.content.Context;
 import android.graphics.Bitmap;

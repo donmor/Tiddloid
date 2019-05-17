@@ -56,4 +56,5 @@
 	<string name="wiki_rolled_back_successfully">위키가 성공적으로 롤백되었습니다.</string>
 	<string name="third_part_rising">페이지가 다른 응용 프로그램을 열려고합니다. 계속 하시겠습니까?</string>
 	<string name="backup_deleted">백업이 삭제되었습니다.</string>
+    <string name="action_about">Tiddloid에 대하여</string>
 </resources>

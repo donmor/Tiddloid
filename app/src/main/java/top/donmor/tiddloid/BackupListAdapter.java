@@ -1,10 +1,10 @@
 /*
- * indi.donmor.tiddloid.BackupListAdapter <= [P|Tiddloid]
+ * top.donmor.tiddloid.BackupListAdapter <= [P|Tiddloid]
  * Last modified: 03:43:00 2019/05/07
  * Copyright (c) 2019 donmor
  */
 
-package indi.donmor.tiddloid;
+package top.donmor.tiddloid;
 
 import android.content.Context;
 import android.support.annotation.NonNull;
@@ -116,7 +116,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 		count = 0;
 		try {
 			String mfp = mf.getParentFile().getAbsolutePath(), mfn = mf.getName();
-			File mfd = new File(mfp +'/'+mfn+ MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
+			File mfd = new File(mfp + '/' + mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
 			if (mfd.isDirectory())
 				bk = sortFile(mfd.listFiles(new FileFilter() {
 					@Override
@@ -124,7 +124,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 						return MainActivity.isBackupFile(mf, pathname);
 					}
 				}), mfn.substring(0, mfn.indexOf('.')));
-			if (bk!=null)count = bk.length;
+			if (bk != null) count = bk.length;
 			JodaTimeAndroid.init(context);
 			dt = new long[count];
 			for (int i = 0; i < count; i++) {

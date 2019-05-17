@@ -28,7 +28,7 @@
 	<string name="show_hidden_files">顯示隱藏(.)文件</string>
 	<string name="template">模板</string>
 	<string name="update_template">更新模板</string>
-	<string name="e_g_cse">例如: google.com/search?q=％s</string>
+	<string name="e_g_cse">例如: google.com/search?q=%s</string>
 	<string name="ready_to_fork">已經準備好分叉這個Wiki。點擊“保存更改”繼續。</string>
 	<string name="failed">失敗</string>
 	<string name="cancelled">取消</string>
@@ -56,4 +56,5 @@
 	<string name="wiki_rolled_back_successfully">Wiki成功回滾</string>
 	<string name="third_part_rising">另一個應用程序將由此頁面打開。你想繼續嗎？</string>
 	<string name="backup_deleted">備份已刪除</string>
+	<string name="action_about">關於Tiddloid</string>
 </resources>

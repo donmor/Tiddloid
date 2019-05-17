@@ -1,10 +1,10 @@
 /*
- * indi.donmor.tiddloid.TWEditorWV <= [P|Tiddloid]
+ * top.donmor.tiddloid.TWEditorWV <= [P|Tiddloid]
  * Last modified: 18:33:05 2019/05/10
  * Copyright (c) 2019 donmor
  */
 
-package indi.donmor.tiddloid;
+package top.donmor.tiddloid;
 
 import android.annotation.TargetApi;
 import android.content.Context;

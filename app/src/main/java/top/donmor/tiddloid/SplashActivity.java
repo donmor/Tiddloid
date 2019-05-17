@@ -1,10 +1,10 @@
 /*
- * indi.donmor.tiddloid.SplashActivity <= [P|Tiddloid]
+ * top.donmor.tiddloid.SplashActivity <= [P|Tiddloid]
  * Last modified: 03:43:55 2019/05/07
  * Copyright (c) 2019 donmor
  */
 
-package indi.donmor.tiddloid;
+package top.donmor.tiddloid;
 
 import android.app.Activity;
 import android.app.Service;
@@ -38,6 +38,7 @@ public class SplashActivity extends Activity {
 			}
 		}, LOAD_DISPLAY_TIME);
 	}
+
 	public static class OnClearFromRecentService extends Service {
 
 		@Override

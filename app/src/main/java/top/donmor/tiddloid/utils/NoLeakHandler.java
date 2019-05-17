@@ -1,10 +1,10 @@
 /*
- * indi.donmor.tiddloid.utils.NoLeakHandler <= [P|Tiddloid]
+ * top.donmor.tiddloid.utils.NoLeakHandler <= [P|Tiddloid]
  * Last modified: 23:14:01 2019/04/22
  * Copyright (c) 2019 donmor
  */
 
-package indi.donmor.tiddloid.utils;
+package top.donmor.tiddloid.utils;
 
 import android.os.Handler;
 import android.os.Message;

@@ -56,4 +56,5 @@
 	<string name="wiki_rolled_back_successfully">Wiki restauré avec succès</string>
 	<string name="third_part_rising">La page tente de démarrer une autre application. Voulez-vous continuer?</string>
 	<string name="backup_deleted">Sauvegarde supprimée</string>
+    <string name="action_about">À propos de Tiddloid</string>
 </resources>

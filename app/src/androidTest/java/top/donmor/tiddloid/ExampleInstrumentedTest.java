@@ -1,4 +1,4 @@
-package indi.donmor.tiddloid;
+package top.donmor.tiddloid;
 
 import android.content.Context;
 import android.support.test.InstrumentationRegistry;
@@ -21,6 +21,6 @@ public class ExampleInstrumentedTest {
         // Context of the app under test.
         Context appContext = InstrumentationRegistry.getTargetContext();
 
-        assertEquals("indi.donmor.tiddloid", appContext.getPackageName());
+        assertEquals("top.donmor.tiddloid", appContext.getPackageName());
     }
 }

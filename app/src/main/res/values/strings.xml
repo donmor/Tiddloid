@@ -113,6 +113,7 @@
     <string name="action_import">Import a file</string>
     <string name="action_fork">Fork a website</string>
     <string name="action_settings">Settings</string>
+    <string name="action_about">About Tiddloid</string>
     <string name="there_is_no_wiki_here">There is nothing here</string>
     <string name="url">URL or keyword</string>
     <string name="search">Search</string>
@@ -161,4 +162,9 @@
     <string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
     <string name="third_part_rising">The page is trying to start another application. Do you want to continue?</string>
     <string name="backup_deleted">Backup deleted</string>
+    <string name="about">
+        Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere.&lt;br&gt;
+        This app is under GPL v2 license,
+        See &lt;a href=&quot;https://tiddlywiki.com/&quot;&gt;https://tiddlywiki.com/&lt;/a&gt; for more details of TiddlyWiki. And furthermore, for more details about this app, please visit&lt;a href=&quot;https://github.com/donmor/Tiddloid&quot;&gt;https://github.com/donmor/Tiddloid&lt;/a&gt;.&lt;br&gt;
+    </string>
 </resources>

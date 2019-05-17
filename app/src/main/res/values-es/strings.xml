@@ -56,4 +56,5 @@
 	<string name="wiki_rolled_back_successfully">Wiki revierte con éxito</string>
 	<string name="third_part_rising">La página está intentando iniciar otra aplicación. ¿Quieres continuar?</string>
 	<string name="backup_deleted">Copia de seguridad ha sido eliminado</string>
+    <string name="action_about">Acerca de Tiddloid</string>
 </resources>

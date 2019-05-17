@@ -56,4 +56,5 @@
 	<string name="wiki_rolled_back_successfully">Wikiはロールバックされました</string>
 	<string name="third_part_rising">このページから別のアプリケーションが開かれます。続行しますか？</string>
 	<string name="backup_deleted">バックアップを削除しました</string>
+    <string name="action_about">Tiddloidについて</string>
 </resources>

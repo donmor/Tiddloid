@@ -1,4 +1,4 @@
-package indi.donmor.tiddloid;
+package top.donmor.tiddloid;
 
 import org.junit.Test;
 

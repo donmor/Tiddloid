@@ -28,7 +28,7 @@
 	<string name="show_hidden_files">显示隐藏(.)文件</string>
 	<string name="template">模板</string>
 	<string name="update_template">更新模板</string>
-	<string name="e_g_cse">例: baidu.com/s?wd=％s</string>
+	<string name="e_g_cse">例: baidu.com/s?wd=%s</string>
 	<string name="ready_to_fork">已准备好创建这个Wiki的副本。点击“保存修改”以继续。</string>
 	<string name="failed">失败</string>
 	<string name="cancelled">取消</string>
@@ -56,4 +56,5 @@
 	<string name="wiki_rolled_back_successfully">Wiki成功还原</string>
 	<string name="third_part_rising">此页面正在请求打开另一个应用程序。要继续吗？</string>
 	<string name="backup_deleted">备份已删除</string>
+	<string name="action_about">关于Tiddloid</string>
 </resources>

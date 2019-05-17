@@ -28,10 +28,22 @@ def getCommitHash = { ->
     }
 }
 
+def properties = new Properties()
+def inputStream = project.rootProject.file('local.properties').newDataInputStream()
+properties.load(inputStream)
+
 android {
+    signingConfigs {
+        donmor {
+            storeFile file('/home/donmor/AndroidStudioProjects/donmor.jks')
+            storePassword properties.getProperty('signPassword')
+            keyAlias = 'key0'
+            keyPassword properties.getProperty('signPassword')
+        }
+    }
     compileSdkVersion 28
     defaultConfig {
-        applicationId "indi.donmor.tiddloid"
+        applicationId "top.donmor.tiddloid"
         minSdkVersion 16
         targetSdkVersion 28
         versionCode getVersionCode()
@@ -42,7 +54,7 @@ android {
     buildTypes {
         release {
             versionNameSuffix "@" + getCommitHash()
-            minifyEnabled true
+            minifyEnabled false
             proguardFiles getDefaultProguardFile('proguard-android-optimize.txt'), 'proguard-rules.pro'
         }
         debug {

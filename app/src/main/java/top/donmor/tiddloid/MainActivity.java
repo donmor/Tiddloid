@@ -1,10 +1,10 @@
 /*
- * indi.donmor.tiddloid.MainActivity <= [P|Tiddloid]
+ * top.donmor.tiddloid.MainActivity <= [P|Tiddloid]
  * Last modified: 18:18:25 2019/05/10
  * Copyright (c) 2019 donmor
  */
 
-package indi.donmor.tiddloid;
+package top.donmor.tiddloid;
 
 import android.Manifest;
 import android.annotation.TargetApi;
@@ -36,8 +36,10 @@ import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
 import android.support.v7.widget.Toolbar;
 import android.text.Editable;
+import android.text.Html;
 import android.text.InputType;
 import android.text.TextWatcher;
+import android.text.method.LinkMovementMethod;
 import android.util.Base64;
 import android.view.View;
 import android.view.LayoutInflater;
@@ -53,6 +55,7 @@ import android.widget.CheckBox;
 import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
@@ -80,8 +83,8 @@ import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
-import indi.donmor.tiddloid.utils.NoLeakHandler;
-import indi.donmor.tiddloid.utils.TLSSocketFactory;
+import top.donmor.tiddloid.utils.NoLeakHandler;
+import top.donmor.tiddloid.utils.TLSSocketFactory;
 
 import com.github.donmor.filedialog.lib.FileDialog;
 import com.github.donmor.filedialog.lib.FileDialogFilter;
@@ -610,6 +613,7 @@ public class MainActivity extends AppCompatActivity {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
+				System.out.println(showHidden);
 				FileDialog.fileSave(MainActivity.this, lastDir, HTML_FILTERS, showHidden, new FileDialog.OnFileTouchedListener() {
 					@Override
 					public void onFileTouched(File[] files) {
@@ -896,12 +900,14 @@ public class MainActivity extends AppCompatActivity {
 									Message msg = new Message();
 									Bundle data = new Bundle();
 									JSONArray array = null;
+									String ses = null;
 									try {
 										switch (se) {
 											case "Google":
 												List<String> attrs = Jsoup.connect(getResources().getString(R.string.su_google).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().getElementsByTag(KEY_SUGGESTION).eachAttr(KEY_DATA);
 												String[] vGoogle = attrs.toArray(new String[0]);
 												data.putStringArray(KEY_SUG, vGoogle);
+												ses = getResources().getString(R.string.google);
 												break;
 											case "Bing":
 												res = Jsoup.connect(getResources().getString(R.string.su_bing).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().body().html();
@@ -911,14 +917,17 @@ public class MainActivity extends AppCompatActivity {
 												for (int i = 0; i < k; i++)
 													vBing[i] = arrayBing.getJSONObject(i).getString(KEY_TXT);
 												data.putStringArray(KEY_SUG, vBing);
+												ses = getResources().getString(R.string.bing);
 												break;
 											case "Baidu":
 												res = Jsoup.connect(getResources().getString(R.string.su_baidu).replace(getResources().getString(R.string.su_arg), newText)).get().body().html();
 												array = new JSONObject(res.substring(res.indexOf('(') + 1, res.lastIndexOf(')'))).getJSONArray(KEY_S);
+												ses = getResources().getString(R.string.baidu);
 												break;
 											case "Sogou":
 												res = Jsoup.connect(getResources().getString(R.string.su_sogou).replace(getResources().getString(R.string.su_arg), newText)).ignoreContentType(true).get().body().html();
 												array = new JSONObject(STR_EMPTY + '{' + '"' + 's' + '"' + ':' + res.substring(res.indexOf('['), res.lastIndexOf(']') + 1) + '}').getJSONArray(KEY_S).getJSONArray(1);
+												ses = getResources().getString(R.string.sogou);
 												break;
 										}
 									} catch (Exception e) {
@@ -932,7 +941,7 @@ public class MainActivity extends AppCompatActivity {
 										data.putStringArray(KEY_SUG, v);
 									}
 									data.putString(KEY_SRC, newText);
-									data.putString(KEY_SE, se);
+									data.putString(KEY_SE, ses);
 									msg.setData(data);
 									handler.sendMessage(msg);
 								} catch (Exception e) {
@@ -1112,6 +1121,20 @@ public class MainActivity extends AppCompatActivity {
 				}
 			});
 			return true;
+		} else if (id == R.id.action_about) {
+			ScrollView scrollView = new ScrollView(this);
+			TextView view = new TextView(scrollView.getContext());
+			int padding = (int) (getResources().getDisplayMetrics().density * 20);
+			view.setPadding(padding, padding, padding, padding);
+			view.setLinksClickable(true);
+			view.setMovementMethod(LinkMovementMethod.getInstance());
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) view.setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
+			view.setText(Html.fromHtml(getResources().getString(R.string.about)));
+			scrollView.addView(view);
+			new AlertDialog.Builder(this)
+					.setTitle(R.string.action_about)
+					.setView(scrollView)
+					.show();
 		}
 		return super.onOptionsItemSelected(item);
 	}
