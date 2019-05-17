@@ -33,7 +33,7 @@ The completion of this app is inseparable from the help of these open source pro
 * FileDialog - https://github.com/donmor/FileDialog ,
 * Json - https://json.org/ ,
 * Jsoup - https://jsoup.org/ ,
-* Rhino - https://developer.mozilla.org/zh-CN/docs/Mozilla/Projects/Rhino .
+* Rhino - https://developer.mozilla.org/Rhino .
 
 License files provided in /lic.
 
