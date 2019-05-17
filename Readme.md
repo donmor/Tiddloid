@@ -39,4 +39,4 @@ License files provided in /lic.
 
 ### Localization
 
-The localization of this app is currently using Google Translation. Pull requests is welcome if you have better localization。
+The localization of this app is currently using Google Translation. Pull requests is welcomed if you have better localization。
