@@ -559,7 +559,7 @@ public class TWEditorWV extends AppCompatActivity {
 				if (sch == null || sch.length() == 0 || wApp == null && browse)
 					return false;
 				try {
-					switch (sch){
+					switch (sch) {
 						case SCH_TEL:
 							Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
 							view.getContext().startActivity(intent);

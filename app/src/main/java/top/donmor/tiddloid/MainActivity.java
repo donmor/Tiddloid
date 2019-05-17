@@ -1135,13 +1135,14 @@ public class MainActivity extends AppCompatActivity {
 			return true;
 		} else if (id == R.id.action_about) {
 			final SpannableString spannableString = new SpannableString(getResources().getString(R.string.about));
-			Linkify.addLinks(spannableString,Linkify.ALL);
+			Linkify.addLinks(spannableString, Linkify.ALL);
 			final AlertDialog aboutDialog = new AlertDialog.Builder(this)
 					.setTitle(R.string.action_about)
 					.setMessage(spannableString)
 					.show();
-			((TextView)aboutDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) ((TextView)aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
+			((TextView) aboutDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M)
+				((TextView) aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
 		}
 		return super.onOptionsItemSelected(item);
 	}
