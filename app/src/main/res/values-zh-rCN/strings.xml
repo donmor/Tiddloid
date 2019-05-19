@@ -58,7 +58,7 @@
 	<string name="backup_deleted">备份已删除</string>
 	<string name="action_about">关于Tiddloid</string>
 	<string name="about">
-		Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来，以便您可以随时随地访问这些想法。有关TiddlyWiki的更多详细信息，请参阅https://tiddlywiki.com/。\n
+		Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来以供随时查阅。有关TiddlyWiki的更多详细信息，请参阅https://tiddlywiki.com/。\n
 		\n
 		本应用程序遵循GPLv2许可发布，\n
 		（1）商业用途\n
