@@ -9,6 +9,8 @@ package top.donmor.tiddloid;
 import android.Manifest;
 import android.annotation.TargetApi;
 import android.app.Notification;
+import android.app.NotificationChannel;
+import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.content.Intent;
@@ -27,7 +29,6 @@ import android.os.Handler;
 import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
-import android.support.v4.app.NotificationManagerCompat;
 import android.support.v4.content.ContextCompat;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
@@ -1357,8 +1358,8 @@ public class MainActivity extends AppCompatActivity {
 		if (sch == null || sch.length() == 0)
 			uri = Uri.parse(SCHEME_WITH_SLASHES_HTTP + uri.toString());
 		try {
-			final String id = MainActivity.genId();
-			final int idt = Integer.parseInt(id.substring(0, 7), 16);
+			final String id = MainActivity.genId().substring(0, 7);
+			final int idt = Integer.parseInt(id, 16);
 			final File cacheFile = new File(parent.getCacheDir(), id);
 			final Uri uriX = uri;
 			final NoLeakHandler handler = new NoLeakHandler(new NoLeakHandler.MessageHandledListener() {
@@ -1420,6 +1421,8 @@ public class MainActivity extends AppCompatActivity {
 							handler.sendMessage(msg);
 						}
 						Notification notification;
+						NotificationManager notificationManager = (NotificationManager) parent.getSystemService(Context.NOTIFICATION_SERVICE);
+						if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) notificationManager.createNotificationChannel(new NotificationChannel(id, id,NotificationManager.IMPORTANCE_LOW));
 						while ((length = is.read(bytes)) != -1) {
 							os.write(bytes, 0, length);
 							lengthTotal += length;
@@ -1433,7 +1436,7 @@ public class MainActivity extends AppCompatActivity {
 										.setShowWhen(true)
 										.setProgress(100, p, false)
 										.build();
-								NotificationManagerCompat.from(parent).notify(id, idt, notification);
+								notificationManager.notify(id, idt, notification);
 							}
 
 						}
@@ -1448,7 +1451,7 @@ public class MainActivity extends AppCompatActivity {
 									.setShowWhen(true)
 									.setProgress(0, 0, true)
 									.build();
-							NotificationManagerCompat.from(parent).notify(id, idt, notification);
+							notificationManager.notify(id, idt, notification);
 						}
 						is2 = new FileInputStream(cacheFile);
 						byte[] b2 = new byte[512];
@@ -1459,7 +1462,7 @@ public class MainActivity extends AppCompatActivity {
 						}
 						os2.flush();
 						if (lt2 != lengthTotal) throw new Exception();
-						if (!noNotification) NotificationManagerCompat.from(parent).cancel(id, idt);
+						if (!noNotification) notificationManager.cancel(id, idt);
 						if (!noToast)
 							bundle.putInt(KEY_TOAST, R.string.download_complete);
 						bundle.putBoolean(KEY_COMPLETE, true);
