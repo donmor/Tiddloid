@@ -27,7 +27,7 @@
 	<string name="filesystem">ファイルシステム</string>
 	<string name="show_hidden_files">隠しファイル(.)を表示する</string>
 	<string name="template">テンプレート</string>
-	<string name="update_template">更新テンプレート</string>
+	<string name="update_template">テンプレートを更新する</string>
 	<string name="e_g_cse">例: google.com/search?q=%s</string>
 	<string name="ready_to_fork">このWikiをフォークする準備ができました。[Save Changes]をクリックして続行します。</string>
 	<string name="failed">失敗しました</string>
@@ -58,7 +58,7 @@
 	<string name="backup_deleted">バックアップを削除しました</string>
     <string name="action_about">Tiddloidについて</string>
     <string name="about">
-		Tiddloidは、ローカルに保存されているTiddlyWikisを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めて、どこからでもこれらのアイデアにアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com/を参照してください。\n
+		Tiddloidは、ローカルに保存されているTiddlyWikiを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めてどこにでもアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com/ を参照してください。\n
         \n
         このアプリはGPLv2ライセンスの下でリリースされています、\n
         （1）商用利用\n
@@ -78,6 +78,6 @@
         Rhino - https://developer.mozilla.org/Rhino .\n
         ライセンスファイルはソースコードとともに提供されます。\n
         \n
-        このアプリの詳細については、https://github.com/donmor/Tiddloidをご覧ください。
+        このアプリの詳細については、https://github.com/donmor/Tiddloid をご覧ください。
 	</string>
 </resources>

@@ -115,7 +115,7 @@
     <string name="filesystem">Filesystem</string>
     <string name="show_hidden_files">Show hidden(.) files</string>
     <string name="template">Template</string>
-    <string name="update_template">Update template</string>
+    <string name="update_template">Update the template</string>
     <string name="e_g_cse">e.g google.com/search?q=%s</string>
     <string name="ready_to_fork">Ready to fork this Wiki. Click \"Save changes\" to continue.</string>
     <string name="failed">Failed</string>
