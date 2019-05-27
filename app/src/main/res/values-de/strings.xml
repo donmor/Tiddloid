@@ -19,6 +19,9 @@
 	<string name="custom">Brauch</string>
 	<string name="enable_backup">Backup aktivieren</string>
 	<string name="no_backups">Keine Backups</string>
+	<string name="create_shortcut">Erstellen Sie eine Verknüpfung auf dem Desktop</string>
+	<string name="shortcut_created">Verknüpfung erfolgreich erstellt</string>
+	<string name="shortcut_failed">Fehlgeschlagen Verknüpfung erstellen</string>
 	<string name="remove_wiki">Wiki entfernen</string>
 	<string name="downloading">Wird heruntergeladen</string>
 	<string name="download_complete">Download abgeschlossen</string>

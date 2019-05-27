@@ -19,6 +19,9 @@
 	<string name="custom">Coutume</string>
 	<string name="enable_backup">Activer la sauvegarde</string>
 	<string name="no_backups">Aucune sauvegarde</string>
+	<string name="create_shortcut">Créer un raccourci sur le bureau</string>
+	<string name="shortcut_created">Raccourci créé avec succès</string>
+	<string name="shortcut_failed">Impossible de créer un raccourci</string>
 	<string name="remove_wiki">Supprimer le wiki</string>
 	<string name="downloading">Téléchargement en cours</string>
 	<string name="download_complete">Téléchargement complet</string>

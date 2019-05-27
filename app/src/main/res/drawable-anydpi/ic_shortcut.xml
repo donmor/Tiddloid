@@ -1,0 +1,28 @@
+<!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/drawable-anydpi/ic_shortcut.xml <= [P|Tiddloid]
+  ~ Last modified: 16:54:45 2019/05/27
+  ~ Copyright (c) 2019 donmor
+  -->
+
+<vector xmlns:android="http://schemas.android.com/apk/res/android"
+    android:width="48dp"
+    android:height="48dp"
+    android:viewportWidth="48"
+    android:viewportHeight="48">
+  <group>
+    <path
+        android:pathData="m8,1c-1.0286,0 -2,0.9714 -2,2v42c0,0.9714 1.0286,2 2,2h32c0.9714,0 2,-1.0286 2,-2v-31l-13,-13z"
+        android:fillColor="#0099cc"/>
+    <path
+        android:fillColor="#FF000000"
+        android:pathData="m29,12 l0.062,0.062 0.157,-0.062h-0.219zM31,14 L42,25v-11h-11z"
+        android:fillAlpha=".196"/>
+    <path
+        android:pathData="m29,1 l13,13h-11c-0.9714,0 -2,-1.0286 -2,-2v-11z"
+        android:fillColor="#fff"
+        android:fillAlpha=".392"/>
+    <path
+        android:fillColor="#FFF"
+        android:pathData="M24 24M15 24A9 9 0 1 0 33 24 9 9 0 1 0 15 24M22 27 22 27C22 27 22 27 22 27 22 27 22 26 21 26 21 26 21 26 21 25L21 25C21 26 21 26 21 26 21 26 21 27 22 27ZM28 28C27 28 27 28 26 28L26 28C26 28 26 28 26 28 26 28 26 27 26 27 25 27 26 26 26 26 26 26 25 25 25 25 25 25 25 25 25 25 24 25 23 25 23 25 23 25 22 26 23 26 23 27 23 27 24 27 24 27 24 28 24 28 24 28 24 28 24 28L23 28C23 28 23 28 23 28 23 28 22 27 22 27 22 27 22 27 22 27 22 28 21 28 21 28 21 27 20 26 20 26 20 25 21 25 21 24 20 24 20 23 20 23L20 23C20 23 20 23 20 23 18 23 17 22 18 20 18 20 18 20 18 20 18 20 18 20 18 20 17 22 20 22 21 22 21 22 21 22 21 22 22 21 22 21 22 21 23 21 24 22 24 22 25 22 26 22 26 22 26 22 27 22 27 22 27 21 27 20 28 20 28 20 28 20 28 20L28 20C28 20 29 21 29 21 29 21 30 20 30 20 30 20 30 20 30 20 30 20 30 21 30 22 30 22 30 22 30 23 29 23 29 24 29 24 29 24 29 24 28 24 28 24 28 24 28 24 28 24 28 25 27 25 26 25 27 27 27 27 28 28 28 28 28 28 28 28 28 28 28 28Z" />
+  </group>
+</vector>

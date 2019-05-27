@@ -19,6 +19,9 @@
 	<string name="custom">自定义</string>
 	<string name="enable_backup">启用备份</string>
 	<string name="no_backups">没有备份</string>
+	<string name="create_shortcut">创建桌面快捷方式</string>
+	<string name="shortcut_created">快捷方式已创建</string>
+	<string name="shortcut_failed">快捷方式创建失败</string>
 	<string name="remove_wiki">移除Wiki</string>
 	<string name="downloading">正在下载</string>
 	<string name="download_complete">下载完成</string>

@@ -19,6 +19,9 @@
 	<string name="custom">カスタム</string>
 	<string name="enable_backup">バックアップを有効にする</string>
 	<string name="no_backups">バックアップなし</string>
+	<string name="create_shortcut">デスクトップにショートカットを作成する</string>
+	<string name="shortcut_created">ショートカットが作成されました</string>
+	<string name="shortcut_failed">ショートカットを作成できませんでした</string>
 	<string name="remove_wiki">Wikiを削除する</string>
 	<string name="downloading">ダウンロード中</string>
 	<string name="download_complete">ダウンロード完了</string>
@@ -58,7 +61,7 @@
 	<string name="backup_deleted">バックアップを削除しました</string>
     <string name="action_about">Tiddloidについて</string>
     <string name="about">
-		Tiddloidは、ローカルに保存されているTiddlyWikiを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めてどこにでもアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com/ を参照してください。\n
+		Tiddloidは、ローカルに保存されているTiddlyWikiを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めてどこにでもアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com を参照してください。\n
         \n
         このアプリはGPLv2ライセンスの下でリリースされています、\n
         （1）商用利用\n

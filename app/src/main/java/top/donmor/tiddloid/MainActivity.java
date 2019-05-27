@@ -30,6 +30,9 @@ import android.os.Message;
 import android.support.v4.app.ActivityCompat;
 import android.support.v4.app.NotificationCompat;
 import android.support.v4.content.ContextCompat;
+import android.support.v4.content.pm.ShortcutInfoCompat;
+import android.support.v4.content.pm.ShortcutManagerCompat;
+import android.support.v4.graphics.drawable.IconCompat;
 import android.support.v4.widget.CursorAdapter;
 import android.support.v4.widget.SwipeRefreshLayout;
 import android.support.v7.app.AppCompatActivity;
@@ -115,6 +118,7 @@ public class MainActivity extends AppCompatActivity {
 	private static final String DB_KEY_CSE = "customSearchEngine",
 			DB_KEY_SEARCH_ENGINE = "searchEngine",
 			KEY_APPLICATION_NAME = "application-name",
+			KEY_LBL = " — ",
 			KEY_CONTENT = "content",
 			KEY_VERSION = "version",
 			KEY_VERSION_AREA = "versionArea",
@@ -305,7 +309,9 @@ public class MainActivity extends AppCompatActivity {
 					final TextView lblNoBackup = view.findViewById(R.id.lblNoBackup);
 					final RecyclerView rvBackupList = view.findViewById(R.id.rvBackupList);
 					rvBackupList.setLayoutManager(new LinearLayoutManager(view.getContext()));
+					Button btnCreateShortcut = view.findViewById(R.id.btnCreateShortcut);
 					Button btnRemoveWiki = view.findViewById(R.id.btnRemoveWiki);
+
 
 					final AlertDialog wikiConfigDialog = new AlertDialog.Builder(MainActivity.this)
 							.setTitle(wikiData.getString(MainActivity.KEY_NAME))
@@ -319,11 +325,13 @@ public class MainActivity extends AppCompatActivity {
 							})
 							.create();
 					FileInputStream is = null;
+					Bitmap iconX = null;
 					try {
 						is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), wikiListAdapter.getId(position)));
-						Bitmap icon = BitmapFactory.decodeStream(is);
-						if (icon != null)
-							wikiConfigDialog.setIcon(new BitmapDrawable(getResources(), icon));
+						iconX = BitmapFactory.decodeStream(is);
+						if (iconX != null)
+							wikiConfigDialog.setIcon(new BitmapDrawable(getResources(), iconX));
+						else throw new Exception();
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
@@ -333,7 +341,7 @@ public class MainActivity extends AppCompatActivity {
 							e.printStackTrace();
 						}
 					}
-
+					final Bitmap icon = iconX;
 					final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
 					backupListAdapter.setOnBtnClickListener(new BackupListAdapter.BtnClickListener() {
 						@Override
@@ -556,6 +564,37 @@ public class MainActivity extends AppCompatActivity {
 									})
 									.create();
 							removeWikiConfirmationDialog.show();
+						}
+					});
+					btnCreateShortcut.setOnClickListener(new View.OnClickListener() {
+						@Override
+						public void onClick(View v) {
+							try {
+								String id = wikiData.getString(KEY_ID);
+								Bundle bu = new Bundle();
+								bu.putString(KEY_ID, id);
+								Intent in = new Intent(getApplicationContext(), TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
+								IconCompat iconCompat;
+								if (icon != null) iconCompat = IconCompat.createWithBitmap(icon);
+								else
+									iconCompat = IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut);
+								String lbl = wikiData.getString(MainActivity.KEY_NAME);
+								System.out.println(lbl);
+								if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
+									ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
+											.setShortLabel(lbl.substring(0, lbl.indexOf(KEY_LBL)))
+											.setLongLabel(lbl)
+											.setIcon(iconCompat)
+											.setIntent(in)
+											.build();
+									if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
+										Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
+									else throw new Exception();
+								}
+							} catch (Exception e) {
+								e.printStackTrace();
+								Toast.makeText(MainActivity.this, R.string.shortcut_failed, Toast.LENGTH_SHORT).show();
+							}
 						}
 					});
 				} catch (Exception e) {
@@ -1422,7 +1461,8 @@ public class MainActivity extends AppCompatActivity {
 						}
 						Notification notification;
 						NotificationManager notificationManager = (NotificationManager) parent.getSystemService(Context.NOTIFICATION_SERVICE);
-						if (Build.VERSION.SDK_INT>=Build.VERSION_CODES.O) notificationManager.createNotificationChannel(new NotificationChannel(id, id,NotificationManager.IMPORTANCE_LOW));
+						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+							notificationManager.createNotificationChannel(new NotificationChannel(id, id, NotificationManager.IMPORTANCE_LOW));
 						while ((length = is.read(bytes)) != -1) {
 							os.write(bytes, 0, length);
 							lengthTotal += length;

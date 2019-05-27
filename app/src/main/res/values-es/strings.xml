@@ -19,6 +19,9 @@
 	<string name="custom">Personalizado</string>
 	<string name="enable_backup">Habilitar copia de seguridad</string>
 	<string name="no_backups">No hay copias de seguridad</string>
+	<string name="create_shortcut">Crear un acceso directo en el escritorio</string>
+	<string name="shortcut_created">Acceso directo creado correctamente</string>
+	<string name="shortcut_failed">Error al crear acceso directo</string>
 	<string name="remove_wiki">Eliminar Wiki</string>
 	<string name="downloading">Descargando</string>
 	<string name="download_complete">Descarga completa</string>

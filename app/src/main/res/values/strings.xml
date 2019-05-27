@@ -107,6 +107,9 @@
     <string name="custom">Custom</string>
     <string name="enable_backup">Enable backup</string>
     <string name="no_backups">No backups</string>
+    <string name="create_shortcut">Create a shortcut on desktop</string>
+    <string name="shortcut_created">Shortcut successfully created</string>
+    <string name="shortcut_failed">Failed to create shortcut</string>
     <string name="remove_wiki">Remove Wiki</string>
     <string name="downloading">Downloading</string>
     <string name="download_complete">Download complete</string>

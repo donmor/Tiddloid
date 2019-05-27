@@ -19,6 +19,9 @@
 	<string name="custom">맞춤</string>
 	<string name="enable_backup">백업 사용</string>
 	<string name="no_backups">백업 없음</string>
+	<string name="create_shortcut">바탕 화면에 바로 가기 만들기</string>
+	<string name="shortcut_created">바로 가기가 성공적으로 생성되었습니다.</string>
+	<string name="shortcut_failed">바로 가기를 만들지 못했습니다.</string>
 	<string name="remove_wiki">위키 삭제</string>
 	<string name="downloading">다운로드 중</string>
 	<string name="download_complete">다운로드를 완료하였습니다</string>

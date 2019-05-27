@@ -15,11 +15,6 @@
         android:textAlignment="viewStart"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
-
-    <!--<ScrollView-->
-    <!--android:layout_width="match_parent"-->
-    <!--android:layout_height="match_parent"-->
-
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
@@ -55,6 +50,14 @@
         </LinearLayout>
 
         <Button
+            android:id="@+id/btnCreateShortcut"
+            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_margin="2dp"
+            android:text="@string/create_shortcut" />
+
+        <Button
             android:id="@+id/btnRemoveWiki"
             style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
             android:layout_width="match_parent"
@@ -63,5 +66,4 @@
             android:text="@string/remove_wiki" />
 
     </LinearLayout>
-    <!--</ScrollView>-->
 </LinearLayout>
