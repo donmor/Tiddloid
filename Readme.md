@@ -6,14 +6,6 @@ Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas
 
 See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
-Nightly Build (could be seldom updated, though):  
-[<img alt='Get it on F-Droid' src='https://fdroid.gitlab.io/artwork/badge/get-it-on.png' height='80px'/>](https://f-droid.org/packages/top.donmor.tiddloid)
-
-Release Build (not updating for a long time unless critical bugs reported):  
-[<img alt='酷安' src='https://www.coolapk.com/static/img/icon.png' height='80px'/>](https://www.coolapk.com/apk/top.donmor.tiddloid)
-
-Please note that the signature of the apk could differs between the two builds that you have to uninstall the app before changing the build. Using adb to back up the database is a good choice.
-
 ### Features
 
 * Create new Wikis with latest template
