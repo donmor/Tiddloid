@@ -14,6 +14,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 * TiddlyWiki detection
 * Saving TiddlyWikis to local files by clicking the Save button
 * Backup system that compatible with TiddlyDesktop, the desktop TiddlyWiki saver
+* Creating shortcuts to existing wiki on desktop
 
 ### License
 
