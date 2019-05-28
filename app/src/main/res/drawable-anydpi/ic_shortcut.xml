@@ -1,12 +1,6 @@
-<!--
-  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/drawable-anydpi/ic_shortcut.xml <= [P|Tiddloid]
-  ~ Last modified: 16:54:45 2019/05/27
-  ~ Copyright (c) 2019 donmor
-  -->
-
 <vector xmlns:android="http://schemas.android.com/apk/res/android"
-    android:width="48dp"
-    android:height="48dp"
+    android:width="192dp"
+    android:height="192dp"
     android:viewportWidth="48"
     android:viewportHeight="48">
   <group>

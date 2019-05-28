@@ -579,7 +579,6 @@ public class MainActivity extends AppCompatActivity {
 								else
 									iconCompat = IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut);
 								String lbl = wikiData.getString(MainActivity.KEY_NAME);
-								System.out.println(lbl);
 								if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
 									ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
 											.setShortLabel(lbl.substring(0, lbl.indexOf(KEY_LBL)))
@@ -665,7 +664,6 @@ public class MainActivity extends AppCompatActivity {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				System.out.println(showHidden);
 				FileDialog.fileSave(MainActivity.this, lastDir, HTML_FILTERS, showHidden, new FileDialog.OnFileTouchedListener() {
 					@Override
 					public void onFileTouched(File[] files) {
