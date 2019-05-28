@@ -29,7 +29,7 @@ is permitted UNDER THESE CONDITIONS:
 3. Disclose source under
 4. Same license.
 
-The completion of this app is inseparable from the help of these open source projects:
+This app is made possible by these open source projects:
 * FileDialog - https://github.com/donmor/FileDialog ,
 * Json - https://json.org/ ,
 * Jsoup - https://jsoup.org/ ,
