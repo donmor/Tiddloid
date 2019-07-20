@@ -66,6 +66,8 @@ public class TWEditorWV extends AppCompatActivity {
 	private WebView wv;
 	private ProgressBar wvProgress;
 	private Bitmap favicon;
+	private boolean isWiki;
+	private boolean dirty;
 
 	// CONSTANT
 	private static final String F02D = "%02d",
@@ -319,6 +321,7 @@ public class TWEditorWV extends AppCompatActivity {
 			@JavascriptInterface
 			public void getVersion(String title, boolean classic) {
 				if (title.equals(getResources().getString(R.string.tiddlywiki))) {
+					isWiki = true;
 					if (wApp == null) {
 						if (!classic)
 							runOnUiThread(new Runnable() {
@@ -329,20 +332,26 @@ public class TWEditorWV extends AppCompatActivity {
 								}
 							});
 					}
-				}
-				if (classic) {
-					wvs.setBuiltInZoomControls(true);
-					wvs.setDisplayZoomControls(true);
-				} else {
-					wvs.setBuiltInZoomControls(false);
-					wvs.setDisplayZoomControls(false);
-				}
+					if (classic) {
+						wvs.setBuiltInZoomControls(true);
+						wvs.setDisplayZoomControls(true);
+					} else {
+						wvs.setBuiltInZoomControls(false);
+						wvs.setDisplayZoomControls(false);
+					}
+				} else isWiki = false;
 			}
 
 			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void getB64(String data, String dest) {
 				MainActivity.wGet(TWEditorWV.this, Uri.parse(MainActivity.SCHEME_BLOB_B64 + ':' + data), new File(dest));
+			}
+
+			@SuppressWarnings("unused")
+			@JavascriptInterface
+			public void setDirty(boolean d) {
+				dirty = d;
 			}
 
 			@SuppressWarnings("unused")
@@ -513,7 +522,7 @@ public class TWEditorWV extends AppCompatActivity {
 														matrix.postScale(scale / width, scale / height);
 														favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
 														toolbar.setLogo(new BitmapDrawable(getResources(), favicon));
-													}
+													} else toolbar.setLogo(null);
 												}
 												if (icon != null) icon.recycle();
 												wv.clearHistory();
@@ -673,22 +682,24 @@ public class TWEditorWV extends AppCompatActivity {
 		else if (wv.canGoBack())
 			wv.goBack();
 		else {
-			final AlertDialog.Builder isExit = new AlertDialog.Builder(this);
-			isExit.setTitle(android.R.string.dialog_alert_title);
-			if (wApp != null)
+			if (isWiki && dirty) {
+				final AlertDialog.Builder isExit = new AlertDialog.Builder(this);
+				isExit.setTitle(android.R.string.dialog_alert_title);
 				isExit.setMessage(R.string.confirm_to_exit_wiki);
-			else isExit.setMessage(R.string.confirm_to_exit);
-			isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-						public void onClick(DialogInterface dialog, int which) {
-							dialog.dismiss();
-							TWEditorWV.super.onBackPressed();
+				isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+							public void onClick(DialogInterface dialog, int which) {
+								dialog.dismiss();
+								TWEditorWV.super.onBackPressed();
+							}
 						}
-					}
-			);
-			isExit.setNegativeButton(android.R.string.no, null);
-			AlertDialog dialog = isExit.create();
-			dialog.setCanceledOnTouchOutside(false);
-			dialog.show();
+				);
+				isExit.setNegativeButton(android.R.string.no, null);
+				AlertDialog dialog = isExit.create();
+				dialog.setCanceledOnTouchOutside(false);
+				dialog.show();
+			} else {
+				TWEditorWV.super.onBackPressed();
+			}
 		}
 	}
 

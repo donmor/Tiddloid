@@ -573,7 +573,7 @@ public class MainActivity extends AppCompatActivity {
 								String id = wikiData.getString(KEY_ID);
 								Bundle bu = new Bundle();
 								bu.putString(KEY_ID, id);
-								Intent in = new Intent(getApplicationContext(), TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
+								Intent in = new Intent(MainActivity.this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
 								IconCompat iconCompat;
 								if (icon != null) iconCompat = IconCompat.createWithBitmap(icon);
 								else

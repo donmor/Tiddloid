@@ -51,6 +51,28 @@
                 },false);
             };
             enableSaving(document);
+            var dirtyIndicate = function(element) {
+                var MutationObserver = window.MutationObserver || window.WebKitMutationObserver || window.MozMutationObserver;
+                var observer = new MutationObserver(function(mutations) {
+                    mutations.forEach(function(mutation) {
+                        if (mutation.type == \"attributes\" &amp;&amp; mutation.attributeName==\"class\") {
+                            var dirty = false;
+                            element.classList.forEach(function(cls) {
+                                if (cls==\"tc-dirty\") {
+                                    dirty = true;
+                                }
+                            });
+                            console.log(dirty);
+                            window.client.setDirty(dirty);
+                        }
+                    });
+                });
+
+                observer.observe(element, {
+                  attributes: true
+                });
+            };
+            dirtyIndicate(document.body);
         }
     </string>
     <string name="js_blob" translatable="false">
@@ -142,8 +164,7 @@
     <string name="confirm_to_remove_wiki">Are you sure you want to remove this Wiki from Tiddloid?</string>
     <string name="confirm_to_auto_remove_wiki">The item selected is not a TiddlyWiki. Do you want to remove it?</string>
     <string name="confirm_to_rollback">Are you sure you want to replace this Wiki with the backup version? This operation cannot be undone!</string>
-    <string name="confirm_to_exit">Are you sure you want to quit?</string>
-    <string name="confirm_to_exit_wiki">Are you sure you want to quit? Please make sure all your modifications have been saved.</string>
+    <string name="confirm_to_exit_wiki">Unsaved changes detected. Are you sure you want to quit?</string>
     <string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
     <string name="third_part_rising">The page is trying to start another application. Do you want to continue?</string>
     <string name="backup_deleted">Backup deleted</string>
