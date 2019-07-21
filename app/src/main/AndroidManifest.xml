@@ -6,7 +6,7 @@
     <uses-permission android:name="android.permission.INTERNET" />
     <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE" />
     <uses-permission android:name="android.permission.VIBRATE" />
-    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT"/>
+    <uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
 
     <application
         android:allowBackup="true"
@@ -14,9 +14,9 @@
         android:icon="@mipmap/ic_launcher"
         android:label="@string/app_name"
         android:roundIcon="@mipmap/ic_launcher_round"
-        android:usesCleartextTraffic="true"
         android:supportsRtl="true"
         android:theme="@style/AppTheme"
+        android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
             android:name=".SplashActivity"
@@ -24,6 +24,7 @@
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />
+
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
@@ -34,12 +35,16 @@
             android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".TWEditorWV"
+            android:configChanges="keyboardHidden|orientation|screenSize"
             android:exported="true"
             android:hardwareAccelerated="true"
-            android:configChanges="keyboardHidden|orientation|screenSize"
             android:label="@string/app_name"
+            android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar"
             tools:targetApi="n" />
-        <service android:name="top.donmor.tiddloid.SplashActivity$OnClearFromRecentService" android:stopWithTask="false" />
+
+        <service
+            android:name="top.donmor.tiddloid.SplashActivity$OnClearFromRecentService"
+            android:stopWithTask="false" />
     </application>
 </manifest>
