@@ -41,14 +41,15 @@
 	<string name="delete_backups_as_well">同时删除备份</string>
 	<string name="delete_the_html_file">删除HTML源文件(无法撤销!)</string>
 	<string name="missing_template">模板不存在。Tiddloid将从TiddlyWiki.com下载一个新的模板。</string>
-	<string name="not_a_wiki">所选文件不是TiddlyWiki。</string>
+	<string name="not_a_wiki">所选文件不是TiddlyWiki</string>
 	<string name="failed_opening_file">打开文件失败</string>
 	<string name="failed_creating_file">创建文件失败</string>
 	<string name="failed_deleting_file">删除文件失败</string>
 	<string name="failed_writing_file">写入文件失败</string>
 	<string name="error_loading_page">加载页面时出错</string>
-	<string name="error_processing_file">“处理文件时出错”</string>
+	<string name="error_processing_file">处理文件时出错</string>
 	<string name="wiki_already_exists">Wiki已存在</string>
+	<string name="wiki_not_exist">Wiki不存在</string>
 	<string name="data_error">数据错误</string>
 	<string name="confirm_to_del_backup">您确定要删除此版本吗？</string>
 	<string name="confirm_to_remove_wiki">你确定要从Tiddloid中删除这个Wiki吗？</string>

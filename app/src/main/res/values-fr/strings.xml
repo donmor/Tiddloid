@@ -41,7 +41,7 @@
 	<string name="delete_backups_as_well">Supprimer également les sauvegardes</string>
 	<string name="delete_the_html_file">Supprimer le fichier HTML (ne peut pas être annulé!)</string>
 	<string name="missing_template">Modèle manquant. Tiddloid va maintenant télécharger un nouveau fichier de modèle à partir de TiddlyWiki.com.</string>
-	<string name="not_a_wiki">Le fichier sélectionné n\'est pas un TiddlyWiki.</string>
+	<string name="not_a_wiki">Le fichier sélectionné n\'est pas un TiddlyWiki</string>
 	<string name="failed_opening_file">Échec de l\'ouverture du fichier</string>
 	<string name="failed_creating_file">Échec de la création du fichier</string>
 	<string name="failed_deleting_file">Échec de la suppression du fichier</string>
@@ -49,6 +49,7 @@
 	<string name="error_loading_page">Erreur lors du chargement de la page</string>
 	<string name="error_processing_file">Erreur lors du traitement du fichier</string>
 	<string name="wiki_already_exists">Le wiki existe déjà</string>
+	<string name="wiki_not_exist">Wiki n\'existe pas</string>
 	<string name="data_error">Erreur de donnée</string>
 	<string name="confirm_to_del_backup">Êtes-vous sûr de vouloir supprimer cette version?</string>
 	<string name="confirm_to_remove_wiki">Êtes-vous sûr de vouloir supprimer ce Wiki de Tiddloid?</string>

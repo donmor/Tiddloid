@@ -86,7 +86,7 @@ public class TWEditorWV extends AppCompatActivity {
 			SCH_EX_FILE = "file://",
 			PREF_BLOB = "$blob$",
 			PREF_DEST = "$dest$",
-			URL_BLANK="about:blank";
+			URL_BLANK = "about:blank";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -303,7 +303,10 @@ public class TWEditorWV extends AppCompatActivity {
 		} else {
 			String url = bu != null ? bu.getString(MainActivity.KEY_URL) : null;
 			if (url != null) ueu = url;
-			if (bu != null) ueu = bu.getString(MainActivity.KEY_URL);
+			else {
+				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+				finish();
+			}
 		}
 
 		final class JavaScriptCallback {
@@ -641,7 +644,7 @@ public class TWEditorWV extends AppCompatActivity {
 
 			public void onPageFinished(WebView view, String url) {
 				view.loadUrl(SCH_JS + ':' + getResources().getString(R.string.js_save));
-				if (wApp != null) wv.clearHistory();
+				if (wApp != null) view.clearHistory();
 			}
 		});
 		wv.setDownloadListener(new DownloadListener() {
@@ -683,29 +686,44 @@ public class TWEditorWV extends AppCompatActivity {
 		super.onNewIntent(intent);
 		Bundle bu = intent.getExtras();
 		final String fid = bu != null ? bu.getString(MainActivity.KEY_ID) : null;
-		if (fid != null && !fid.equals(id)) {
-			if (isWiki && dirty) {
-				final AlertDialog.Builder isExit = new AlertDialog.Builder(this);
-				isExit.setTitle(android.R.string.dialog_alert_title);
-				isExit.setMessage(R.string.confirm_to_exit_wiki);
-				isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								nextWiki(intent, fid);
+		if (fid != null) {
+			int ser = -1;
+			try {
+				for (int i = 0; i < db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
+					if (db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.KEY_ID).equals(fid)) {
+						ser = i;
+						break;
+					}
+				}
+			} catch (Exception e) {
+				e.printStackTrace();
+			}
+			if (ser == -1) Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+			else if (!fid.equals(id)) {
+				final int serial = ser;
+				if (isWiki && dirty) {
+					final AlertDialog.Builder isExit = new AlertDialog.Builder(this);
+					isExit.setTitle(android.R.string.dialog_alert_title);
+					isExit.setMessage(R.string.confirm_to_exit_wiki);
+					isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int which) {
+									dialog.dismiss();
+									nextWiki(intent, serial);
+								}
 							}
-						}
-				);
-				isExit.setNegativeButton(android.R.string.no, null);
-				AlertDialog dialog = isExit.create();
-				dialog.setCanceledOnTouchOutside(false);
-				dialog.show();
-			} else {
-				nextWiki(intent, fid);
+					);
+					isExit.setNegativeButton(android.R.string.no, null);
+					AlertDialog dialog = isExit.create();
+					dialog.setCanceledOnTouchOutside(false);
+					dialog.show();
+				} else {
+					nextWiki(intent, serial);
+				}
 			}
 		}
 	}
 
-	private void nextWiki(Intent intent, String fid) {
+	private void nextWiki(Intent intent, int serial) {
 		String ueu = URL_BLANK;
 		toolbar.setLogo(null);
 		wApp = null;
@@ -713,14 +731,9 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setJavaScriptEnabled(false);
 		wv.loadUrl(ueu);
 		setIntent(intent);
-		id = fid;
 		try {
-			for (int i = 0; i < db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
-				if (db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.KEY_ID).equals(id)) {
-					wApp = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
-					break;
-				}
-			}
+			wApp = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(serial);
+			id = wApp.getString(MainActivity.KEY_ID);
 		} catch (Exception e) {
 			e.printStackTrace();
 		}

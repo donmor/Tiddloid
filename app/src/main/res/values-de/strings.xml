@@ -41,7 +41,7 @@
 	<string name="delete_backups_as_well">Löschen Sie auch Backups</string>
 	<string name="delete_the_html_file">Löschen Sie die HTML-Datei (Kann nicht rückgängig gemacht werden!)</string>
 	<string name="missing_template">Fehlende Vorlage. Tiddloid wird nun eine neue Vorlage-Datei von TiddlyWiki.com herunterladen.</string>
-	<string name="not_a_wiki">Die ausgewählte Datei ist kein TiddlyWiki.</string>
+	<string name="not_a_wiki">Die ausgewählte Datei ist kein TiddlyWiki</string>
 	<string name="failed_opening_file">Fehler beim Öffnen der Datei</string>
 	<string name="failed_creating_file">Fehler beim Erstellen der Datei</string>
 	<string name="failed_deleting_file">Fehler beim Löschen der Datei</string>
@@ -49,12 +49,12 @@
 	<string name="error_loading_page">Fehler beim Laden der Seite</string>
 	<string name="error_processing_file">Fehler beim Verarbeiten der Datei</string>
 	<string name="wiki_already_exists">Das Wiki existiert bereits</string>
+	<string name="wiki_not_exist">Wiki existiert nicht</string>
 	<string name="data_error">Datenfehler</string>
 	<string name="confirm_to_del_backup">Möchten Sie diese Version wirklich löschen?</string>
 	<string name="confirm_to_remove_wiki">Möchtest du dieses Wiki wirklich von Tiddloid entfernen?</string>
 	<string name="confirm_to_auto_remove_wiki">Der ausgewählte Gegenstand ist kein TiddlyWiki. Möchten Sie es entfernen?</string>
 	<string name="confirm_to_rollback">Möchten Sie dieses Wiki wirklich durch die Sicherungsversion ersetzen? Dieser Vorgang kann nicht rückgängig gemacht werden!</string>
-	<!--<string name="confirm_to_exit">Möchtest du kündigen?</string>-->
 	<string name="confirm_to_exit_wiki">Nicht gespeicherte Änderungen erkannt. Möchtest du kündigen?</string>
 	<string name="wiki_rolled_back_successfully">Wiki zurückgerollt erfolgreich</string>
 	<string name="third_part_rising">Die Seite versucht, eine andere Anwendung zu starten. Möchtest du fortfahren?</string>

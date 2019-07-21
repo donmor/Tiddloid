@@ -41,7 +41,7 @@
 	<string name="delete_backups_as_well">Eliminar copias de seguridad también</string>
 	<string name="delete_the_html_file">Eliminar el archivo HTML (no se puede deshacer!)</string>
 	<string name="missing_template">Falta la plantilla. Tiddloid ahora descargará un nuevo archivo de plantilla de TiddlyWiki.com.</string>
-	<string name="not_a_wiki">El archivo seleccionado no es un TiddlyWiki.</string>
+	<string name="not_a_wiki">El archivo seleccionado no es un TiddlyWiki</string>
 	<string name="failed_opening_file">Error al abrir el archivo</string>
 	<string name="failed_creating_file">Error al crear el archivo</string>
 	<string name="failed_deleting_file">Falló la eliminación del archivo</string>
@@ -49,6 +49,7 @@
 	<string name="error_loading_page">Error al cargar la página</string>
 	<string name="error_processing_file">Error al procesar el archivo</string>
 	<string name="wiki_already_exists">El wiki ya existe</string>
+    <string name="wiki_not_exist">Wiki no existe</string>
 	<string name="data_error">Error de datos</string>
 	<string name="confirm_to_del_backup">¿Estás seguro de que quieres eliminar esta versión?</string>
 	<string name="confirm_to_remove_wiki">¿Estás seguro de que deseas eliminar esta Wiki de Tiddloid?</string>

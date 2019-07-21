@@ -41,7 +41,7 @@
 	<string name="delete_backups_as_well">バックアップも削除する</string>
 	<string name="delete_the_html_file">HTMLファイルを削除します(元に戻せません!)。</string>
 	<string name="missing_template">テンプレートが見つかりません。TiddloidはTiddlyWiki.comから新しいテンプレートファイルをダウンロードします。</string>
-	<string name="not_a_wiki">選択されたファイルはTiddlyWikiではありません。</string>
+	<string name="not_a_wiki">選択されたファイルはTiddlyWikiではありません</string>
 	<string name="failed_opening_file">ファイルを開けませんでした</string>
 	<string name="failed_creating_file">ファイルの作成に失敗しました</string>
 	<string name="failed_deleting_file">ファイルの削除に失敗しました</string>
@@ -49,6 +49,7 @@
 	<string name="error_loading_page">ページの読み込み中にエラーが発生しました</string>
 	<string name="error_processing_file">ファイルの処理中にエラーが発生しました</string>
 	<string name="wiki_already_exists">Wikiは既に存在します</string>
+	<string name="wiki_not_exist">Wikiは存在しません</string>
 	<string name="data_error">データエラー</string>
 	<string name="confirm_to_del_backup">このバージョンを削除してもよろしいですか？</string>
 	<string name="confirm_to_remove_wiki">このWikiをTiddloidから削除しますか？</string>
