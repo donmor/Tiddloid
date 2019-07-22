@@ -56,6 +56,7 @@
 	<string name="confirm_to_auto_remove_wiki">選択した項目はTiddlyWikiのではありません。削除しますか？</string>
 	<string name="confirm_to_rollback">このWikiをバックアップバージョンに置き換えますか？この操作は元に戻せません。</string>
 	<string name="confirm_to_exit_wiki">未保存の変更があります。本当に終了しますか？</string>
+	<string name="confirm_to_exit_wiki_classic">本当に終了しますか？すべての変更が保存されたことを確認してください。</string>
 	<string name="wiki_rolled_back_successfully">Wikiはロールバックされました</string>
 	<string name="third_part_rising">このページから別のアプリケーションが開かれます。続行しますか？</string>
 	<string name="backup_deleted">バックアップを削除しました</string>

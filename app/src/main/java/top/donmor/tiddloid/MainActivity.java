@@ -72,7 +72,6 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 import org.mozilla.javascript.Scriptable;
-import org.mozilla.javascript.UniqueTag;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -123,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
 			KEY_VERSION = "version",
 			KEY_VERSION_AREA = "versionArea",
 			KEY_TITLE = "title",
-			KEY_MAJOR = "major",
 			SE_GOOGLE = "Google",
 			SE_BING = "Bing",
 			SE_BAIDU = "Baidu",
@@ -133,7 +131,7 @@ public class MainActivity extends AppCompatActivity {
 			PREF_VER_2 = "};",
 			PREF_S = "%s",
 			PREF_SU = "#content#",
-			SCHEME_WITH_SLASHES_HTTP = "http://",
+			SCH_EX_HTTP = "http://",
 			TEMPLATE_FILE_NAME = "template.html",
 			CHARSET_DEFAULT = "UTF-8",
 			CLASS_MENU_BUILDER = "MenuBuilder",
@@ -145,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
 		getWindow().setFormat(PixelFormat.RGBA_8888);
 		setContentView(R.layout.activity_main);
 		File templateOnStart = new File(getFilesDir(), TEMPLATE_FILE_NAME);
-		if (!templateOnStart.exists() || templateOnStart.length() == 0) {
+		if (!templateOnStart.exists() || !(new TWInfo(MainActivity.this, templateOnStart).isWiki)) {
 			final ProgressDialog progressDialog = new ProgressDialog(this);
 			progressDialog.setMessage(getResources().getString(R.string.please_wait));
 			progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
@@ -156,7 +154,7 @@ public class MainActivity extends AppCompatActivity {
 					wGet(MainActivity.this, Uri.parse(getResources().getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
 						@Override
 						public boolean checkNg(File file) {
-							return getTWType(MainActivity.this, file) == 0;
+							return !(new TWInfo(MainActivity.this, file).isWiki);
 						}
 					}, new OnDownloadCompleteListener() {
 						@Override
@@ -264,7 +262,7 @@ public class MainActivity extends AppCompatActivity {
 				}
 				if (id != null && vp != null && mp < ep) {
 					File f = new File(vp);
-					if (getTWType(MainActivity.this, f) != 0) {
+					if (new TWInfo(MainActivity.this, f).isWiki) {
 						if (!loadPage(id))
 							Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 					} else {
@@ -465,7 +463,8 @@ public class MainActivity extends AppCompatActivity {
 								public void onFileTouched(File[] files) {
 									if (files != null && files.length > 0 && files[0] != null) {
 										File file = files[0];
-										if (getTWType(MainActivity.this, file) > 0) {
+										TWInfo info = new TWInfo(MainActivity.this, file);
+										if (info.isWiki) {
 											try {
 												boolean exist = false;
 												for (int i = 0; i < db.getJSONArray(DB_KEY_WIKI).length(); i++) {
@@ -477,13 +476,15 @@ public class MainActivity extends AppCompatActivity {
 												if (exist) {
 													Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 												} else {
-													String p = file.getAbsolutePath();
+													String p = file.getAbsolutePath(), t = (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki);
+													wikiData.put(KEY_NAME, t);
 													wikiData.put(DB_KEY_PATH, p);
 													btnWikiConfigPath.setText(p);
-													writeJson(openFileOutput(TEMPLATE_FILE_NAME, MODE_PRIVATE), db);
+													wikiConfigDialog.setTitle(t);
+													writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
 												}
 												db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-												writeJson(openFileOutput(TEMPLATE_FILE_NAME, MODE_PRIVATE), db);
+												writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
 											} catch (Exception e) {
 												e.printStackTrace();
 												Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
@@ -655,7 +656,7 @@ public class MainActivity extends AppCompatActivity {
 		int id = item.getItemId();
 		if (id == R.id.action_new) {
 			final File template = new File(getFilesDir(), TEMPLATE_FILE_NAME);
-			if (template.exists() && template.length() > 0) {
+			if (template.exists() && new TWInfo(MainActivity.this, template).isWiki) {
 				File lastDir = Environment.getExternalStorageDirectory();
 				boolean showHidden = false;
 				try {
@@ -696,8 +697,9 @@ public class MainActivity extends AppCompatActivity {
 									if (exist) {
 										Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
 									} else {
+										TWInfo info = new TWInfo(MainActivity.this, file);
 										JSONObject w = new JSONObject();
-										w.put(MainActivity.KEY_NAME, getResources().getString(R.string.tiddlywiki));
+										w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
 										w.put(KEY_ID, id);
 										w.put(DB_KEY_PATH, file.getAbsolutePath());
 										w.put(DB_KEY_BACKUP, false);
@@ -749,7 +751,7 @@ public class MainActivity extends AppCompatActivity {
 						wGet(MainActivity.this, Uri.parse(getResources().getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
 							@Override
 							public boolean checkNg(File file) {
-								return getTWType(MainActivity.this, file) == 0;
+								return !(new TWInfo(MainActivity.this, file).isWiki);
 							}
 						}, new OnDownloadCompleteListener() {
 							@Override
@@ -794,7 +796,8 @@ public class MainActivity extends AppCompatActivity {
 					if (files != null && files.length > 0 && files[0] != null) {
 						File file = files[0];
 						String id = genId();
-						if (getTWType(MainActivity.this, file) > 0) {
+						TWInfo info = new TWInfo(MainActivity.this, file);
+						if (info.isWiki) {
 							try {
 								boolean exist = false;
 								for (int i = 0; i < db.getJSONArray(DB_KEY_WIKI).length(); i++) {
@@ -808,7 +811,7 @@ public class MainActivity extends AppCompatActivity {
 									Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 								} else {
 									JSONObject w = new JSONObject();
-									w.put(MainActivity.KEY_NAME, getResources().getString(R.string.tiddlywiki));
+									w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
 									w.put(KEY_ID, id);
 									w.put(DB_KEY_PATH, file.getAbsolutePath());
 									w.put(DB_KEY_BACKUP, false);
@@ -870,7 +873,7 @@ public class MainActivity extends AppCompatActivity {
 					String[] sug = data.getStringArray(KEY_SUG);
 					MatrixCursor cursor = new MatrixCursor(SUG_COLUMNS);
 					int i = 0;
-					Uri uri1 = sch == null ? Uri.parse(SCHEME_WITH_SLASHES_HTTP + src) : null;
+					Uri uri1 = sch == null ? Uri.parse(SCH_EX_HTTP + src) : null;
 					String hos1 = uri1 != null ? uri1.getHost() : null;
 					if (sch != null && sch.length() > 0 || hos1 != null && hos1.indexOf('.') > 0 && hos1.length() > hos1.indexOf('.') + 1) {
 						cursor.addRow(new CharSequence[]{String.valueOf(i), src, getResources().getString(R.string.mark_Go), STR_EMPTY, getResources().getString(R.string.mark_Return)});
@@ -911,7 +914,7 @@ public class MainActivity extends AppCompatActivity {
 					Bundle bu = new Bundle();
 					if (direct && vScheme != null && vScheme.length() > 0)
 						bu.putString(KEY_URL, res);
-					else if (direct) bu.putString(KEY_URL, SCHEME_WITH_SLASHES_HTTP + res);
+					else if (direct) bu.putString(KEY_URL, SCH_EX_HTTP + res);
 					else bu.putString(KEY_URL, wSearch(res));
 					in.putExtras(bu).setClass(MainActivity.this, TWEditorWV.class);
 					startActivity(in);
@@ -927,12 +930,12 @@ public class MainActivity extends AppCompatActivity {
 					Bundle bu = new Bundle();
 					Uri uri = Uri.parse(query);
 					String sch = uri.getScheme();
-					Uri uri1 = sch == null ? Uri.parse(SCHEME_WITH_SLASHES_HTTP + query) : null;
+					Uri uri1 = sch == null ? Uri.parse(SCH_EX_HTTP + query) : null;
 					String hos1 = uri1 != null ? uri1.getHost() : null;
 					if (sch != null && sch.length() > 0)
 						bu.putString(KEY_URL, query);
 					else if (hos1 != null && hos1.indexOf('.') > 0 && hos1.length() > hos1.indexOf('.') + 1)
-						bu.putString(KEY_URL, SCHEME_WITH_SLASHES_HTTP + query);
+						bu.putString(KEY_URL, SCH_EX_HTTP + query);
 					else bu.putString(KEY_URL, wSearch(query));
 					in.putExtras(bu).setClass(MainActivity.this, TWEditorWV.class);
 					startActivity(in);
@@ -1083,7 +1086,7 @@ public class MainActivity extends AppCompatActivity {
 									Uri uri = Uri.parse(vCSE.getText().toString());
 									String sch = uri.getScheme();
 									if (sch == null)
-										uri = Uri.parse(SCHEME_WITH_SLASHES_HTTP + uri.toString());
+										uri = Uri.parse(SCH_EX_HTTP + uri.toString());
 									db.put(DB_KEY_CSE, uri.toString());
 								}
 							} catch (Exception e) {
@@ -1118,7 +1121,7 @@ public class MainActivity extends AppCompatActivity {
 							wGet(MainActivity.this, Uri.parse(getResources().getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
 								@Override
 								public boolean checkNg(File file) {
-									return getTWType(MainActivity.this, file) == 0;
+									return !(new TWInfo(MainActivity.this, file).isWiki);
 								}
 							}, new OnDownloadCompleteListener() {
 								@Override
@@ -1276,37 +1279,38 @@ public class MainActivity extends AppCompatActivity {
 		return UUID.randomUUID().toString();
 	}
 
-	private static int getTWType(Context context, File file) {
-		String c = null;
-		boolean v = false;
-		try {
-			Document doc = Jsoup.parse(file, CHARSET_DEFAULT);
-			Element ele = doc.getElementsByAttributeValue(KEY_NAME, KEY_APPLICATION_NAME).first();
-			c = ele != null ? ele.attributes().get(KEY_CONTENT) : null;
-			if (c == null || c.length() == 0) {
-				Element ele2 = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
-				String js = ele2 != null ? ele2.html().substring(ele2.html().indexOf(PREF_VER_1), ele2.html().indexOf(PREF_VER_2) + 2) : null;
+	private class TWInfo {
+		private boolean isWiki;
+		private String title;
+
+		private TWInfo(Context context, File file) {
+			try {
+				Document doc = Jsoup.parse(file, CHARSET_DEFAULT);
+				Element ti = doc.getElementsByTag(KEY_TITLE).first();
+				title = ti != null ? ti.html() : null;
+				Element an = doc.getElementsByAttributeValue(KEY_NAME, KEY_APPLICATION_NAME).first();
+				isWiki = an != null && an.attr(KEY_CONTENT).equals(context.getResources().getString(R.string.tiddlywiki));
+				if (isWiki) return;
+				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
+				String js = ele != null ? ele.html().substring(ele.html().indexOf(PREF_VER_1), ele.html().indexOf(PREF_VER_2) + 2) : null;
 				if (js != null) {
 					org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
 					rhino.setOptimizationLevel(-1);
 					try {
 						Scriptable scope = rhino.initStandardObjects();
 						rhino.evaluateString(scope, js, context.getResources().getString(R.string.app_name), 1, null);
-						c = (String) ((Scriptable) scope.get(KEY_VERSION, scope)).get(KEY_TITLE, scope);
-						v = c.equals(context.getResources().getString(R.string.tiddlywiki)) && ((Scriptable) scope.get(KEY_VERSION, scope)).get(KEY_MAJOR, scope) != UniqueTag.NOT_FOUND;
+						String c = (String) ((Scriptable) scope.get(KEY_VERSION, scope)).get(KEY_TITLE, scope);
+						isWiki = c != null && c.equals(context.getResources().getString(R.string.tiddlywiki));
 					} catch (Exception e) {
 						e.printStackTrace();
 					} finally {
 						org.mozilla.javascript.Context.exit();
 					}
 				}
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
-		if (c != null && c.equals(context.getResources().getString(R.string.tiddlywiki)))
-			return v ? 2 : 1;
-		return 0;
 	}
 
 	public static boolean isBackupFile(File main, File chk) {
@@ -1393,7 +1397,7 @@ public class MainActivity extends AppCompatActivity {
 				KEY_FILEPATH = "filepath";
 		String sch = uri.getScheme();
 		if (sch == null || sch.length() == 0)
-			uri = Uri.parse(SCHEME_WITH_SLASHES_HTTP + uri.toString());
+			uri = Uri.parse(SCH_EX_HTTP + uri.toString());
 		try {
 			final String id = MainActivity.genId().substring(0, 7);
 			final int idt = Integer.parseInt(id, 16);

@@ -166,6 +166,7 @@
     <string name="confirm_to_auto_remove_wiki">The item selected is not a TiddlyWiki. Do you want to remove it?</string>
     <string name="confirm_to_rollback">Are you sure you want to replace this Wiki with the backup version? This operation cannot be undone!</string>
     <string name="confirm_to_exit_wiki">Unsaved changes detected. Are you sure you want to quit?</string>
+    <string name="confirm_to_exit_wiki_classic">Are you sure you want to quit? Please make sure all your modifications have been saved.</string>
     <string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
     <string name="third_part_rising">The page is trying to start another application. Do you want to continue?</string>
     <string name="backup_deleted">Backup deleted</string>

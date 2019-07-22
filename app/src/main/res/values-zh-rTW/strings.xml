@@ -56,6 +56,7 @@
 	<string name="confirm_to_auto_remove_wiki">所選項目不是TiddlyWiki。你想刪除它嗎？</string>
 	<string name="confirm_to_rollback">您確定要用備份版本替換此Wiki嗎？此操作無法撤消！</string>
 	<string name="confirm_to_exit_wiki">檢測到未保存的更改。你確定要退出嗎？</string>
+	<string name="confirm_to_exit_wiki_classic">你確定要退出嗎？請確保你的所有修改都已保存。</string>
 	<string name="wiki_rolled_back_successfully">Wiki成功回滾</string>
 	<string name="third_part_rising">另一個應用程序將由此頁面打開。你想繼續嗎？</string>
 	<string name="backup_deleted">備份已刪除</string>

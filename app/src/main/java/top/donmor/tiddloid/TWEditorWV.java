@@ -68,8 +68,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private Bitmap favicon;
-	private boolean isWiki;
-	private boolean dirty;
+	private boolean isWiki, isClassic, dirty;
 	private String id;
 
 	// CONSTANT
@@ -328,13 +327,9 @@ public class TWEditorWV extends AppCompatActivity {
 								}
 							});
 					}
-					if (classic) {
-						wvs.setBuiltInZoomControls(true);
-						wvs.setDisplayZoomControls(true);
-					} else {
-						wvs.setBuiltInZoomControls(false);
-						wvs.setDisplayZoomControls(false);
-					}
+					wvs.setBuiltInZoomControls(classic);
+					wvs.setDisplayZoomControls(classic);
+					isClassic = classic;
 				} else isWiki = false;
 			}
 
@@ -726,6 +721,8 @@ public class TWEditorWV extends AppCompatActivity {
 	private void nextWiki(Intent intent, int serial) {
 		String ueu = URL_BLANK;
 		toolbar.setLogo(null);
+		wvs.setBuiltInZoomControls(false);
+		wvs.setDisplayZoomControls(false);
 		wApp = null;
 		dirty = false;
 		wvs.setJavaScriptEnabled(false);
@@ -762,10 +759,10 @@ public class TWEditorWV extends AppCompatActivity {
 		else if (wv.canGoBack())
 			wv.goBack();
 		else {
-			if (isWiki && dirty) {
+			if (isWiki && (isClassic || dirty)) {
 				final AlertDialog.Builder isExit = new AlertDialog.Builder(this);
 				isExit.setTitle(android.R.string.dialog_alert_title);
-				isExit.setMessage(R.string.confirm_to_exit_wiki);
+				isExit.setMessage(isClassic ? R.string.confirm_to_exit_wiki_classic : R.string.confirm_to_exit_wiki);
 				isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 							public void onClick(DialogInterface dialog, int which) {
 								dialog.dismiss();
