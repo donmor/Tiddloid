@@ -696,10 +696,10 @@ public class TWEditorWV extends AppCompatActivity {
 			if (ser == -1) Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 			else if (!fid.equals(id)) {
 				final int serial = ser;
-				if (isWiki && dirty) {
+				if (isWiki && (isClassic || dirty)) {
 					final AlertDialog.Builder isExit = new AlertDialog.Builder(this);
 					isExit.setTitle(android.R.string.dialog_alert_title);
-					isExit.setMessage(R.string.confirm_to_exit_wiki);
+					isExit.setMessage(isClassic ? R.string.confirm_to_exit_wiki_classic : R.string.confirm_to_exit_wiki);
 					isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
 								public void onClick(DialogInterface dialog, int which) {
 									dialog.dismiss();
