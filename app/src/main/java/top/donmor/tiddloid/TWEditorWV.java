@@ -343,15 +343,6 @@ public class TWEditorWV extends AppCompatActivity {
 			@JavascriptInterface
 			public void setDirty(boolean d) {
 				dirty = d;
-				if (!d)
-					try {
-						if (wApp != null) {
-							wApp.put(MainActivity.KEY_NAME, TWEditorWV.this.getTitle().toString());
-							MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), db);
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					}
 			}
 
 			@SuppressWarnings("unused")
@@ -421,6 +412,20 @@ public class TWEditorWV extends AppCompatActivity {
 							}
 							os.flush();
 							if (lengthTotal != len) throw new Exception();
+							runOnUiThread(new Runnable() {
+								@Override
+								public void run() {
+									Bitmap icon = wv.getFavicon();
+									if (wApp != null && icon == null) try {
+										toolbar.setLogo(null);
+										new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)).delete();
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+								}
+							});
+							wApp.put(MainActivity.KEY_NAME, TWEditorWV.this.getTitle().toString());
+							MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), db);
 						}
 					} catch (Exception e) {
 						e.printStackTrace();
