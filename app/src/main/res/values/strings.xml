@@ -40,7 +40,7 @@
                     var message = event.target,
                     filepath = message.getAttribute(\"data-tiddlyfox-path\"),
                     content = message.getAttribute(\"data-tiddlyfox-content\");
-                    window.client.saveWiki(filepath,content);
+                    window.client.saveWiki(content);
                     message.parentNode.removeChild(message);
                     var event = doc.createEvent(\"Events\");
                     event.initEvent(\"tiddlyfox-have-saved-file\",true,false);
