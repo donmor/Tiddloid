@@ -68,7 +68,7 @@
         xhr.send();
     </string>
     <string name="js_quit" translatable="false">
-        window.client.isDirtyOnQuit(document.body.classList.contains("tc-dirty"));
+        window.client.isDirtyOnQuit(document.body.classList.contains(\"tc-dirty\"));
     </string>
     <string name="js_quit_c" translatable="false">
         window.client.isDirtyOnQuit(store.dirty || story.areAnyDirty());
