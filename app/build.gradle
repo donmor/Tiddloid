@@ -34,7 +34,7 @@ android {
         //noinspection OldTargetApi
         targetSdkVersion 28
         versionCode 26
-        versionName "1.2.0"
+        versionName "1.2.1"
         testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
