@@ -384,86 +384,83 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@SuppressWarnings("unused")
 			@JavascriptInterface
-			public void saveWiki(String filepath, String data) {
+			public void saveWiki(String data) {
 				final ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(Charset.forName(CHARSET_NAME_UTF_8)));
 				if (wApp != null) {
 					FileOutputStream os = null;
 					try {
 						String fp = wApp.getString(MainActivity.DB_KEY_PATH);
-						if (fp.equals(filepath)) {
-							File file = new File(fp);
-							if (wApp.getBoolean(MainActivity.DB_KEY_BACKUP)) {
-								FileInputStream isb = null;
-								FileOutputStream osb = null;
-								try {
-									String mfn = file.getName();
-									File mfd = new File(file.getParentFile().getAbsolutePath() + '/' + mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
-									if (!mfd.exists()) mfd.mkdir();
-									else if (!mfd.isDirectory()) throw new Exception();
-									DateTime dateTime = new DateTime(file.lastModified(), DateTimeZone.UTC);
-									String prefix = '.'
-											+ String.format(Locale.US, F04D, dateTime.year().get())
-											+ String.format(Locale.US, F02D, dateTime.monthOfYear().get())
-											+ String.format(Locale.US, F02D, dateTime.dayOfMonth().get())
-											+ String.format(Locale.US, F02D, dateTime.hourOfDay().get())
-											+ String.format(Locale.US, F02D, dateTime.minuteOfHour().get())
-											+ String.format(Locale.US, F02D, dateTime.secondOfMinute().get())
-											+ String.format(Locale.US, F03D, dateTime.millisOfSecond().get());
-									isb = new FileInputStream(file);
-									osb = new FileOutputStream(new File(mfd.getAbsolutePath() + '/' + new StringBuilder(mfn).insert(mfn.lastIndexOf('.'), prefix).toString()));
-									int len = isb.available();
-									int length, lengthTotal = 0;
-									byte[] b = new byte[512];
-									while ((length = isb.read(b)) != -1) {
-										osb.write(b, 0, length);
-										lengthTotal += length;
-									}
-									osb.flush();
-									if (lengthTotal != len) throw new Exception();
-								} catch (Exception e) {
-									e.printStackTrace();
-									Toast.makeText(TWEditorWV.this, R.string.backup_failed, Toast.LENGTH_SHORT).show();
-								} finally {
-									if (isb != null)
-										try {
-											isb.close();
-										} catch (Exception e) {
-											e.printStackTrace();
-										}
-									if (osb != null)
-										try {
-											osb.close();
-										} catch (Exception e) {
-											e.printStackTrace();
-										}
+						File file = new File(fp);
+						if (wApp.getBoolean(MainActivity.DB_KEY_BACKUP)) {
+							FileInputStream isb = null;
+							FileOutputStream osb = null;
+							try {
+								String mfn = file.getName();
+								File mfd = new File(file.getParentFile().getAbsolutePath() + '/' + mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
+								if (!mfd.exists()) mfd.mkdir();
+								else if (!mfd.isDirectory()) throw new Exception();
+								DateTime dateTime = new DateTime(file.lastModified(), DateTimeZone.UTC);
+								String prefix = '.'
+										+ String.format(Locale.US, F04D, dateTime.year().get())
+										+ String.format(Locale.US, F02D, dateTime.monthOfYear().get())
+										+ String.format(Locale.US, F02D, dateTime.dayOfMonth().get())
+										+ String.format(Locale.US, F02D, dateTime.hourOfDay().get())
+										+ String.format(Locale.US, F02D, dateTime.minuteOfHour().get())
+										+ String.format(Locale.US, F02D, dateTime.secondOfMinute().get())
+										+ String.format(Locale.US, F03D, dateTime.millisOfSecond().get());
+								isb = new FileInputStream(file);
+								osb = new FileOutputStream(new File(mfd.getAbsolutePath() + '/' + new StringBuilder(mfn).insert(mfn.lastIndexOf('.'), prefix).toString()));
+								int len = isb.available();
+								int length, lengthTotal = 0;
+								byte[] b = new byte[512];
+								while ((length = isb.read(b)) != -1) {
+									osb.write(b, 0, length);
+									lengthTotal += length;
 								}
-							}
-							os = new FileOutputStream(file);
-							int len = is.available();
-							int length, lengthTotal = 0;
-							byte[] b = new byte[512];
-							while ((length = is.read(b)) != -1) {
-
-								os.write(b, 0, length);
-								lengthTotal += length;
-							}
-							os.flush();
-							if (lengthTotal != len) throw new Exception();
-							runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									Bitmap icon = wv.getFavicon();
-									if (wApp != null && icon == null) try {
-										toolbar.setLogo(null);
-										new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)).delete();
+								osb.flush();
+								if (lengthTotal != len) throw new Exception();
+							} catch (Exception e) {
+								e.printStackTrace();
+								Toast.makeText(TWEditorWV.this, R.string.backup_failed, Toast.LENGTH_SHORT).show();
+							} finally {
+								if (isb != null)
+									try {
+										isb.close();
 									} catch (Exception e) {
 										e.printStackTrace();
 									}
-								}
-							});
-							wApp.put(MainActivity.KEY_NAME, TWEditorWV.this.getTitle().toString());
-							MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), db);
+								if (osb != null)
+									try {
+										osb.close();
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+							}
 						}
+						os = new FileOutputStream(file);
+						int len = is.available();
+						int length, lengthTotal = 0;
+						byte[] b = new byte[512];
+						while ((length = is.read(b)) != -1) {
+							os.write(b, 0, length);
+							lengthTotal += length;
+						}
+						os.flush();
+						if (lengthTotal != len) throw new Exception();
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								Bitmap icon = wv.getFavicon();
+								if (wApp != null && icon == null) try {
+									toolbar.setLogo(null);
+									new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)).delete();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+							}
+						});
+						wApp.put(MainActivity.KEY_NAME, TWEditorWV.this.getTitle().toString());
+						MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), db);
 					} catch (Exception e) {
 						e.printStackTrace();
 						Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
