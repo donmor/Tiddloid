@@ -59,8 +59,9 @@ public class TWEditorWV extends AppCompatActivity {
 	private JSONObject wApp;
 	private WebChromeClient wcc;
 	private View mCustomView;
-	private int mOriginalOrientation;
 	private WebChromeClient.CustomViewCallback mCustomViewCallback;
+	private int mOriginalOrientation, nextWikiSerial = -1;
+	private Intent nextWikiIntent;
 	protected FrameLayout mFullscreenContainer;
 	private ValueCallback<Uri[]> uploadMessage;
 	private WebView wv;
@@ -68,7 +69,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private Bitmap favicon;
-	private boolean isWiki, isClassic, dirty;
+	private boolean isWiki, isClassic;
 	private String id;
 
 	// CONSTANT
@@ -341,8 +342,44 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@SuppressWarnings("unused")
 			@JavascriptInterface
-			public void setDirty(boolean d) {
-				dirty = d;
+			public void isDirtyOnQuit(boolean d) {
+				if (d) {
+					final AlertDialog.Builder isExit = new AlertDialog.Builder(TWEditorWV.this);
+					isExit.setTitle(android.R.string.dialog_alert_title);
+					isExit.setMessage(R.string.confirm_to_exit_wiki);
+					isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int which) {
+									quitting();
+									dialog.dismiss();
+								}
+							}
+					);
+					isExit.setNegativeButton(android.R.string.no, null);
+					isExit.setOnCancelListener(new DialogInterface.OnCancelListener() {
+						@Override
+						public void onCancel(DialogInterface dialog) {
+							nextWikiIntent = null;
+							nextWikiSerial = -1;
+						}
+					});
+					AlertDialog dialog = isExit.create();
+					dialog.setCanceledOnTouchOutside(false);
+					dialog.show();
+				} else {
+					quitting();
+				}
+			}
+
+			private void quitting() {
+				runOnUiThread(new Runnable() {
+					@Override
+					public void run() {
+						if (nextWikiIntent == null)
+							TWEditorWV.super.onBackPressed();
+						else
+							nextWiki();
+					}
+				});
 			}
 
 			@SuppressWarnings("unused")
@@ -700,41 +737,26 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 			if (ser == -1) Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 			else if (!fid.equals(id)) {
-				final int serial = ser;
-				if (isWiki && (isClassic || dirty)) {
-					final AlertDialog.Builder isExit = new AlertDialog.Builder(this);
-					isExit.setTitle(android.R.string.dialog_alert_title);
-					isExit.setMessage(isClassic ? R.string.confirm_to_exit_wiki_classic : R.string.confirm_to_exit_wiki);
-					isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int which) {
-									dialog.dismiss();
-									nextWiki(intent, serial);
-								}
-							}
-					);
-					isExit.setNegativeButton(android.R.string.no, null);
-					AlertDialog dialog = isExit.create();
-					dialog.setCanceledOnTouchOutside(false);
-					dialog.show();
-				} else {
-					nextWiki(intent, serial);
-				}
+				nextWikiIntent = intent;
+				nextWikiSerial = ser;
+				if (isWiki)
+					wv.loadUrl(SCH_JS + ':' + getResources().getString(isClassic ? R.string.js_quit_c : R.string.js_quit));
+				else nextWiki();
 			}
 		}
 	}
 
-	private void nextWiki(Intent intent, int serial) {
+	private void nextWiki() {
 		String ueu = URL_BLANK;
 		toolbar.setLogo(null);
 		wvs.setBuiltInZoomControls(false);
 		wvs.setDisplayZoomControls(false);
 		wApp = null;
-		dirty = false;
 		wvs.setJavaScriptEnabled(false);
 		wv.loadUrl(ueu);
-		setIntent(intent);
+		setIntent(nextWikiIntent);
 		try {
-			wApp = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(serial);
+			wApp = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(nextWikiSerial);
 			id = wApp.getString(MainActivity.KEY_ID);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -755,6 +777,8 @@ public class TWEditorWV extends AppCompatActivity {
 		}
 		wvs.setJavaScriptEnabled(true);
 		wv.loadUrl(ueu);
+		nextWikiIntent = null;
+		nextWikiSerial = -1;
 	}
 
 	@Override
@@ -763,25 +787,10 @@ public class TWEditorWV extends AppCompatActivity {
 			wcc.onHideCustomView();
 		else if (wv.canGoBack())
 			wv.goBack();
-		else {
-			if (isWiki && (isClassic || dirty)) {
-				final AlertDialog.Builder isExit = new AlertDialog.Builder(this);
-				isExit.setTitle(android.R.string.dialog_alert_title);
-				isExit.setMessage(isClassic ? R.string.confirm_to_exit_wiki_classic : R.string.confirm_to_exit_wiki);
-				isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-							public void onClick(DialogInterface dialog, int which) {
-								dialog.dismiss();
-								TWEditorWV.super.onBackPressed();
-							}
-						}
-				);
-				isExit.setNegativeButton(android.R.string.no, null);
-				AlertDialog dialog = isExit.create();
-				dialog.setCanceledOnTouchOutside(false);
-				dialog.show();
-			} else {
-				TWEditorWV.super.onBackPressed();
-			}
+		else if (isWiki) {
+			wv.loadUrl(SCH_JS + ':' + getResources().getString(isClassic ? R.string.js_quit_c : R.string.js_quit));
+		} else {
+			TWEditorWV.super.onBackPressed();
 		}
 	}
 

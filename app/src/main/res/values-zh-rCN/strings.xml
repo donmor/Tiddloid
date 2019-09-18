@@ -56,8 +56,7 @@
 	<string name="confirm_to_auto_remove_wiki">所选项目不是TiddlyWiki。要从列表中移除它吗？</string>
 	<string name="confirm_to_rollback">您确定要用备份的版本替换此Wiki吗？</string>
 	<string name="confirm_to_exit_wiki">一些更改尚未保存。确定要退出吗？</string>
-	<string name="confirm_to_exit_wiki_classic">确定要退出吗？请确认所有修改已经保存。</string>
-	<string name="wiki_rolled_back_successfully">Wiki成功还原</string>
+    <string name="wiki_rolled_back_successfully">Wiki成功还原</string>
 	<string name="third_part_rising">此页面正在请求打开另一个应用程序。要继续吗？</string>
 	<string name="backup_deleted">备份已删除</string>
 	<string name="action_about">关于Tiddloid</string>

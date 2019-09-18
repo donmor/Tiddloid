@@ -56,8 +56,7 @@
 	<string name="confirm_to_auto_remove_wiki">Der ausgewählte Gegenstand ist kein TiddlyWiki. Möchten Sie es entfernen?</string>
 	<string name="confirm_to_rollback">Möchten Sie dieses Wiki wirklich durch die Sicherungsversion ersetzen? Dieser Vorgang kann nicht rückgängig gemacht werden!</string>
 	<string name="confirm_to_exit_wiki">Nicht gespeicherte Änderungen erkannt. Möchtest du kündigen?</string>
-	<string name="confirm_to_exit_wiki_classic">Möchtest du kündigen? Bitte stellen Sie sicher, dass alle Ihre Änderungen gespeichert wurden.</string>
-	<string name="wiki_rolled_back_successfully">Wiki zurückgerollt erfolgreich</string>
+    <string name="wiki_rolled_back_successfully">Wiki zurückgerollt erfolgreich</string>
 	<string name="third_part_rising">Die Seite versucht, eine andere Anwendung zu starten. Möchtest du fortfahren?</string>
 	<string name="backup_deleted">Backup gelöscht</string>
     <string name="action_about">Über Tiddloid</string>
