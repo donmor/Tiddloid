@@ -362,7 +362,7 @@ public class MainActivity extends AppCompatActivity {
 															os = new FileOutputStream(new File(btnWikiConfigPath.getText().toString()));
 															int len = is.available();
 															int length, lengthTotal = 0;
-															byte[] b = new byte[512];
+															byte[] b = new byte[4096];
 															while ((length = is.read(b)) != -1) {
 																os.write(b, 0, length);
 																lengthTotal += length;
@@ -677,7 +677,7 @@ public class MainActivity extends AppCompatActivity {
 								os = new FileOutputStream(file);
 								int len = is.available();
 								int length, lengthTotal = 0;
-								byte[] b = new byte[512];
+								byte[] b = new byte[4096];
 								while ((length = is.read(b)) != -1) {
 									os.write(b, 0, length);
 									lengthTotal += length;
@@ -1198,20 +1198,6 @@ public class MainActivity extends AppCompatActivity {
 		super.onResume();
 		try {
 			db = readJson(openFileInput(DB_FILE_NAME));
-			if (db != null) {
-				int i = 0;
-				if (db.getJSONArray(DB_KEY_WIKI).length() > 0)
-					do {
-						if (!new File(db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(DB_KEY_PATH)).exists())
-							if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT) {
-								db.put(DB_KEY_WIKI, removeUnderK(db.getJSONArray(DB_KEY_WIKI), i));
-							} else {
-								db.getJSONArray(DB_KEY_WIKI).remove(i);
-							}
-						else i++;
-					} while (i < db.getJSONArray(DB_KEY_WIKI).length());
-			}
-			writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
 			wikiListAdapter.reload(db);
 			rvWikiList.setAdapter(wikiListAdapter);
 		} catch (Exception e) {
@@ -1454,7 +1440,7 @@ public class MainActivity extends AppCompatActivity {
 						os2 = new FileOutputStream(dest);
 						int length;
 						int lengthTotal = 0;
-						byte[] bytes = new byte[128];
+						byte[] bytes = new byte[4096];
 						if (!noToast) {
 							bundle.putInt(KEY_TOAST, R.string.downloading);
 							msg = new Message();
@@ -1496,7 +1482,7 @@ public class MainActivity extends AppCompatActivity {
 							notificationManager.notify(id, idt, notification);
 						}
 						is2 = new FileInputStream(cacheFile);
-						byte[] b2 = new byte[512];
+						byte[] b2 = new byte[4096];
 						int l2, lt2 = 0;
 						while ((l2 = is2.read(b2)) != -1) {
 							os2.write(b2, 0, l2);

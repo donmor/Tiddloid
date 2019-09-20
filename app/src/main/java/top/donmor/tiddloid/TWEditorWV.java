@@ -412,7 +412,7 @@ public class TWEditorWV extends AppCompatActivity {
 								osb = new FileOutputStream(new File(mfd.getAbsolutePath() + '/' + new StringBuilder(mfn).insert(mfn.lastIndexOf('.'), prefix).toString()));
 								int len = isb.available();
 								int length, lengthTotal = 0;
-								byte[] b = new byte[512];
+								byte[] b = new byte[4096];
 								while ((length = isb.read(b)) != -1) {
 									osb.write(b, 0, length);
 									lengthTotal += length;
@@ -440,7 +440,7 @@ public class TWEditorWV extends AppCompatActivity {
 						os = new FileOutputStream(file);
 						int len = is.available();
 						int length, lengthTotal = 0;
-						byte[] b = new byte[512];
+						byte[] b = new byte[4096];
 						while ((length = is.read(b)) != -1) {
 							os.write(b, 0, length);
 							lengthTotal += length;
@@ -496,7 +496,7 @@ public class TWEditorWV extends AppCompatActivity {
 									os = new FileOutputStream(file);
 									int len = is.available();
 									int length, lengthTotal = 0;
-									byte[] b = new byte[512];
+									byte[] b = new byte[4096];
 									while ((length = is.read(b)) != -1) {
 										os.write(b, 0, length);
 										lengthTotal += length;
@@ -601,28 +601,31 @@ public class TWEditorWV extends AppCompatActivity {
 		wv.setWebViewClient(new WebViewClient() {
 			@Override
 			public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
-				Uri uri = Uri.parse(url);
-				String sch = uri.getScheme();
+				Uri u = Uri.parse(url);
+				String sch = u.getScheme();
 				boolean browse = sch != null && (sch.equals(SCH_ABOUT) || sch.equals(SCH_HTTP) || sch.equals(SCH_HTTPS));
 				if (sch == null || sch.length() == 0 || wApp == null && browse)
 					return false;
 				try {
+					Intent intent;
 					switch (sch) {
 						case SCH_TEL:
-							Intent intent = new Intent(Intent.ACTION_DIAL, Uri.parse(url));
+							intent = new Intent(Intent.ACTION_DIAL, u);
 							view.getContext().startActivity(intent);
 							break;
 						case SCH_MAILTO:
-							Intent intent2 = new Intent(Intent.ACTION_SENDTO, Uri.parse(url));
-							view.getContext().startActivity(intent2);
+							intent = new Intent(Intent.ACTION_SENDTO, u);
+							view.getContext().startActivity(intent);
 							break;
 						case SCH_ABOUT:
 						case SCH_HTTP:
 						case SCH_HTTPS:
-							Intent intent3 = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-							view.getContext().startActivity(intent3);
+							intent = new Intent(Intent.ACTION_VIEW, u);
+							view.getContext().startActivity(intent);
 							break;
 						default:
+							intent = new Intent(Intent.ACTION_VIEW, u);
+							final Intent intent1 = intent;
 							new AlertDialog.Builder(TWEditorWV.this)
 									.setTitle(android.R.string.dialog_alert_title)
 									.setMessage(R.string.third_part_rising)
@@ -631,8 +634,7 @@ public class TWEditorWV extends AppCompatActivity {
 										@Override
 										public void onClick(DialogInterface dialog, int which) {
 											try {
-												Intent intent4 = new Intent(Intent.ACTION_VIEW, Uri.parse(url));
-												view.getContext().startActivity(intent4);
+												view.getContext().startActivity(intent1);
 											} catch (Exception e) {
 												e.printStackTrace();
 											}
