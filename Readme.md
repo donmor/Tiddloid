@@ -70,5 +70,5 @@ Here's the difference between Tiddloid and Tiddloid Lite:
 | Cloud Service (via SAF) | No | Yes |
 | Android Q dark mode | No | Yes |
 | Template | Download on first startup | Download on creating new wiki
-| Compatibility | Support most Android versions and most TiddlyWikis | Support latest Android version better, support most of TW5 |
+| Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android version best and support most of TW5 |
 | Supported Android version | Android 16 ~ 28 | Android 24 ~ |
