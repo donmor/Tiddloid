@@ -1,8 +1,10 @@
 # Tiddloid
 
-![avatar](img/img01.png)    ![avatar](img/img02.png)
+![avatar](img/Tiddloid.png)
 
 Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere.
+
+![avatar](img/img01.png)    ![avatar](img/img02.png)
 
 See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
