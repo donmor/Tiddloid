@@ -74,7 +74,6 @@ import org.json.JSONObject;
 import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
-import org.mozilla.javascript.Scriptable;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
@@ -123,7 +122,6 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_SEARCH_ENGINE = "searchEngine",
 			KEY_APPLICATION_NAME = "application-name",
 			KEY_CONTENT = "content",
-			KEY_VERSION = "version",
 			KEY_VERSION_AREA = "versionArea",
 			KEY_STORE_AREA = "storeArea",
 			KEY_PRE = "pre",
@@ -137,8 +135,6 @@ public class MainActivity extends AppCompatActivity {
 			SE_BAIDU = "Baidu",
 			SE_SOGOU = "Sogou",
 			SE_CUSTOM = "Custom",
-			PREF_VER_1 = "var version",
-			PREF_VER_2 = "};",
 			PREF_S = "%s",
 			PREF_SU = "#content#",
 			SCH_EX_HTTP = "http://",
@@ -1288,35 +1284,25 @@ public class MainActivity extends AppCompatActivity {
 		TWInfo(Context context, File file) {
 			try {
 				Document doc = Jsoup.parse(file, null);
-				Element ti = doc.getElementsByTag(KEY_TITLE).first();
-				title = ti != null ? ti.html() : null;
-				Element t1 = doc.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE).first();
-				Element t2 = doc.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE).first();
-				title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
-				subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
 				Element an = doc.getElementsByAttributeValue(KEY_NAME, KEY_APPLICATION_NAME).first();
 				isWiki = an != null && an.attr(KEY_CONTENT).equals(context.getResources().getString(R.string.tiddlywiki));
-				if (isWiki) return;
-				Element sa = doc.getElementsByAttributeValue(KEY_ID, KEY_STORE_AREA).first();
-				t1 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE_C).first();
-				t2 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE_C).first();
-				title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
-				subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
+				if (isWiki) {
+					Element ti = doc.getElementsByTag(KEY_TITLE).first();
+					title = ti != null ? ti.html() : null;
+					Element t1 = doc.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE).first();
+					Element t2 = doc.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE).first();
+					title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
+					subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
+					return;
+				}
 				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
-				String js = ele != null ? ele.html().substring(ele.html().indexOf(PREF_VER_1), ele.html().indexOf(PREF_VER_2) + 2) : null;
-				if (js != null) {
-					org.mozilla.javascript.Context rhino = org.mozilla.javascript.Context.enter();
-					rhino.setOptimizationLevel(-1);
-					try {
-						Scriptable scope = rhino.initStandardObjects();
-						rhino.evaluateString(scope, js, context.getResources().getString(R.string.app_name), 1, null);
-						String c = (String) ((Scriptable) scope.get(KEY_VERSION, scope)).get(KEY_TITLE, scope);
-						isWiki = c != null && c.equals(context.getResources().getString(R.string.tiddlywiki));
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						org.mozilla.javascript.Context.exit();
-					}
+				isWiki = ele != null && ele.html().length() > 0;
+				if (isWiki) {
+					Element sa = doc.getElementsByAttributeValue(KEY_ID, KEY_STORE_AREA).first();
+					Element t1 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE_C).first();
+					Element t2 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE_C).first();
+					title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
+					subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
 				}
 			} catch (Exception e) {
 				e.printStackTrace();

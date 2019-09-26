@@ -39,7 +39,7 @@ This app is made possible by these open source projects:
 * FileDialog - https://github.com/donmor/FileDialog ,
 * Json - https://json.org/ ,
 * Jsoup - https://jsoup.org/ ,
-* Rhino - https://developer.mozilla.org/Rhino .
+* Joda-Time - https://www.joda.org/joda-time/ .
 
 License files provided in /lic.
 
