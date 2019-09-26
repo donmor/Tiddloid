@@ -71,4 +71,4 @@ Here's the difference between Tiddloid and Tiddloid Lite:
 | Android Q dark mode | No | Yes |
 | Template | Download on first startup | Download on creating new wiki
 | Compatibility | Support most Android versions and most TiddlyWikis | Support latest Android version better, support most of TW5 |
-| Supported Android version | Android 16 ~ 28 | Android 21 ~ |
+| Supported Android version | Android 16 ~ 28 | Android 24 ~ |
