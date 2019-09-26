@@ -52,7 +52,7 @@ The localization of this app is currently provided by Google Translation. Pull r
 Since Google introduced scoped storage in Android Q, Tiddloid can no longer access the external storage(/sdcard). To continue using Tiddloid on Q and above, connect your device to adb and run this command:
 
 ```
-adb shell cmd appops set your-package-name android:legacy_storage allow
+adb shell cmd appops set top.donmor.tiddloid android:legacy_storage allow
 ```
 
 And then force stop the app.
