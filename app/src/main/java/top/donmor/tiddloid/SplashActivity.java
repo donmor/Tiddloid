@@ -13,9 +13,10 @@ import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
-import android.support.v4.app.NotificationManagerCompat;
 import android.view.WindowManager;
 import android.widget.TextView;
+
+import androidx.core.app.NotificationManagerCompat;
 
 public class SplashActivity extends Activity {
 	private static final int LOAD_DISPLAY_TIME = 2000;

@@ -1,0 +1,15 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values/color.xml <= [P|Tiddloid]
+  ~ Last modified: 16:07:41 2019/09/26
+  ~ Copyright (c) 2019 donmor
+  -->
+
+<resources>
+    <color name="content">@android:color/black</color>
+    <color name="content_tint">@color/cardview_dark_background</color>
+    <color name="content_sub">#8A000000</color>
+    <color name="design_default_color_primary">@android:color/background_light</color>
+    <color name="design_default_color_primary_dark">@android:color/darker_gray</color>
+    <color name="design_default_color_accent">@android:color/holo_blue_dark</color>
+</resources>

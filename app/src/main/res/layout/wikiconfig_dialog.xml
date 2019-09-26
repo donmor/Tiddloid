@@ -42,7 +42,7 @@
                 android:text="@string/no_backups"
                 android:textAlignment="center" />
 
-            <android.support.v7.widget.RecyclerView
+            <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/rvBackupList"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"

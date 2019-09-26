@@ -2,59 +2,15 @@
     <string name="app_name" translatable="false">Tiddloid</string>
     <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
     <!--JS-->
-    <string name="js_save" translatable="false">
+    <string name="js_version" translatable="false">
         var appName = typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\" ? version.title : undefined;
         var verMajor = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\" ? version.major : undefined;
-        window.client.getVersion(appName,typeof(verMajor)==\"number\");
-        if (appName == \"TiddlyWiki\") {
-            var enableSaving = function(doc) {
-                var messageBox = doc.createElement(\"div\");
-                messageBox.id = \"tiddlyfox-message-box\";
-                doc.body.appendChild(messageBox);
-                if(appName == \"TiddlyWiki\" &amp;&amp; typeof(verMajor) == \"number\") {
-                    var injectedSaveFile = function(path,content) {
-                        var messageBox = document.getElementById(\"tiddlyfox-message-box\");
-                        if(messageBox) {
-                            var message = document.createElement(\"div\");
-                            message.setAttribute(\"data-tiddlyfox-path\",path);
-                            message.setAttribute(\"data-tiddlyfox-content\",content);
-                            messageBox.appendChild(message);
-                            var event = document.createEvent(\"Events\");
-                            event.initEvent(\"tiddlyfox-save-file\",true,false);
-                            message.dispatchEvent(event);
-                        }
-                        return true;
-                    };
-                    var injectedLoadFile = function(path) {
-                        if(getLocalPath(document.location.toString()) === path) {
-                            return this.tiddlywikiSourceText;
-                        } else {
-                            return false;
-                        }
-                    };
-
-                    window.mozillaSaveFile = injectedSaveFile;
-                    window.mozillaLoadFile = injectedLoadFile;
-                }
-                messageBox.addEventListener(\"tiddlyfox-save-file\",function(event) {
-                    var message = event.target,
-                    filepath = message.getAttribute(\"data-tiddlyfox-path\"),
-                    content = message.getAttribute(\"data-tiddlyfox-content\");
-                    window.client.saveWiki(content);
-                    message.parentNode.removeChild(message);
-                    var event = doc.createEvent(\"Events\");
-                    event.initEvent(\"tiddlyfox-have-saved-file\",true,false);
-                    event.savedFilePath = filepath; message.dispatchEvent(event);
-                    return false;
-                },false);
-            };
-            enableSaving(document);
-        }
+        window.twi.getVersion(appName,typeof(verMajor)==\"number\");
     </string>
     <string name="js_blob" translatable="false">
         var reader = new FileReader();
         reader.onload = function () {
-            window.client.getB64(reader.result.replace(/^data:.+;base64,/, \'\'),\'$dest$\');
+            window.twi.getB64(reader.result.replace(/^data:.+;base64,/, \'\'),\'$dest$\');
         };
         var blobString = \'$blob$\';
         var xhr = new XMLHttpRequest();
@@ -68,10 +24,10 @@
         xhr.send();
     </string>
     <string name="js_quit" translatable="false">
-        window.client.isDirtyOnQuit(document.body.classList.contains(\"tc-dirty\"));
+        window.twi.isDirtyOnQuit(document.body.classList.contains(\"tc-dirty\"));
     </string>
     <string name="js_quit_c" translatable="false">
-        window.client.isDirtyOnQuit(store.dirty || story.areAnyDirty());
+        window.twi.isDirtyOnQuit(store.dirty || story.areAnyDirty());
     </string>
     <!--Misc-->
     <string name="logo" translatable="false">logo</string>

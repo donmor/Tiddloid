@@ -8,17 +8,18 @@ package top.donmor.tiddloid;
 
 import android.Manifest;
 import android.annotation.TargetApi;
+import android.app.AlertDialog;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.database.MatrixCursor;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
@@ -27,18 +28,6 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
-import android.support.v4.app.ActivityCompat;
-import android.support.v4.app.NotificationCompat;
-import android.support.v4.content.ContextCompat;
-import android.support.v4.content.pm.ShortcutInfoCompat;
-import android.support.v4.content.pm.ShortcutManagerCompat;
-import android.support.v4.graphics.drawable.IconCompat;
-import android.support.v4.widget.CursorAdapter;
-import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
-import android.support.v7.widget.LinearLayoutManager;
-import android.support.v7.widget.RecyclerView;
-import android.support.v7.widget.Toolbar;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.SpannableString;
@@ -46,12 +35,10 @@ import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.Base64;
-import android.view.View;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.content.DialogInterface;
-import android.app.AlertDialog;
+import android.view.View;
 import android.view.inputmethod.EditorInfo;
 import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
@@ -65,6 +52,22 @@ import android.widget.SimpleCursorAdapter;
 import android.widget.Spinner;
 import android.widget.TextView;
 import android.widget.Toast;
+
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationCompat;
+import androidx.core.content.ContextCompat;
+import androidx.core.content.pm.ShortcutInfoCompat;
+import androidx.core.content.pm.ShortcutManagerCompat;
+import androidx.core.graphics.drawable.IconCompat;
+import androidx.cursoradapter.widget.CursorAdapter;
+import androidx.recyclerview.widget.LinearLayoutManager;
+import androidx.recyclerview.widget.RecyclerView;
+import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
+
+import com.github.donmor.filedialog.lib.FileDialog;
+import com.github.donmor.filedialog.lib.FileDialogFilter;
 
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -86,13 +89,10 @@ import java.net.URL;
 import java.util.List;
 import java.util.UUID;
 
+import javax.net.ssl.HttpsURLConnection;
+
 import top.donmor.tiddloid.utils.NoLeakHandler;
 import top.donmor.tiddloid.utils.TLSSocketFactory;
-
-import com.github.donmor.filedialog.lib.FileDialog;
-import com.github.donmor.filedialog.lib.FileDialogFilter;
-
-import javax.net.ssl.HttpsURLConnection;
 
 public class MainActivity extends AppCompatActivity {
 	private RecyclerView rvWikiList;
@@ -102,25 +102,35 @@ public class MainActivity extends AppCompatActivity {
 
 	// CONSTANT
 	static final FileDialogFilter[] HTML_FILTERS = {new FileDialogFilter(".html;.htm", new String[]{".html", ".htm"})};
-	static final String SCHEME_BLOB_B64 = "blob-b64",
+	static final String
+			SCHEME_BLOB_B64 = "blob-b64",
 			BACKUP_DIRECTORY_PATH_PREFIX = "_backup",
 			KEY_NAME = "name",
+			KEY_LBL = " — ",
 			KEY_FAVICON = "favicon",
 			KEY_ID = "id",
 			KEY_URL = "url",
-			DB_FILE_NAME = "data.json",
 			DB_KEY_SHOW_HIDDEN = "showHidden",
 			DB_KEY_LAST_DIR = "lastDir",
 			DB_KEY_WIKI = "wiki",
 			DB_KEY_PATH = "path",
-			DB_KEY_BACKUP = "backup";
-	private static final String DB_KEY_CSE = "customSearchEngine",
+			DB_KEY_SUBTITLE = "subtitle",
+			DB_KEY_BACKUP = "backup",
+			STR_EMPTY = "";
+	private static final String
+			DB_FILE_NAME = "data.json",
+			DB_KEY_CSE = "customSearchEngine",
 			DB_KEY_SEARCH_ENGINE = "searchEngine",
 			KEY_APPLICATION_NAME = "application-name",
-			KEY_LBL = " — ",
 			KEY_CONTENT = "content",
 			KEY_VERSION = "version",
 			KEY_VERSION_AREA = "versionArea",
+			KEY_STORE_AREA = "storeArea",
+			KEY_PRE = "pre",
+			KEY_WIKI_TITLE = "$:/SiteTitle",
+			KEY_WIKI_SUBTITLE = "$:/SiteSubTitle",
+			KEY_WIKI_TITLE_C = "SiteTitle",
+			KEY_WIKI_SUBTITLE_C = "SiteSubtitle",
 			KEY_TITLE = "title",
 			SE_GOOGLE = "Google",
 			SE_BING = "Bing",
@@ -133,7 +143,6 @@ public class MainActivity extends AppCompatActivity {
 			PREF_SU = "#content#",
 			SCH_EX_HTTP = "http://",
 			TEMPLATE_FILE_NAME = "template.html",
-			CHARSET_DEFAULT = "UTF-8",
 			CLASS_MENU_BUILDER = "MenuBuilder",
 			METHOD_SET_OPTIONAL_ICONS_VISIBLE = "setOptionalIconsVisible";
 
@@ -188,7 +197,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 
 		try {
-			db = readJson(openFileInput(DB_FILE_NAME));
+			db = readJson(this);
 			if (db == null) throw new Exception();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -198,15 +207,15 @@ public class MainActivity extends AppCompatActivity {
 				db.put(DB_KEY_SHOW_HIDDEN, false);
 				db.put(DB_KEY_WIKI, new JSONArray());
 				db.put(DB_KEY_LAST_DIR, Environment.getExternalStorageDirectory().getAbsolutePath());
-				writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
+				writeJson(this, db);
 			} catch (Exception e1) {
 				e1.printStackTrace();
 			}
 		}
 
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-			MainActivity.this.getWindow().setStatusBarColor(Color.WHITE);
-			MainActivity.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+			getWindow().setStatusBarColor(getColor(R.color.design_default_color_primary));
+			getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 			checkPermission();
 		}
 		Toolbar toolbar = findViewById(R.id.toolbar);
@@ -279,7 +288,7 @@ public class MainActivity extends AppCompatActivity {
 												db.put(DB_KEY_WIKI, removeUnderK(db.getJSONArray(DB_KEY_WIKI), p));
 											else
 												db.getJSONArray(DB_KEY_WIKI).remove(p);
-											writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
+											writeJson(MainActivity.this, db);
 										} catch (Exception e) {
 											e.printStackTrace();
 										}
@@ -435,7 +444,7 @@ public class MainActivity extends AppCompatActivity {
 						public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
 							try {
 								wikiData.put(DB_KEY_BACKUP, isChecked);
-								writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
+								writeJson(MainActivity.this, db);
 								if (cbBackup.isChecked()) frmBackupList.setVisibility(View.VISIBLE);
 								else frmBackupList.setVisibility(View.GONE);
 								backupListAdapter.reload(wikiConfigDialog.getContext(), new File(btnWikiConfigPath.getText().toString()));
@@ -476,15 +485,16 @@ public class MainActivity extends AppCompatActivity {
 												if (exist) {
 													Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 												} else {
-													String p = file.getAbsolutePath(), t = (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki);
+													String p = file.getAbsolutePath(), t = (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki), s = (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY;
 													wikiData.put(KEY_NAME, t);
+													wikiData.put(DB_KEY_SUBTITLE, s);
 													wikiData.put(DB_KEY_PATH, p);
 													btnWikiConfigPath.setText(p);
 													wikiConfigDialog.setTitle(t);
-													writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
+													writeJson(MainActivity.this, db);
 												}
 												db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-												writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
+												writeJson(MainActivity.this, db);
 											} catch (Exception e) {
 												e.printStackTrace();
 												Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
@@ -529,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
 													db.put(DB_KEY_WIKI, removeUnderK(db.getJSONArray(DB_KEY_WIKI), position));
 												else
 													db.getJSONArray(DB_KEY_WIKI).remove(position);
-												writeJson(openFileOutput(DB_FILE_NAME, MODE_PRIVATE), db);
+												writeJson(MainActivity.this, db);
 												if (cbDelFile.isChecked()) {
 													try {
 														File[] fbx = f.getParentFile().listFiles(new FileFilter() {
@@ -700,13 +710,14 @@ public class MainActivity extends AppCompatActivity {
 										TWInfo info = new TWInfo(MainActivity.this, file);
 										JSONObject w = new JSONObject();
 										w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
+										w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
 										w.put(KEY_ID, id);
 										w.put(DB_KEY_PATH, file.getAbsolutePath());
 										w.put(DB_KEY_BACKUP, false);
 										db.getJSONArray(DB_KEY_WIKI).put(db.getJSONArray(DB_KEY_WIKI).length(), w);
 									}
 									db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-									if (!MainActivity.writeJson(openFileOutput(DB_FILE_NAME, Context.MODE_PRIVATE), db))
+									if (!MainActivity.writeJson(MainActivity.this, db))
 										throw new Exception();
 								} catch (Exception e) {
 									e.printStackTrace();
@@ -812,13 +823,14 @@ public class MainActivity extends AppCompatActivity {
 								} else {
 									JSONObject w = new JSONObject();
 									w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
+									w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
 									w.put(KEY_ID, id);
 									w.put(DB_KEY_PATH, file.getAbsolutePath());
 									w.put(DB_KEY_BACKUP, false);
 									db.getJSONArray(DB_KEY_WIKI).put(db.getJSONArray(DB_KEY_WIKI).length(), w);
 								}
 								db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-								if (!MainActivity.writeJson(openFileOutput(DB_FILE_NAME, Context.MODE_PRIVATE), db))
+								if (!MainActivity.writeJson(MainActivity.this, db))
 									throw new Exception();
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -1098,7 +1110,7 @@ public class MainActivity extends AppCompatActivity {
 								e.printStackTrace();
 							}
 							try {
-								writeJson(openFileOutput(DB_FILE_NAME, Context.MODE_PRIVATE), db);
+								writeJson(MainActivity.this, db);
 							} catch (Exception e) {
 								e.printStackTrace();
 							}
@@ -1197,7 +1209,7 @@ public class MainActivity extends AppCompatActivity {
 	public void onResume() {
 		super.onResume();
 		try {
-			db = readJson(openFileInput(DB_FILE_NAME));
+			db = readJson(this);
 			wikiListAdapter.reload(db);
 			rvWikiList.setAdapter(wikiListAdapter);
 		} catch (Exception e) {
@@ -1213,10 +1225,12 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	static JSONObject readJson(FileInputStream is) {
+	static JSONObject readJson(Context context) {
 		byte[] b;
+		InputStream is = null;
 		JSONObject jsonObject = null;
 		try {
+			is = context.openFileInput(DB_FILE_NAME);
 			b = new byte[is.available()];
 			if (is.read(b) < 0) throw new Exception();
 			jsonObject = new JSONObject(new String(b));
@@ -1233,9 +1247,11 @@ public class MainActivity extends AppCompatActivity {
 		return jsonObject;
 	}
 
-	static boolean writeJson(FileOutputStream os, JSONObject vdb) {
+	static boolean writeJson(Context context, JSONObject vdb) {
 		boolean v;
+		OutputStream os = null;
 		try {
+			os = context.openFileOutput(DB_FILE_NAME, MODE_PRIVATE);
 			byte[] b = vdb.toString(2).getBytes();
 			os.write(b);
 			os.flush();
@@ -1265,18 +1281,27 @@ public class MainActivity extends AppCompatActivity {
 		return UUID.randomUUID().toString();
 	}
 
-	private class TWInfo {
-		private boolean isWiki;
-		private String title;
+	static class TWInfo {
+		boolean isWiki;
+		String title, subtitle = null;
 
-		private TWInfo(Context context, File file) {
+		TWInfo(Context context, File file) {
 			try {
-				Document doc = Jsoup.parse(file, CHARSET_DEFAULT);
+				Document doc = Jsoup.parse(file, null);
 				Element ti = doc.getElementsByTag(KEY_TITLE).first();
 				title = ti != null ? ti.html() : null;
+				Element t1 = doc.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE).first();
+				Element t2 = doc.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE).first();
+				title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
+				subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
 				Element an = doc.getElementsByAttributeValue(KEY_NAME, KEY_APPLICATION_NAME).first();
 				isWiki = an != null && an.attr(KEY_CONTENT).equals(context.getResources().getString(R.string.tiddlywiki));
 				if (isWiki) return;
+				Element sa = doc.getElementsByAttributeValue(KEY_ID, KEY_STORE_AREA).first();
+				t1 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE_C).first();
+				t2 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE_C).first();
+				title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
+				subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
 				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
 				String js = ele != null ? ele.html().substring(ele.html().indexOf(PREF_VER_1), ele.html().indexOf(PREF_VER_2) + 2) : null;
 				if (js != null) {

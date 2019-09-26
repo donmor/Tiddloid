@@ -14,17 +14,13 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
-import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
-import android.os.Environment;
-import android.support.v7.app.AlertDialog;
-import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
-import android.support.v7.widget.Toolbar;
+import android.os.Environment;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.WindowManager;
@@ -40,7 +36,12 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.appcompat.app.AlertDialog;
+import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
+
 import com.github.donmor.filedialog.lib.FileDialog;
+import com.github.donmor.filedialog.lib.FileDialogFilter;
 
 import org.joda.time.DateTime;
 import org.joda.time.DateTimeZone;
@@ -50,6 +51,8 @@ import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.OutputStream;
 import java.nio.charset.Charset;
 import java.util.Locale;
 
@@ -62,7 +65,6 @@ public class TWEditorWV extends AppCompatActivity {
 	private WebChromeClient.CustomViewCallback mCustomViewCallback;
 	private int mOriginalOrientation, nextWikiSerial = -1;
 	private Intent nextWikiIntent;
-	protected FrameLayout mFullscreenContainer;
 	private ValueCallback<Uri[]> uploadMessage;
 	private WebView wv;
 	private WebSettings wvs;
@@ -73,9 +75,11 @@ public class TWEditorWV extends AppCompatActivity {
 	private String id;
 
 	// CONSTANT
-	private static final String F02D = "%02d",
+	private static final String
+			F02D = "%02d",
 			F03D = "%03d",
 			F04D = "%04d",
+			JSI = "twi",
 			SCH_ABOUT = "about",
 			SCH_BLOB = "blob",
 			SCH_HTTP = "http",
@@ -95,7 +99,7 @@ public class TWEditorWV extends AppCompatActivity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 		setContentView(R.layout.tweditor);
 		try {
-			db = MainActivity.readJson(openFileInput(MainActivity.DB_FILE_NAME));
+			db = MainActivity.readJson(this);
 			if (db == null) throw new Exception();
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -104,7 +108,7 @@ public class TWEditorWV extends AppCompatActivity {
 		toolbar = findViewById(R.id.wv_toolbar);
 		setSupportActionBar(toolbar);
 		this.setTitle(getResources().getString(R.string.app_name));
-		configurationChanged(getResources().getConfiguration());
+		onConfigurationChanged(getResources().getConfiguration());
 		wv = findViewById(R.id.twWebView);
 		wvProgress = findViewById(R.id.progressBar);
 		wvProgress.setMax(100);
@@ -137,10 +141,6 @@ public class TWEditorWV extends AppCompatActivity {
 				super.onProgressChanged(view, newProgress);
 			}
 
-			@Override
-			public void onReceivedTitle(WebView view, String title) {
-				TWEditorWV.this.setTitle(title);
-			}
 
 			@Override
 			public void onReceivedIcon(WebView view, Bitmap icon) {
@@ -226,7 +226,7 @@ public class TWEditorWV extends AppCompatActivity {
 										break;
 								}
 								db.put(MainActivity.DB_KEY_LAST_DIR, files[0].getParentFile().getAbsolutePath());
-								MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), db);
+								MainActivity.writeJson(TWEditorWV.this, db);
 							} else throw new Exception();
 
 						} catch (Exception e) {
@@ -296,7 +296,9 @@ public class TWEditorWV extends AppCompatActivity {
 			try {
 				ueu = SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
 				String wvTitle = wApp.getString(MainActivity.KEY_NAME);
-				if (!wvTitle.equals("")) this.setTitle(wvTitle);
+				if (wvTitle.length() > 0) this.setTitle(wvTitle);
+				String wvSubTitle = wApp.getString(MainActivity.DB_KEY_SUBTITLE);
+				if (wvSubTitle.length() > 0) toolbar.setSubtitle(wvSubTitle);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -384,6 +386,71 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@SuppressWarnings("unused")
 			@JavascriptInterface
+			public void saveFile(String pathname, String data) {
+				saveWiki(data);
+			}
+
+			@SuppressWarnings("unused")
+			@JavascriptInterface
+			public void saveDownload(String data) {
+				final InputStream is = new ByteArrayInputStream(data.getBytes(Charset.forName(CHARSET_NAME_UTF_8)));
+				File lastDir = Environment.getExternalStorageDirectory();
+				boolean showHidden = false;
+				try {
+					lastDir = new File(db.getString(MainActivity.DB_KEY_LAST_DIR));
+					showHidden = db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				FileDialog.fileSave(TWEditorWV.this, lastDir, new FileDialogFilter[]{FileDialog.ALL}, showHidden, new FileDialog.OnFileTouchedListener() {
+					@Override
+					public void onFileTouched(File[] files) {
+						OutputStream os = null;
+						File file = null;
+						try {
+							if (files != null && files.length > 0 && files[0] != null) {
+								file = files[0];
+								os = new FileOutputStream(file);
+								int len = is.available();
+								int length, lengthTotal = 0;
+								byte[] b = new byte[4096];
+								while ((length = is.read(b)) != -1) {
+									os.write(b, 0, length);
+									lengthTotal += length;
+								}
+								os.flush();
+								if (lengthTotal != len) throw new Exception();
+							} else throw new Exception();
+						} catch (Exception e) {
+							e.printStackTrace();
+							if (file != null) {
+								file.delete();
+							}
+							Toast.makeText(TWEditorWV.this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+						} finally {
+							try {
+								is.close();
+							} catch (Exception e) {
+								e.printStackTrace();
+							}
+							if (os != null)
+								try {
+									os.close();
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+						}
+					}
+
+					@Override
+					public void onCanceled() {
+						Toast.makeText(TWEditorWV.this, R.string.cancelled, Toast.LENGTH_SHORT).show();
+					}
+				});
+			}
+
+			@SuppressWarnings({"unused", "WeakerAccess"})
+			@JavascriptInterface
 			public void saveWiki(String data) {
 				final ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(Charset.forName(CHARSET_NAME_UTF_8)));
 				if (wApp != null) {
@@ -446,7 +513,10 @@ public class TWEditorWV extends AppCompatActivity {
 							lengthTotal += length;
 						}
 						os.flush();
+						os.close();
+						os = null;
 						if (lengthTotal != len) throw new Exception();
+						final MainActivity.TWInfo info = new MainActivity.TWInfo(TWEditorWV.this, file);
 						runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
@@ -457,10 +527,13 @@ public class TWEditorWV extends AppCompatActivity {
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
+								TWEditorWV.this.setTitle(info.title);
+								toolbar.setSubtitle(info.subtitle);
 							}
 						});
-						wApp.put(MainActivity.KEY_NAME, TWEditorWV.this.getTitle().toString());
-						MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, MODE_PRIVATE), db);
+						wApp.put(MainActivity.KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getString(R.string.tiddlywiki));
+						wApp.put(MainActivity.DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : MainActivity.STR_EMPTY);
+						MainActivity.writeJson(TWEditorWV.this, db);
 					} catch (Exception e) {
 						e.printStackTrace();
 						Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
@@ -522,12 +595,12 @@ public class TWEditorWV extends AppCompatActivity {
 											w.put(MainActivity.DB_KEY_PATH, file.getAbsolutePath());
 											w.put(MainActivity.DB_KEY_BACKUP, false);
 											db.getJSONArray(MainActivity.DB_KEY_WIKI).put(db.getJSONArray(MainActivity.DB_KEY_WIKI).length(), w);
-											if (!MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, Context.MODE_PRIVATE), db))
+											if (!MainActivity.writeJson(TWEditorWV.this, db))
 												throw new Exception();
 										}
 										wApp = w;
 										db.put(MainActivity.DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-										if (!MainActivity.writeJson(openFileOutput(MainActivity.DB_FILE_NAME, Context.MODE_PRIVATE), db))
+										if (!MainActivity.writeJson(TWEditorWV.this, db))
 											throw new Exception();
 									} catch (Exception e) {
 										e.printStackTrace();
@@ -590,14 +663,13 @@ public class TWEditorWV extends AppCompatActivity {
 						@Override
 						public void onCanceled() {
 							Toast.makeText(TWEditorWV.this, R.string.cancelled, Toast.LENGTH_SHORT).show();
-
 						}
 					});
 				}
 			}
 		}
 
-		wv.addJavascriptInterface(new JavaScriptCallback(), "client");
+		wv.addJavascriptInterface(new JavaScriptCallback(), JSI);
 		wv.setWebViewClient(new WebViewClient() {
 			@Override
 			public boolean shouldOverrideUrlLoading(final WebView view, final String url) {
@@ -679,7 +751,7 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 
 			public void onPageFinished(WebView view, String url) {
-				view.loadUrl(SCH_JS + ':' + getResources().getString(R.string.js_save));
+				view.loadUrl(SCH_JS + ':' + getResources().getString(R.string.js_version));
 				if (wApp != null) view.clearHistory();
 			}
 		});
@@ -764,7 +836,9 @@ public class TWEditorWV extends AppCompatActivity {
 			try {
 				ueu = SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
 				String wvTitle = wApp.getString(MainActivity.KEY_NAME);
-				if (!wvTitle.equals("")) this.setTitle(wvTitle);
+				String wvSubTitle = wApp.getString(MainActivity.DB_KEY_SUBTITLE);
+				if (wvTitle.length() > 0) this.setTitle(wvTitle);
+				if (wvSubTitle.length() > 0) toolbar.setTitle(wvSubTitle);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -796,22 +870,18 @@ public class TWEditorWV extends AppCompatActivity {
 	@Override
 	public void onConfigurationChanged(Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-		configurationChanged(newConfig);
-	}
-
-	private void configurationChanged(Configuration config) {
 		try {
-			if (config.orientation == Configuration.ORIENTATION_LANDSCAPE) {
+			if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 				findViewById(R.id.wv_toolbar).setVisibility(View.GONE);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					TWEditorWV.this.getWindow().setStatusBarColor(Color.WHITE);
+					TWEditorWV.this.getWindow().setStatusBarColor(getColor(R.color.design_default_color_primary));
 					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 				} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
 					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
-			} else if (config.orientation == Configuration.ORIENTATION_PORTRAIT) {
+			} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
 				findViewById(R.id.wv_toolbar).setVisibility(View.VISIBLE);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					TWEditorWV.this.getWindow().setStatusBarColor(Color.WHITE);
+					TWEditorWV.this.getWindow().setStatusBarColor(getColor(R.color.design_default_color_primary));
 					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
 				} else
 					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
@@ -820,6 +890,7 @@ public class TWEditorWV extends AppCompatActivity {
 			e.printStackTrace();
 		}
 	}
+
 
 	@Override
 	protected void onDestroy() {
