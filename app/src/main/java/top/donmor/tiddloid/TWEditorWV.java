@@ -36,8 +36,10 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 
 import com.github.donmor.filedialog.lib.FileDialog;
@@ -97,12 +99,14 @@ public class TWEditorWV extends AppCompatActivity {
 		super.onCreate(savedInstanceState);
 		getWindow().setFormat(PixelFormat.RGBA_8888);
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
+		AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 		setContentView(R.layout.tweditor);
 		try {
 			db = MainActivity.readJson(this);
 			if (db == null) throw new Exception();
 		} catch (Exception e) {
 			e.printStackTrace();
+			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
 			finish();
 		}
 		toolbar = findViewById(R.id.wv_toolbar);
@@ -889,24 +893,29 @@ public class TWEditorWV extends AppCompatActivity {
 	}
 
 	@Override
-	public void onConfigurationChanged(Configuration newConfig) {
+	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
 		try {
 			if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 				findViewById(R.id.wv_toolbar).setVisibility(View.GONE);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					TWEditorWV.this.getWindow().setStatusBarColor(getColor(R.color.design_default_color_primary));
-					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+					getWindow().setStatusBarColor(getColor(R.color.design_default_color_primary));
+					getWindow().getDecorView().setSystemUiVisibility(((newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : View.SYSTEM_UI_FLAG_VISIBLE) | View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 				} else if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
-					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
+					getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 			} else if (newConfig.orientation == Configuration.ORIENTATION_PORTRAIT) {
 				findViewById(R.id.wv_toolbar).setVisibility(View.VISIBLE);
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-					TWEditorWV.this.getWindow().setStatusBarColor(getColor(R.color.design_default_color_primary));
-					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR);
+					getWindow().setStatusBarColor(getColor(R.color.design_default_color_primary));
+					getWindow().getDecorView().setSystemUiVisibility((newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : View.SYSTEM_UI_FLAG_VISIBLE);
 				} else
-					TWEditorWV.this.getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
+					getWindow().getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_VISIBLE);
 			}
+			toolbar.setBackgroundColor(getResources().getColor(R.color.design_default_color_primary));
+			toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);
+			toolbar.setSubtitleTextAppearance(this, R.style.TextAppearance_AppCompat_Small);
+			toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
+			wvProgress.setBackgroundColor(getResources().getColor(R.color.design_default_color_primary));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
