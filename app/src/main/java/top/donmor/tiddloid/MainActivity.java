@@ -693,18 +693,25 @@ public class MainActivity extends AppCompatActivity {
 								String id = genId();
 								try {
 									boolean exist = false;
+									JSONObject w = null;
 									for (int i = 0; i < db.getJSONArray(DB_KEY_WIKI).length(); i++) {
-										if (db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(DB_KEY_PATH).equals(file.getAbsolutePath())) {
+										w = db.getJSONArray(DB_KEY_WIKI).getJSONObject(i);
+										if (w.getString(DB_KEY_PATH).equals(file.getAbsolutePath())) {
 											exist = true;
 											id = db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(KEY_ID);
 											break;
 										}
 									}
+									TWInfo info = new TWInfo(MainActivity.this, file);
 									if (exist) {
 										Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
+										w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
+										w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
+										w.put(DB_KEY_PATH, file.getAbsolutePath());
+										w.put(DB_KEY_BACKUP, false);
+										new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
 									} else {
-										TWInfo info = new TWInfo(MainActivity.this, file);
-										JSONObject w = new JSONObject();
+										w = new JSONObject();
 										w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
 										w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
 										w.put(KEY_ID, id);

@@ -141,6 +141,13 @@ public class TWEditorWV extends AppCompatActivity {
 				super.onProgressChanged(view, newProgress);
 			}
 
+			@Override
+			public void onReceivedTitle(WebView view, String title) {
+				if (wApp == null) {
+					setTitle(title);
+					toolbar.setSubtitle(null);
+				}
+			}
 
 			@Override
 			public void onReceivedIcon(WebView view, Bitmap icon) {
@@ -320,16 +327,15 @@ public class TWEditorWV extends AppCompatActivity {
 			public void getVersion(String title, boolean classic) {
 				if (title.equals(getResources().getString(R.string.tiddlywiki))) {
 					isWiki = true;
-					if (wApp == null) {
-						if (!classic)
-							runOnUiThread(new Runnable() {
-								@Override
-								public void run() {
-									Toast.makeText(TWEditorWV.this, R.string.ready_to_fork, Toast.LENGTH_SHORT).show();
-									toolbar.setLogo(R.drawable.ic_fork);
-								}
-							});
-					}
+					if (wApp == null && !classic)
+						runOnUiThread(new Runnable() {
+							@Override
+							public void run() {
+								Toast.makeText(TWEditorWV.this, R.string.ready_to_fork, Toast.LENGTH_SHORT).show();
+								toolbar.setLogo(R.drawable.ic_fork);
+							}
+						});
+
 					wvs.setBuiltInZoomControls(classic);
 					wvs.setDisplayZoomControls(classic);
 					isClassic = classic;
@@ -523,7 +529,7 @@ public class TWEditorWV extends AppCompatActivity {
 								Bitmap icon = wv.getFavicon();
 								if (wApp != null && icon == null) try {
 									toolbar.setLogo(null);
-									new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)).delete();
+									new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
 								} catch (Exception e) {
 									e.printStackTrace();
 								}
@@ -575,29 +581,40 @@ public class TWEditorWV extends AppCompatActivity {
 										lengthTotal += length;
 									}
 									os.flush();
+									os.close();
+									os = null;
 									if (lengthTotal != len) throw new Exception();
-									try {
+									final MainActivity.TWInfo info = new MainActivity.TWInfo(TWEditorWV.this, file);
+									if (info.isWiki) try {
 										boolean exist = false;
-										JSONObject w = new JSONObject();
+										JSONObject w = null;
+										id = MainActivity.genId();
 										for (int i = 0; i < db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
-											if (db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.DB_KEY_PATH).equals(file.getAbsolutePath())) {
+											w = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
+											if (w.getString(MainActivity.DB_KEY_PATH).equals(file.getAbsolutePath())) {
 												exist = true;
-												w = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
+												id = w.getString(MainActivity.KEY_ID);
 												break;
 											}
 										}
 										if (exist) {
 											Toast.makeText(TWEditorWV.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-
+											w.put(MainActivity.KEY_NAME, info.title);
+											w.put(MainActivity.DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : MainActivity.STR_EMPTY);
+											w.put(MainActivity.DB_KEY_PATH, file.getAbsolutePath());
+											w.put(MainActivity.DB_KEY_BACKUP, false);
+											new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
 										} else {
-											w.put(MainActivity.KEY_NAME, TWEditorWV.this.getTitle());
-											w.put(MainActivity.KEY_ID, MainActivity.genId());
+											w = new JSONObject();
+											w.put(MainActivity.KEY_NAME, info.title);
+											w.put(MainActivity.DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : MainActivity.STR_EMPTY);
+											w.put(MainActivity.KEY_ID, id);
 											w.put(MainActivity.DB_KEY_PATH, file.getAbsolutePath());
 											w.put(MainActivity.DB_KEY_BACKUP, false);
 											db.getJSONArray(MainActivity.DB_KEY_WIKI).put(db.getJSONArray(MainActivity.DB_KEY_WIKI).length(), w);
-											if (!MainActivity.writeJson(TWEditorWV.this, db))
-												throw new Exception();
 										}
+										if (!MainActivity.writeJson(TWEditorWV.this, db))
+											throw new Exception();
 										wApp = w;
 										db.put(MainActivity.DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
 										if (!MainActivity.writeJson(TWEditorWV.this, db))
@@ -606,6 +623,8 @@ public class TWEditorWV extends AppCompatActivity {
 										e.printStackTrace();
 										Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
 									}
+									else
+										Toast.makeText(TWEditorWV.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 									if (wApp != null) {
 										runOnUiThread(new Runnable() {
 											@Override
@@ -637,6 +656,8 @@ public class TWEditorWV extends AppCompatActivity {
 													} else toolbar.setLogo(null);
 												}
 												if (icon != null) icon.recycle();
+												TWEditorWV.this.setTitle(info.title);
+												toolbar.setSubtitle(info.subtitle);
 												wv.clearHistory();
 											}
 										});
@@ -838,7 +859,7 @@ public class TWEditorWV extends AppCompatActivity {
 				String wvTitle = wApp.getString(MainActivity.KEY_NAME);
 				String wvSubTitle = wApp.getString(MainActivity.DB_KEY_SUBTITLE);
 				if (wvTitle.length() > 0) this.setTitle(wvTitle);
-				if (wvSubTitle.length() > 0) toolbar.setTitle(wvSubTitle);
+				if (wvSubTitle.length() > 0) toolbar.setSubtitle(wvSubTitle);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
