@@ -2,6 +2,8 @@
 
 ![avatar](img/Tiddloid.png)
 
+&emsp;&emsp;[<img src="https://www.coolapk.com/static/img/icon.png" width="64" height="64" alt="CoolApk"/>](https://www.coolapk.com/apk/top.donmor.tiddloid)&emsp;&emsp;<img src="img/qr.png" width="64" height="64" alt="QrCode"/>
+
 Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere.
 
 ![avatar](img/img01.png)    ![avatar](img/img02.png)
