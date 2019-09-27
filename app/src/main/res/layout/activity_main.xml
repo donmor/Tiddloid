@@ -3,7 +3,6 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_primary"
     android:orientation="vertical"
     tools:context=".MainActivity">
 
@@ -34,8 +33,9 @@
                 android:id="@+id/t_noWiki"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:layout_margin="8dp"
+                android:padding="8dp"
                 android:gravity="center"
+                android:background="@color/design_default_color_primary"
                 android:text="@string/there_is_no_wiki_here"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
@@ -43,7 +43,8 @@
                 android:id="@+id/rvWikiList"
                 android:layout_width="match_parent"
                 android:layout_height="0dp"
-                android:layout_weight="1" />
+                android:layout_weight="1"
+                android:background="@color/design_default_color_primary" />
         </LinearLayout>
     </androidx.swiperefreshlayout.widget.SwipeRefreshLayout>
 </LinearLayout>
