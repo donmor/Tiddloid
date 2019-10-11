@@ -116,6 +116,7 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_LAST_DIR = "lastDir",
 			DB_KEY_WIKI = "wiki",
 			DB_KEY_PATH = "path",
+			KEY_SHORTCUT = "shortcut",
 			DB_KEY_SUBTITLE = "subtitle",
 			DB_KEY_BACKUP = "backup",
 			STR_EMPTY = "";
@@ -130,8 +131,10 @@ public class MainActivity extends AppCompatActivity {
 			KEY_PRE = "pre",
 			KEY_WIKI_TITLE = "$:/SiteTitle",
 			KEY_WIKI_SUBTITLE = "$:/SiteSubTitle",
+			KEY_WIKI_FAVICON = "$:/favicon.ico",
 			KEY_WIKI_TITLE_C = "SiteTitle",
 			KEY_WIKI_SUBTITLE_C = "SiteSubtitle",
+			KEY_WIKI_FAVICON_C = "favicon.ico",
 			KEY_TITLE = "title",
 			SE_GOOGLE = "Google",
 			SE_BING = "Bing",
@@ -254,364 +257,372 @@ public class MainActivity extends AppCompatActivity {
 		});
 		wikiListAdapter.setOnItemClickListener(new WikiListAdapter.ItemClickListener() {
 			@Override
-			public void onItemClick(int position) {
-				String id = wikiListAdapter.getId(position);
-				String vp = null;
-				int mp = 0, ep = 0;
-				try {
-					ep = db.getJSONArray(DB_KEY_WIKI).length();
-					for (int i = 0; i < ep; i++) {
-						if (db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(KEY_ID).equals(id)) {
-							vp = db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(DB_KEY_PATH);
-							break;
-						}
-						mp++;
-					}
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				if (id != null && vp != null && mp < ep) {
-					File f = new File(vp);
-					if (new TWInfo(MainActivity.this, f).isWiki) {
-						if (!loadPage(id))
-							Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-					} else {
-						final int p = mp;
-						new AlertDialog.Builder(MainActivity.this)
-								.setTitle(android.R.string.dialog_alert_title)
-								.setMessage(R.string.confirm_to_auto_remove_wiki)
-								.setNegativeButton(android.R.string.no, null)
-								.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										try {
-											if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
-												db.put(DB_KEY_WIKI, removeUnderK(db.getJSONArray(DB_KEY_WIKI), p));
-											else
-												db.getJSONArray(DB_KEY_WIKI).remove(p);
-											writeJson(MainActivity.this, db);
-										} catch (Exception e) {
-											e.printStackTrace();
-										}
-										MainActivity.this.onResume();
-									}
-								}).show();
-					}
+			public void onItemClick(final int position, String id, final File file) {
+//				String id = wikiListAdapter.getId(position);
+//				if (new TWInfo(MainActivity.this, file).isWiki)
+//				String vp = null;
+//				int mp = 0, ep = 0;
+//				try {
+//					ep = db.getJSONArray(DB_KEY_WIKI).length();
+//					for (int i = 0; i < ep; i++) {
+//						if (db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(KEY_ID).equals(id)) {
+//							vp = db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(DB_KEY_PATH);
+//							break;
+//						}
+//						mp++;
+//					}
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+//				if (id != null && vp != null && mp < ep) {
+//					File f = new File(vp);
+				if (new TWInfo(MainActivity.this, file).isWiki) {
+					if (!loadPage(id))
+						Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 				} else {
-					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+//						final int p = mp;
+					new AlertDialog.Builder(MainActivity.this)
+							.setTitle(android.R.string.dialog_alert_title)
+							.setMessage(R.string.confirm_to_auto_remove_wiki)
+							.setNegativeButton(android.R.string.no, null)
+							.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+								@Override
+								public void onClick(DialogInterface dialog, int which) {
+									try {
+										if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
+											db.put(DB_KEY_WIKI, removeUnderK(db.getJSONArray(DB_KEY_WIKI), position));
+										else
+											db.getJSONArray(DB_KEY_WIKI).remove(position);
+										writeJson(MainActivity.this, db);
+									} catch (Exception e) {
+										e.printStackTrace();
+									}
+									MainActivity.this.onResume();
+								}
+							}).show();
 				}
+//				} else {
+//					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+//				}
 			}
 
 			@Override
-			public void onItemLongClick(final int position) {
+			public void onItemLongClick(final int position, final JSONObject w, final String id, final File file, final String name, final String sub, final Bitmap favicon) {
+//				try {
+//					final JSONObject wikiData = db.getJSONArray(DB_KEY_WIKI).getJSONObject(position);
+				View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.wikiconfig_dialog, null);
+				final Button btnWikiConfigPath = view.findViewById(R.id.btnWikiConfigPath);
+				btnWikiConfigPath.setText(file.getAbsolutePath());
+				final CheckBox cbBackup = view.findViewById(R.id.cbBackup);
 				try {
-					final JSONObject wikiData = db.getJSONArray(DB_KEY_WIKI).getJSONObject(position);
-					View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.wikiconfig_dialog, null);
-					final Button btnWikiConfigPath = view.findViewById(R.id.btnWikiConfigPath);
-					btnWikiConfigPath.setText(wikiData.getString(DB_KEY_PATH));
-					final CheckBox cbBackup = view.findViewById(R.id.cbBackup);
-					cbBackup.setChecked(wikiData.getBoolean(DB_KEY_BACKUP));
-					final LinearLayout frmBackupList = view.findViewById(R.id.frmBackupList);
-					if (cbBackup.isChecked()) frmBackupList.setVisibility(View.VISIBLE);
-					else frmBackupList.setVisibility(View.GONE);
-					final TextView lblNoBackup = view.findViewById(R.id.lblNoBackup);
-					final RecyclerView rvBackupList = view.findViewById(R.id.rvBackupList);
-					rvBackupList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-					Button btnCreateShortcut = view.findViewById(R.id.btnCreateShortcut);
-					Button btnRemoveWiki = view.findViewById(R.id.btnRemoveWiki);
+					cbBackup.setChecked(w.getBoolean(DB_KEY_BACKUP));
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				final LinearLayout frmBackupList = view.findViewById(R.id.frmBackupList);
+				if (cbBackup.isChecked()) frmBackupList.setVisibility(View.VISIBLE);
+				else frmBackupList.setVisibility(View.GONE);
+				final TextView lblNoBackup = view.findViewById(R.id.lblNoBackup);
+				final RecyclerView rvBackupList = view.findViewById(R.id.rvBackupList);
+				rvBackupList.setLayoutManager(new LinearLayoutManager(view.getContext()));
+				Button btnCreateShortcut = view.findViewById(R.id.btnCreateShortcut);
+				Button btnRemoveWiki = view.findViewById(R.id.btnRemoveWiki);
 
 
-					final AlertDialog wikiConfigDialog = new AlertDialog.Builder(MainActivity.this)
-							.setTitle(wikiData.getString(MainActivity.KEY_NAME))
-							.setIcon(getResources().getDrawable(R.drawable.ic_description))
-							.setView(view)
-							.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									MainActivity.this.onResume();
-								}
-							})
-							.create();
-					FileInputStream is = null;
-					Bitmap iconX = null;
-					try {
-						is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), wikiListAdapter.getId(position)));
-						iconX = BitmapFactory.decodeStream(is);
-						if (iconX != null)
-							wikiConfigDialog.setIcon(new BitmapDrawable(getResources(), iconX));
-						else throw new Exception();
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						if (is != null) try {
-							is.close();
+				final AlertDialog wikiConfigDialog = new AlertDialog.Builder(MainActivity.this)
+						.setTitle(name)
+						.setIcon(getResources().getDrawable(R.drawable.ic_description))
+						.setView(view)
+						.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+							@Override
+							public void onClick(DialogInterface dialog, int which) {
+								MainActivity.this.onResume();
+							}
+						})
+						.create();
+//					FileInputStream is = null;
+//					Bitmap iconX = null;
+				try {
+//						is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), id));
+//						iconX = BitmapFactory.decodeStream(is);
+					if (favicon != null)
+						wikiConfigDialog.setIcon(new BitmapDrawable(getResources(), favicon));
+					else throw new Exception();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+//					finally {
+//						if (is != null) try {
+//							is.close();
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//					}
+//					final Bitmap icon = iconX;
+				final IconCompat iconCompat = favicon != null ? IconCompat.createWithBitmap(favicon) : IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut);
+				final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
+				backupListAdapter.setOnBtnClickListener(new BackupListAdapter.BtnClickListener() {
+					@Override
+					public void onBtnClick(int position, int which) {
+						final File f = backupListAdapter.getBackupFile(position);
+						if (f != null && f.exists())
+							switch (which) {
+								case 1:
+									new AlertDialog.Builder(wikiConfigDialog.getContext())
+											.setTitle(android.R.string.dialog_alert_title)
+											.setMessage(R.string.confirm_to_rollback)
+											.setNegativeButton(android.R.string.no, null)
+											.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+												@Override
+												public void onClick(DialogInterface dialog, int which) {
+													FileInputStream is = null;
+													FileOutputStream os = null;
+													try {
+														is = new FileInputStream(f);
+														os = new FileOutputStream(new File(btnWikiConfigPath.getText().toString()));
+														int len = is.available();
+														int length, lengthTotal = 0;
+														byte[] b = new byte[4096];
+														while ((length = is.read(b)) != -1) {
+															os.write(b, 0, length);
+															lengthTotal += length;
+														}
+														os.flush();
+														if (lengthTotal != len)
+															throw new Exception();
+														wikiConfigDialog.dismiss();
+														Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
+														loadPage(id);
+													} catch (Exception e) {
+														e.printStackTrace();
+														Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
+													} finally {
+														if (is != null)
+															try {
+																is.close();
+															} catch (Exception e) {
+																e.printStackTrace();
+															}
+														if (os != null)
+															try {
+																os.close();
+															} catch (Exception e) {
+																e.printStackTrace();
+															}
+													}
+												}
+											})
+											.show();
+									break;
+								case 2:
+									new AlertDialog.Builder(wikiConfigDialog.getContext())
+											.setTitle(android.R.string.dialog_alert_title)
+											.setMessage(R.string.confirm_to_del_backup)
+											.setNegativeButton(android.R.string.no, null)
+											.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+												@Override
+												public void onClick(DialogInterface dialog, int which) {
+													try {
+														if (f.delete())
+															Toast.makeText(wikiConfigDialog.getContext(), R.string.backup_deleted, Toast.LENGTH_SHORT).show();
+														else throw new Exception();
+														backupListAdapter.reload(wikiConfigDialog.getContext(), new File(btnWikiConfigPath.getText().toString()));
+														rvBackupList.setAdapter(backupListAdapter);
+													} catch (Exception e) {
+														e.printStackTrace();
+														Toast.makeText(wikiConfigDialog.getContext(), R.string.failed_deleting_file, Toast.LENGTH_SHORT).show();
+													}
+												}
+											})
+											.show();
+									break;
+							}
+					}
+				});
+				backupListAdapter.setOnLoadListener(new BackupListAdapter.LoadListener() {
+					@Override
+					public void onLoad(int count) {
+						if (count > 0)
+							lblNoBackup.setVisibility(View.GONE);
+						else
+							lblNoBackup.setVisibility(View.VISIBLE);
+					}
+				});
+				backupListAdapter.reload(wikiConfigDialog.getContext(), new File(btnWikiConfigPath.getText().toString()));
+				rvBackupList.setAdapter(backupListAdapter);
+				cbBackup.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+					@Override
+					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+						try {
+							w.put(DB_KEY_BACKUP, isChecked);
+							writeJson(MainActivity.this, db);
+							if (cbBackup.isChecked()) frmBackupList.setVisibility(View.VISIBLE);
+							else frmBackupList.setVisibility(View.GONE);
+							backupListAdapter.reload(wikiConfigDialog.getContext(), new File(btnWikiConfigPath.getText().toString()));
+						} catch (Exception e) {
+							e.printStackTrace();
+							Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
+						}
+					}
+				});
+				wikiConfigDialog.setCanceledOnTouchOutside(false);
+				wikiConfigDialog.show();
+				btnWikiConfigPath.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						File lastDir = Environment.getExternalStorageDirectory();
+						boolean showHidden = false;
+						try {
+							lastDir = new File(db.getString(DB_KEY_LAST_DIR));
+							showHidden = db.getBoolean(DB_KEY_SHOW_HIDDEN);
 						} catch (Exception e) {
 							e.printStackTrace();
 						}
-					}
-					final Bitmap icon = iconX;
-					final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
-					backupListAdapter.setOnBtnClickListener(new BackupListAdapter.BtnClickListener() {
-						@Override
-						public void onBtnClick(int position, int which) {
-							final File f = backupListAdapter.getBackupFile(position);
-							if (f != null && f.exists())
-								switch (which) {
-									case 1:
-										new AlertDialog.Builder(wikiConfigDialog.getContext())
-												.setTitle(android.R.string.dialog_alert_title)
-												.setMessage(R.string.confirm_to_rollback)
-												.setNegativeButton(android.R.string.no, null)
-												.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-													@Override
-													public void onClick(DialogInterface dialog, int which) {
-														FileInputStream is = null;
-														FileOutputStream os = null;
-														try {
-															is = new FileInputStream(f);
-															os = new FileOutputStream(new File(btnWikiConfigPath.getText().toString()));
-															int len = is.available();
-															int length, lengthTotal = 0;
-															byte[] b = new byte[4096];
-															while ((length = is.read(b)) != -1) {
-																os.write(b, 0, length);
-																lengthTotal += length;
-															}
-															os.flush();
-															if (lengthTotal != len)
-																throw new Exception();
-															wikiConfigDialog.dismiss();
-															Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
-															loadPage(wikiData.getString(KEY_ID));
-														} catch (Exception e) {
-															e.printStackTrace();
-															Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
-														} finally {
-															if (is != null)
-																try {
-																	is.close();
-																} catch (Exception e) {
-																	e.printStackTrace();
-																}
-															if (os != null)
-																try {
-																	os.close();
-																} catch (Exception e) {
-																	e.printStackTrace();
-																}
-														}
-													}
-												})
-												.show();
-										break;
-									case 2:
-										new AlertDialog.Builder(wikiConfigDialog.getContext())
-												.setTitle(android.R.string.dialog_alert_title)
-												.setMessage(R.string.confirm_to_del_backup)
-												.setNegativeButton(android.R.string.no, null)
-												.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-													@Override
-													public void onClick(DialogInterface dialog, int which) {
-														try {
-															if (f.delete())
-																Toast.makeText(wikiConfigDialog.getContext(), R.string.backup_deleted, Toast.LENGTH_SHORT).show();
-															else throw new Exception();
-															backupListAdapter.reload(wikiConfigDialog.getContext(), new File(btnWikiConfigPath.getText().toString()));
-															rvBackupList.setAdapter(backupListAdapter);
-														} catch (Exception e) {
-															e.printStackTrace();
-															Toast.makeText(wikiConfigDialog.getContext(), R.string.failed_deleting_file, Toast.LENGTH_SHORT).show();
-														}
-													}
-												})
-												.show();
-										break;
-								}
-						}
-					});
-					backupListAdapter.setOnLoadListener(new BackupListAdapter.LoadListener() {
-						@Override
-						public void onLoad(int count) {
-							if (count > 0)
-								lblNoBackup.setVisibility(View.GONE);
-							else
-								lblNoBackup.setVisibility(View.VISIBLE);
-						}
-					});
-					backupListAdapter.reload(wikiConfigDialog.getContext(), new File(btnWikiConfigPath.getText().toString()));
-					rvBackupList.setAdapter(backupListAdapter);
-					cbBackup.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-						@Override
-						public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-							try {
-								wikiData.put(DB_KEY_BACKUP, isChecked);
-								writeJson(MainActivity.this, db);
-								if (cbBackup.isChecked()) frmBackupList.setVisibility(View.VISIBLE);
-								else frmBackupList.setVisibility(View.GONE);
-								backupListAdapter.reload(wikiConfigDialog.getContext(), new File(btnWikiConfigPath.getText().toString()));
-							} catch (Exception e) {
-								e.printStackTrace();
-								Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
-							}
-						}
-					});
-					wikiConfigDialog.setCanceledOnTouchOutside(false);
-					wikiConfigDialog.show();
-					btnWikiConfigPath.setOnClickListener(new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							File lastDir = Environment.getExternalStorageDirectory();
-							boolean showHidden = false;
-							try {
-								lastDir = new File(db.getString(DB_KEY_LAST_DIR));
-								showHidden = db.getBoolean(DB_KEY_SHOW_HIDDEN);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
-							FileDialog.fileOpen(wikiConfigDialog.getContext(), lastDir, HTML_FILTERS, showHidden, new FileDialog.OnFileTouchedListener() {
-								@Override
-								public void onFileTouched(File[] files) {
-									if (files != null && files.length > 0 && files[0] != null) {
-										File file = files[0];
-										TWInfo info = new TWInfo(MainActivity.this, file);
-										if (info.isWiki) {
-											try {
-												boolean exist = false;
-												for (int i = 0; i < db.getJSONArray(DB_KEY_WIKI).length(); i++) {
-													if (db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(DB_KEY_PATH).equals(file.getAbsolutePath())) {
-														exist = true;
-														break;
-													}
+						FileDialog.fileOpen(wikiConfigDialog.getContext(), lastDir, HTML_FILTERS, showHidden, new FileDialog.OnFileTouchedListener() {
+							@Override
+							public void onFileTouched(File[] files) {
+								if (files != null && files.length > 0 && files[0] != null) {
+									File file = files[0];
+									TWInfo info = new TWInfo(MainActivity.this, file);
+									if (info.isWiki) {
+										try {
+											boolean exist = false;
+											for (int i = 0; i < db.getJSONArray(DB_KEY_WIKI).length(); i++) {
+												if (db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(DB_KEY_PATH).equals(file.getAbsolutePath())) {
+													exist = true;
+													break;
 												}
-												if (exist) {
-													Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
-												} else {
-													String p = file.getAbsolutePath(), t = (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki), s = (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY;
-													wikiData.put(KEY_NAME, t);
-													wikiData.put(DB_KEY_SUBTITLE, s);
-													wikiData.put(DB_KEY_PATH, p);
-													btnWikiConfigPath.setText(p);
-													wikiConfigDialog.setTitle(t);
-													writeJson(MainActivity.this, db);
-												}
-												db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-												writeJson(MainActivity.this, db);
-											} catch (Exception e) {
-												e.printStackTrace();
-												Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
 											}
-										} else
-											Toast.makeText(MainActivity.this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
-									} else
-										Toast.makeText(MainActivity.this, R.string.failed_opening_file, Toast.LENGTH_SHORT).show();
-								}
-
-								@Override
-								public void onCanceled() {
-
-								}
-							});
-						}
-					});
-					btnRemoveWiki.setOnClickListener(new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							View view1 = LayoutInflater.from(wikiConfigDialog.getContext()).inflate(R.layout.del_confirm, null);
-							final CheckBox cbDelFile = view1.findViewById(R.id.cbDelFile);
-							final CheckBox cbDelBackups = view1.findViewById(R.id.cbDelBackups);
-							cbDelBackups.setEnabled(false);
-							cbDelFile.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-								@Override
-								public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-									cbDelBackups.setEnabled(isChecked);
-								}
-							});
-							AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(wikiConfigDialog.getContext())
-									.setTitle(android.R.string.dialog_alert_title)
-									.setMessage(R.string.confirm_to_remove_wiki)
-									.setView(view1)
-									.setNegativeButton(android.R.string.cancel, null)
-									.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-										@Override
-										public void onClick(DialogInterface dialog, int which) {
-											try {
-												final File f = new File(btnWikiConfigPath.getText().toString());
-												if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
-													db.put(DB_KEY_WIKI, removeUnderK(db.getJSONArray(DB_KEY_WIKI), position));
-												else
-													db.getJSONArray(DB_KEY_WIKI).remove(position);
+											if (exist) {
+												Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
+											} else {
+												String p = file.getAbsolutePath(), t = (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki), s = (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY;
+												w.put(KEY_NAME, t);
+												w.put(DB_KEY_SUBTITLE, s);
+												w.put(DB_KEY_PATH, p);
+												btnWikiConfigPath.setText(p);
+												wikiConfigDialog.setTitle(t);
 												writeJson(MainActivity.this, db);
-												if (cbDelFile.isChecked()) {
-													try {
-														File[] fbx = f.getParentFile().listFiles(new FileFilter() {
-															@Override
-															public boolean accept(File pathname) {
-																return pathname.exists() && pathname.isDirectory() && pathname.getName().equals(f.getName() + BACKUP_DIRECTORY_PATH_PREFIX);
-															}
-														});
-														for (File fb : fbx)
-															if (cbDelBackups.isChecked() && fb.isDirectory()) {
-																File[] b = fb.listFiles(new FileFilter() {
-																	@Override
-																	public boolean accept(File pathname) {
-																		return isBackupFile(f, pathname);
-																	}
-																});
-																for (File f1 : b)
-																	f1.delete();
-																fb.delete();
-															}
-													} catch (Exception e) {
-														e.printStackTrace();
-													}
-													if (f.delete())
-														Toast.makeText(MainActivity.this, R.string.file_deleted, Toast.LENGTH_SHORT).show();
-												}
-											} catch (Exception e) {
-												e.printStackTrace();
 											}
-											wikiConfigDialog.dismiss();
-											MainActivity.this.onResume();
+											db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
+											writeJson(MainActivity.this, db);
+										} catch (Exception e) {
+											e.printStackTrace();
+											Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
 										}
-									})
-									.create();
-							removeWikiConfirmationDialog.show();
-						}
-					});
-					btnCreateShortcut.setOnClickListener(new View.OnClickListener() {
-						@Override
-						public void onClick(View v) {
-							try {
-								String id = wikiData.getString(KEY_ID);
-								Bundle bu = new Bundle();
-								bu.putString(KEY_ID, id);
-								Intent in = new Intent(MainActivity.this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
-								IconCompat iconCompat;
-								if (icon != null) iconCompat = IconCompat.createWithBitmap(icon);
-								else
-									iconCompat = IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut);
-								String lbl = wikiData.getString(MainActivity.KEY_NAME);
-								if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
-									ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
-											.setShortLabel(lbl.substring(0, lbl.indexOf(KEY_LBL)))
-											.setLongLabel(lbl)
-											.setIcon(iconCompat)
-											.setIntent(in)
-											.build();
-									if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
-										Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
-									else throw new Exception();
-								}
-							} catch (Exception e) {
-								e.printStackTrace();
-								Toast.makeText(MainActivity.this, R.string.shortcut_failed, Toast.LENGTH_SHORT).show();
+									} else
+										Toast.makeText(MainActivity.this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
+								} else
+									Toast.makeText(MainActivity.this, R.string.failed_opening_file, Toast.LENGTH_SHORT).show();
 							}
+
+							@Override
+							public void onCanceled() {
+
+							}
+						});
+					}
+				});
+				btnRemoveWiki.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						View view1 = LayoutInflater.from(wikiConfigDialog.getContext()).inflate(R.layout.del_confirm, null);
+						final CheckBox cbDelFile = view1.findViewById(R.id.cbDelFile);
+						final CheckBox cbDelBackups = view1.findViewById(R.id.cbDelBackups);
+						cbDelBackups.setEnabled(false);
+						cbDelFile.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+							@Override
+							public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+								cbDelBackups.setEnabled(isChecked);
+							}
+						});
+						AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(wikiConfigDialog.getContext())
+								.setTitle(android.R.string.dialog_alert_title)
+								.setMessage(R.string.confirm_to_remove_wiki)
+								.setView(view1)
+								.setNegativeButton(android.R.string.cancel, null)
+								.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										try {
+											final File f = new File(btnWikiConfigPath.getText().toString());
+											if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
+												db.put(DB_KEY_WIKI, removeUnderK(db.getJSONArray(DB_KEY_WIKI), position));
+											else
+												db.getJSONArray(DB_KEY_WIKI).remove(position);
+											writeJson(MainActivity.this, db);
+											if (cbDelFile.isChecked()) {
+												try {
+													File[] fbx = f.getParentFile().listFiles(new FileFilter() {
+														@Override
+														public boolean accept(File pathname) {
+															return pathname.exists() && pathname.isDirectory() && pathname.getName().equals(f.getName() + BACKUP_DIRECTORY_PATH_PREFIX);
+														}
+													});
+													for (File fb : fbx)
+														if (cbDelBackups.isChecked() && fb.isDirectory()) {
+															File[] b = fb.listFiles(new FileFilter() {
+																@Override
+																public boolean accept(File pathname) {
+																	return isBackupFile(f, pathname);
+																}
+															});
+															for (File f1 : b)
+																f1.delete();
+															fb.delete();
+														}
+												} catch (Exception e) {
+													e.printStackTrace();
+												}
+												if (f.delete())
+													Toast.makeText(MainActivity.this, R.string.file_deleted, Toast.LENGTH_SHORT).show();
+											}
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
+										wikiConfigDialog.dismiss();
+										MainActivity.this.onResume();
+									}
+								})
+								.create();
+						removeWikiConfirmationDialog.show();
+					}
+				});
+				btnCreateShortcut.setOnClickListener(new View.OnClickListener() {
+					@Override
+					public void onClick(View v) {
+						try {
+//								String id = wikiData.getString(KEY_ID);
+							Bundle bu = new Bundle();
+							bu.putString(KEY_ID, id);
+							bu.putBoolean(KEY_SHORTCUT, true);
+							Intent in = new Intent(MainActivity.this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
+//								IconCompat iconCompat;
+//								if (icon != null) iconCompat = IconCompat.createWithBitmap(icon);
+//								else
+//									iconCompat = IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut);
+//								String lbl = wikiData.getString(MainActivity.KEY_NAME);
+							if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
+								ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
+										.setShortLabel(name)
+										.setLongLabel(name + (sub != null ? (KEY_LBL + sub) : MainActivity.STR_EMPTY))
+										.setIcon(iconCompat)
+										.setIntent(in)
+										.build();
+								if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
+									Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
+								else throw new Exception();
+							}
+						} catch (Exception e) {
+							e.printStackTrace();
+							Toast.makeText(MainActivity.this, R.string.shortcut_failed, Toast.LENGTH_SHORT).show();
 						}
-					});
-				} catch (Exception e) {
-					e.printStackTrace();
-					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-				}
+					}
+				});
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+//				}
 			}
 		});
 	}
@@ -708,22 +719,40 @@ public class MainActivity extends AppCompatActivity {
 										}
 									}
 									TWInfo info = new TWInfo(MainActivity.this, file);
-									if (exist) {
+									if (exist)
 										Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-										w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
-										w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
-										w.put(DB_KEY_PATH, file.getAbsolutePath());
-										w.put(DB_KEY_BACKUP, false);
-										new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
-									} else {
+//										new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
+									else {
 										w = new JSONObject();
-										w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
-										w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
+//										w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
+//										w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
 										w.put(KEY_ID, id);
-										w.put(DB_KEY_PATH, file.getAbsolutePath());
-										w.put(DB_KEY_BACKUP, false);
+//										w.put(DB_KEY_PATH, file.getAbsolutePath());
+//										w.put(DB_KEY_BACKUP, false);
 										db.getJSONArray(DB_KEY_WIKI).put(db.getJSONArray(DB_KEY_WIKI).length(), w);
 									}
+									w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
+									w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
+									w.put(DB_KEY_PATH, file.getAbsolutePath());
+									w.put(DB_KEY_BACKUP, false);
+									File fi = new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id);
+									if (info.favicon != null) {
+										OutputStream osf = null;
+										try {
+											osf = new FileOutputStream(fi);
+											info.favicon.compress(Bitmap.CompressFormat.PNG, 100, osf);
+											osf.flush();
+										} catch (Exception e) {
+											e.printStackTrace();
+										} finally {
+											if (osf != null)
+												try {
+													osf.close();
+												} catch (Exception e) {
+													e.printStackTrace();
+												}
+										}
+									} else fi.delete();
 									db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
 									if (!MainActivity.writeJson(MainActivity.this, db))
 										throw new Exception();
@@ -836,6 +865,24 @@ public class MainActivity extends AppCompatActivity {
 									w.put(DB_KEY_PATH, file.getAbsolutePath());
 									w.put(DB_KEY_BACKUP, false);
 									db.getJSONArray(DB_KEY_WIKI).put(db.getJSONArray(DB_KEY_WIKI).length(), w);
+									File fi = new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id);
+									if (info.favicon != null) {
+										OutputStream osf = null;
+										try {
+											osf = new FileOutputStream(fi);
+											info.favicon.compress(Bitmap.CompressFormat.PNG, 100, osf);
+											osf.flush();
+										} catch (Exception e) {
+											e.printStackTrace();
+										} finally {
+											if (osf != null)
+												try {
+													osf.close();
+												} catch (Exception e) {
+													e.printStackTrace();
+												}
+										}
+									} else fi.delete();
 								}
 								db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
 								if (!MainActivity.writeJson(MainActivity.this, db))
@@ -1238,7 +1285,6 @@ public class MainActivity extends AppCompatActivity {
 		super.onConfigurationChanged(newConfig);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) try {
 			getWindow().setStatusBarColor(getColor(R.color.design_default_color_primary));
-			System.out.println(newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK);
 			getWindow().getDecorView().setSystemUiVisibility((newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : View.SYSTEM_UI_FLAG_VISIBLE);
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -1302,32 +1348,44 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	static class TWInfo {
-		boolean isWiki;
-		String title, subtitle = null;
+		boolean isWiki, isClassic;
+		String title = null, subtitle = null;
+		Bitmap favicon = null;
 
 		TWInfo(Context context, File file) {
 			try {
 				Document doc = Jsoup.parse(file, null);
 				Element an = doc.getElementsByAttributeValue(KEY_NAME, KEY_APPLICATION_NAME).first();
-				isWiki = an != null && an.attr(KEY_CONTENT).equals(context.getResources().getString(R.string.tiddlywiki));
+				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
+				isClassic = ele != null && ele.html().length() > 0;
+				isWiki = isClassic || an != null && an.attr(KEY_CONTENT).equals(context.getResources().getString(R.string.tiddlywiki));
 				if (isWiki) {
 					Element ti = doc.getElementsByTag(KEY_TITLE).first();
 					title = ti != null ? ti.html() : null;
-					Element t1 = doc.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE).first();
-					Element t2 = doc.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE).first();
-					title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
-					subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
-					return;
-				}
-				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
-				isWiki = ele != null && ele.html().length() > 0;
-				if (isWiki) {
 					Element sa = doc.getElementsByAttributeValue(KEY_ID, KEY_STORE_AREA).first();
-					Element t1 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE_C).first();
-					Element t2 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE_C).first();
+					Element t1 = sa.getElementsByAttributeValue(KEY_TITLE, isClassic ? KEY_WIKI_TITLE_C : KEY_WIKI_TITLE).first();
+					Element t2 = sa.getElementsByAttributeValue(KEY_TITLE, isClassic ? KEY_WIKI_SUBTITLE_C : KEY_WIKI_SUBTITLE).first();
 					title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
 					subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
+					Element fi = sa.getElementsByAttributeValue(KEY_TITLE, isClassic ? KEY_WIKI_FAVICON_C : KEY_WIKI_FAVICON).first();
+					byte[] b = fi != null ? Base64.decode(fi.getElementsByTag(KEY_PRE).first().html(), Base64.NO_PADDING) : new byte[0];
+					favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
+//					return;
 				}
+//				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
+//				isWiki = ele != null && ele.html().length() > 0;
+//				if (isWiki) {
+//					Element ti = doc.getElementsByTag(KEY_TITLE).first();
+//					title = ti != null ? ti.html() : null;
+//					Element sa = doc.getElementsByAttributeValue(KEY_ID, KEY_STORE_AREA).first();
+//					Element t1 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE_C).first();
+//					Element t2 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE_C).first();
+//					title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
+//					subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
+//					Element fi = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_FAVICON_C).first();
+//					byte[] b = fi != null ? Base64.decode(fi.getElementsByTag(KEY_PRE).first().html(), Base64.NO_PADDING) : new byte[0];
+//					favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
+//				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1356,7 +1414,7 @@ public class MainActivity extends AppCompatActivity {
 		return k1 && k2 && k3 && k4 && k5;
 	}
 
-	private static JSONArray removeUnderK(JSONArray src, int index) {
+	static JSONArray removeUnderK(JSONArray src, int index) {
 		if (src == null) return null;
 		if (src.length() <= index) return src;
 		JSONArray des = new JSONArray();

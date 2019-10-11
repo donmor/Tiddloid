@@ -15,12 +15,13 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
         <androidx.appcompat.widget.Toolbar
+            style="@style/NoSpaceActionBarTheme"
             android:id="@+id/wv_toolbar"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:navigationIcon="@drawable/ic_arrow_back"
-            app:titleTextAppearance="@style/Toolbar.TitleText"
-            app:subtitleTextAppearance="@style/TextAppearance.AppCompat.Small" />
+            app:subtitleTextAppearance="@style/TextAppearance.AppCompat.Small"
+            app:titleTextAppearance="@style/Toolbar.TitleText" />
 
         <ProgressBar
             android:id="@+id/progressBar"

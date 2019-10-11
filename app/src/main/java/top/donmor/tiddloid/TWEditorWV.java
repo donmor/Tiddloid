@@ -14,6 +14,7 @@ import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
@@ -66,18 +67,19 @@ public class TWEditorWV extends AppCompatActivity {
 	private View mCustomView;
 	private WebChromeClient.CustomViewCallback mCustomViewCallback;
 	private int mOriginalOrientation, nextWikiSerial = -1;
+	private float scale;
 	private Intent nextWikiIntent;
 	private ValueCallback<Uri[]> uploadMessage;
 	private WebView wv;
 	private WebSettings wvs;
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
-	private Bitmap favicon;
 	private boolean isWiki, isClassic;
 	private String id;
 
 	// CONSTANT
 	private static final String
+			CHARSET_NAME_UTF_8 = "UTF-8",
 			F02D = "%02d",
 			F03D = "%03d",
 			F04D = "%04d",
@@ -133,6 +135,7 @@ public class TWEditorWV extends AppCompatActivity {
 			wvs.setAllowFileAccessFromFileURLs(true);
 			wvs.setAllowUniversalAccessFromFileURLs(true);
 		}
+		scale = getResources().getDisplayMetrics().density;
 		wcc = new WebChromeClient() {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
@@ -153,36 +156,39 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 			}
 
-			@Override
-			public void onReceivedIcon(WebView view, Bitmap icon) {
-				if (wApp != null) {
-					if (icon != null) {
-						FileOutputStream os = null;
-						try {
-							os = new FileOutputStream(new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)));
-							icon.compress(Bitmap.CompressFormat.PNG, 100, os);
-							os.flush();
-						} catch (Exception e) {
-							e.printStackTrace();
-						} finally {
-							if (os != null)
-								try {
-									os.close();
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
-						}
-						int width = icon.getWidth(), height = icon.getHeight();
-						float scale = getResources().getDisplayMetrics().density * 16f;
-						Matrix matrix = new Matrix();
-						matrix.postScale(scale / width, scale / height);
-						favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
-						toolbar.setLogo(new BitmapDrawable(getResources(), favicon));
-					}
-
-				}
-				super.onReceivedIcon(view, icon);
-			}
+//			@Override
+//			public void onReceivedIcon(WebView view, Bitmap icon) {
+//				if (wApp != null) {
+//					if (icon != null) {
+//						FileOutputStream os = null;
+//						try {
+//							os = new FileOutputStream(new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)));
+//							icon.compress(Bitmap.CompressFormat.PNG, 100, os);
+//							os.flush();
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						} finally {
+//							if (os != null)
+//								try {
+//									os.close();
+//								} catch (Exception e) {
+//									e.printStackTrace();
+//								}
+//						}
+//						Matrix matrix = new Matrix();
+//						matrix.postScale(scale * 32f / icon.getWidth(), scale * 32f / icon.getHeight());
+//						matrix.postTranslate(scale * 4f, 0);
+//						favicon = Bitmap.createBitmap(Math.round(scale * 40f), Math.round(scale * 32f), Bitmap.Config.ARGB_8888);
+//						Canvas c = new Canvas(favicon);
+//						c.drawBitmap(icon, matrix, null);
+//						c.save();
+//						c.restore();
+//						toolbar.setLogo(new BitmapDrawable(getResources(), favicon));
+//					}
+//
+//				}
+//				super.onReceivedIcon(view, icon);
+//			}
 
 			@TargetApi(Build.VERSION_CODES.LOLLIPOP)
 			@Override
@@ -292,39 +298,96 @@ public class TWEditorWV extends AppCompatActivity {
 		});
 		Bundle bu = getIntent().getExtras();
 		String ueu = URL_BLANK;
+		CharSequence wvTitle = null, wvSubTitle = null;
 		id = bu != null ? bu.getString(MainActivity.KEY_ID) : null;
+		boolean shortcut = bu != null && bu.getBoolean(MainActivity.KEY_SHORTCUT);
+		boolean fin = false;
 		try {
-			for (int i = 0; i < db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
-				if (db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.KEY_ID).equals(id)) {
-					wApp = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
-					break;
+			if (id != null && id.length() > 0)
+				for (int i = 0; i < db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
+					JSONObject w = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
+					if (w.getString(MainActivity.KEY_ID).equals(id)) {
+						wApp = w;
+						final int p = i;
+						if (shortcut && !new MainActivity.TWInfo(this, new File(wApp.getString(MainActivity.DB_KEY_PATH))).isWiki) {
+							fin = true;
+							new AlertDialog.Builder(this)
+									.setTitle(android.R.string.dialog_alert_title)
+									.setMessage(R.string.confirm_to_auto_remove_wiki)
+									.setNegativeButton(android.R.string.no, null)
+									.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+										@Override
+										public void onClick(DialogInterface dialog, int which) {
+											try {
+												if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
+													db.put(MainActivity.DB_KEY_WIKI, MainActivity.removeUnderK(db.getJSONArray(MainActivity.DB_KEY_WIKI), p));
+												else
+													db.getJSONArray(MainActivity.DB_KEY_WIKI).remove(p);
+												MainActivity.writeJson(TWEditorWV.this, db);
+											} catch (Exception e) {
+												e.printStackTrace();
+											}
+										}
+									}).setOnDismissListener(new DialogInterface.OnDismissListener() {
+								@Override
+								public void onDismiss(DialogInterface dialogInterface) {
+									finish();
+								}
+							}).show();
+						}
+						wvTitle = wApp.getString(MainActivity.KEY_NAME);
+						try {
+							wvSubTitle = wApp.getString(MainActivity.DB_KEY_SUBTITLE);
+						} catch (Exception e) {
+							e.printStackTrace();
+						}
+						break;
+					} else if (i == db.getJSONArray(MainActivity.DB_KEY_WIKI).length() - 1)
+						throw new Exception();
+				}
+		} catch (Exception e) {
+			e.printStackTrace();
+			Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+			finish();
+		}
+
+		if (wApp != null) try {
+			ueu = SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
+			if (wvTitle != null && wvTitle.length() > 0) this.setTitle(wvTitle);
+			if (wvSubTitle != null && wvSubTitle.length() > 0) toolbar.setSubtitle(wvSubTitle);
+			InputStream is = null;
+			try {
+				is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), id));
+				Bitmap icon = BitmapFactory.decodeStream(is);
+				if (icon != null)
+//					int width = icon.getWidth(), height = icon.getHeight();
+//					Matrix matrix = new Matrix();
+//					matrix.postScale(scale * 24f / icon.getWidth(), scale * 24f / icon.getHeight());
+//					Bitmap icons = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
+					toolbar.setLogo(cIcon(icon));
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (is != null) try {
+					is.close();
+				} catch (Exception e) {
+					e.printStackTrace();
 				}
 			}
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		if (wApp != null) {
-			try {
-				ueu = SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
-				String wvTitle = wApp.getString(MainActivity.KEY_NAME);
-				if (wvTitle.length() > 0) this.setTitle(wvTitle);
-				String wvSubTitle = wApp.getString(MainActivity.DB_KEY_SUBTITLE);
-				if (wvSubTitle.length() > 0) toolbar.setSubtitle(wvSubTitle);
-			} catch (Exception e) {
-				e.printStackTrace();
-			}
-		} else {
+
+		else {
 			String url = bu != null ? bu.getString(MainActivity.KEY_URL) : null;
 			if (url != null) ueu = url;
-			else {
-				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
-				finish();
-			}
+//			else {
+//				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+//				finish();
+//			}
 		}
 
 		final class JavaScriptCallback {
-
-			private static final String CHARSET_NAME_UTF_8 = "UTF-8";
 
 			@SuppressWarnings("unused")
 			@JavascriptInterface
@@ -530,12 +593,32 @@ public class TWEditorWV extends AppCompatActivity {
 						runOnUiThread(new Runnable() {
 							@Override
 							public void run() {
-								Bitmap icon = wv.getFavicon();
-								if (wApp != null && icon == null) try {
+								File ff = new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id);
+								if (info.favicon != null) {
+									sIcon(info.favicon, ff);
+//									OutputStream os = null;
+//									try {
+//										os = new FileOutputStream(ff);
+//										info.favicon.compress(Bitmap.CompressFormat.PNG, 100, os);
+//										os.flush();
+//									} catch (Exception e) {
+//										e.printStackTrace();
+//									} finally {
+//										if (os != null)
+//											try {
+//												os.close();
+//											} catch (Exception e) {
+//												e.printStackTrace();
+//											}
+//									}
+//									int width = info.favicon.getWidth(), height = info.favicon.getHeight();
+//									Matrix matrix = new Matrix();
+//									matrix.postScale(scale * 24f / info.favicon.getWidth(), scale * 24f / info.favicon.getHeight());
+//									Bitmap favicon = Bitmap.createBitmap(info.favicon, 0, 0, width, height, matrix, true);
+									toolbar.setLogo(cIcon(info.favicon));
+								} else {
 									toolbar.setLogo(null);
-									new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
-								} catch (Exception e) {
-									e.printStackTrace();
+									ff.delete();
 								}
 								TWEditorWV.this.setTitle(info.title);
 								toolbar.setSubtitle(info.subtitle);
@@ -601,22 +684,41 @@ public class TWEditorWV extends AppCompatActivity {
 												break;
 											}
 										}
-										if (exist) {
+										if (exist)
 											Toast.makeText(TWEditorWV.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-											w.put(MainActivity.KEY_NAME, info.title);
-											w.put(MainActivity.DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : MainActivity.STR_EMPTY);
-											w.put(MainActivity.DB_KEY_PATH, file.getAbsolutePath());
-											w.put(MainActivity.DB_KEY_BACKUP, false);
-											new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
-										} else {
+//											new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
+										else {
 											w = new JSONObject();
-											w.put(MainActivity.KEY_NAME, info.title);
-											w.put(MainActivity.DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : MainActivity.STR_EMPTY);
+//											w.put(MainActivity.KEY_NAME, info.title);
+//											w.put(MainActivity.DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : MainActivity.STR_EMPTY);
 											w.put(MainActivity.KEY_ID, id);
-											w.put(MainActivity.DB_KEY_PATH, file.getAbsolutePath());
-											w.put(MainActivity.DB_KEY_BACKUP, false);
+//											w.put(MainActivity.DB_KEY_PATH, file.getAbsolutePath());
+//											w.put(MainActivity.DB_KEY_BACKUP, false);
 											db.getJSONArray(MainActivity.DB_KEY_WIKI).put(db.getJSONArray(MainActivity.DB_KEY_WIKI).length(), w);
 										}
+										w.put(MainActivity.KEY_NAME, info.title);
+										w.put(MainActivity.DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : MainActivity.STR_EMPTY);
+										w.put(MainActivity.DB_KEY_PATH, file.getAbsolutePath());
+										w.put(MainActivity.DB_KEY_BACKUP, false);
+										File fi = new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id);
+										if (info.favicon != null) {
+											sIcon(info.favicon,fi);
+//											OutputStream osf = null;
+//											try {
+//												osf = new FileOutputStream(fi);
+//												info.favicon.compress(Bitmap.CompressFormat.PNG, 100, osf);
+//												osf.flush();
+//											} catch (Exception e) {
+//												e.printStackTrace();
+//											} finally {
+//												if (osf != null)
+//													try {
+//														osf.close();
+//													} catch (Exception e) {
+//														e.printStackTrace();
+//													}
+//											}
+										} else fi.delete();
 										if (!MainActivity.writeJson(TWEditorWV.this, db))
 											throw new Exception();
 										wApp = w;
@@ -633,40 +735,21 @@ public class TWEditorWV extends AppCompatActivity {
 										runOnUiThread(new Runnable() {
 											@Override
 											public void run() {
-												Bitmap icon = wv.getFavicon();
 												if (wApp != null) {
-													if (icon != null) {
-														FileOutputStream os = null;
-														try {
-															os = new FileOutputStream(new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)));
-															icon.compress(Bitmap.CompressFormat.PNG, 100, os);
-															os.flush();
-														} catch (Exception e) {
-															e.printStackTrace();
-														} finally {
-															if (os != null)
-																try {
-																	os.close();
-																} catch (Exception e) {
-																	e.printStackTrace();
-																}
-														}
-														int width = icon.getWidth(), height = icon.getHeight();
-														float scale = getResources().getDisplayMetrics().density * 16f;
-														Matrix matrix = new Matrix();
-														matrix.postScale(scale / width, scale / height);
-														favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
-														toolbar.setLogo(new BitmapDrawable(getResources(), favicon));
-													} else toolbar.setLogo(null);
+													if (info.favicon != null)
+//														int width = info.favicon.getWidth(), height = info.favicon.getHeight();
+//														Matrix matrix = new Matrix();
+//														matrix.postScale(scale * 24f / info.favicon.getWidth(), scale * 24f / info.favicon.getHeight());
+//														Bitmap favicon = Bitmap.createBitmap(info.favicon, 0, 0, width, height, matrix, true);
+														toolbar.setLogo(cIcon(info.favicon));
+													else toolbar.setLogo(null);
 												}
-												if (icon != null) icon.recycle();
 												TWEditorWV.this.setTitle(info.title);
 												toolbar.setSubtitle(info.subtitle);
 												wv.clearHistory();
 											}
 										});
 									}
-
 								} else throw new Exception();
 							} catch (Exception e) {
 								e.printStackTrace();
@@ -749,30 +832,34 @@ public class TWEditorWV extends AppCompatActivity {
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
 				if (wApp == null) {
 					toolbar.setLogo(R.drawable.ic_language);
-				} else {
-					FileInputStream is = null;
-					try {
-						is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)));
-						Bitmap icon = BitmapFactory.decodeStream(is);
-						if (icon != null) {
-							int width = icon.getWidth(), height = icon.getHeight();
-							float scale = getResources().getDisplayMetrics().density * 16f;
-							Matrix matrix = new Matrix();
-							matrix.postScale(scale / width, scale / height);
-							TWEditorWV.this.favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
-							toolbar.setLogo(new BitmapDrawable(getResources(), TWEditorWV.this.favicon));
-						}
-					} catch (Exception e) {
-						e.printStackTrace();
-					} finally {
-						if (is != null) try {
-							is.close();
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-					}
-
 				}
+//				else {
+//					FileInputStream is = null;
+//					try {
+//						is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), wApp.getString(MainActivity.KEY_ID)));
+//						Bitmap icon = BitmapFactory.decodeStream(is);
+//						if (icon != null) {
+//							Matrix matrix = new Matrix();
+//							matrix.postScale(scale * 32f / icon.getWidth(), scale * 32f / icon.getHeight());
+//							matrix.postTranslate(scale * 4f, 0);
+//							TWEditorWV.this.favicon = Bitmap.createBitmap(Math.round(scale * 40f), Math.round(scale * 32f), Bitmap.Config.ARGB_8888);
+//							Canvas c = new Canvas(TWEditorWV.this.favicon);
+//							c.drawBitmap(icon, matrix, null);
+//							c.save();
+//							c.restore();
+//							toolbar.setLogo(new BitmapDrawable(getResources(), TWEditorWV.this.favicon));
+//						}
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//					} finally {
+//						if (is != null) try {
+//							is.close();
+//						} catch (Exception e) {
+//							e.printStackTrace();
+//						}
+//					}
+//
+//				}
 			}
 
 			public void onPageFinished(WebView view, String url) {
@@ -811,7 +898,7 @@ public class TWEditorWV extends AppCompatActivity {
 				});
 			}
 		});
-		wv.loadUrl(ueu);
+		wv.loadUrl(!fin?ueu:null);
 	}
 
 	@Override
@@ -821,9 +908,11 @@ public class TWEditorWV extends AppCompatActivity {
 		final String fid = bu != null ? bu.getString(MainActivity.KEY_ID) : null;
 		if (fid != null) {
 			int ser = -1;
+			JSONObject w = null;
 			try {
 				for (int i = 0; i < db.getJSONArray(MainActivity.DB_KEY_WIKI).length(); i++) {
-					if (db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i).getString(MainActivity.KEY_ID).equals(fid)) {
+					w = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(i);
+					if (w.getString(MainActivity.KEY_ID).equals(fid)) {
 						ser = i;
 						break;
 					}
@@ -833,50 +922,125 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 			if (ser == -1) Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 			else if (!fid.equals(id)) {
-				nextWikiIntent = intent;
-				nextWikiSerial = ser;
-				if (isWiki)
-					wv.loadUrl(SCH_JS + ':' + getResources().getString(isClassic ? R.string.js_quit_c : R.string.js_quit));
-				else nextWiki();
+				try {
+					if (new MainActivity.TWInfo(this, new File(w.getString(MainActivity.DB_KEY_PATH))).isWiki) {
+						nextWikiIntent = intent;
+						nextWikiSerial = ser;
+						if (isWiki)
+							wv.loadUrl(SCH_JS + ':' + getResources().getString(isClassic ? R.string.js_quit_c : R.string.js_quit));
+						else nextWiki();
+					} else {
+						final int p = ser;
+						new AlertDialog.Builder(this)
+								.setTitle(android.R.string.dialog_alert_title)
+								.setMessage(R.string.confirm_to_auto_remove_wiki)
+								.setNegativeButton(android.R.string.no, null)
+								.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+									@Override
+									public void onClick(DialogInterface dialog, int which) {
+										try {
+											if (Build.VERSION.SDK_INT < Build.VERSION_CODES.KITKAT)
+												db.put(MainActivity.DB_KEY_WIKI, MainActivity.removeUnderK(db.getJSONArray(MainActivity.DB_KEY_WIKI), p));
+											else
+												db.getJSONArray(MainActivity.DB_KEY_WIKI).remove(p);
+											MainActivity.writeJson(TWEditorWV.this, db);
+										} catch (Exception e) {
+											e.printStackTrace();
+										}
+									}
+								}).show();
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
 
 	private void nextWiki() {
-		String ueu = URL_BLANK;
+		String ueu = null;
 		toolbar.setLogo(null);
 		wvs.setBuiltInZoomControls(false);
 		wvs.setDisplayZoomControls(false);
 		wApp = null;
 		wvs.setJavaScriptEnabled(false);
-		wv.loadUrl(ueu);
+		wv.loadUrl(null);
 		setIntent(nextWikiIntent);
+		String wvTitle = null, wvSubTitle = null;
 		try {
 			wApp = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(nextWikiSerial);
+			if (wApp == null) throw new Exception();
 			id = wApp.getString(MainActivity.KEY_ID);
-		} catch (Exception e) {
-			e.printStackTrace();
-		}
-		if (wApp != null) {
+			ueu = SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
+			wvTitle = wApp.getString(MainActivity.KEY_NAME);
 			try {
-				ueu = SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
-				String wvTitle = wApp.getString(MainActivity.KEY_NAME);
-				String wvSubTitle = wApp.getString(MainActivity.DB_KEY_SUBTITLE);
-				if (wvTitle.length() > 0) this.setTitle(wvTitle);
-				if (wvSubTitle.length() > 0) toolbar.setSubtitle(wvSubTitle);
+				wvSubTitle = wApp.getString(MainActivity.DB_KEY_SUBTITLE);
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
-		} else {
-			Bundle bu = getIntent().getExtras();
-			String url = bu != null ? bu.getString(MainActivity.KEY_URL) : null;
-			if (url != null) ueu = url;
-			if (bu != null) ueu = bu.getString(MainActivity.KEY_URL);
+		} catch (Exception e) {
+			e.printStackTrace();
+			Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
+			finish();
+		}
+		try {
+			if (wvTitle != null && wvTitle.length() > 0) this.setTitle(wvTitle);
+			if (wvSubTitle != null && wvSubTitle.length() > 0) toolbar.setSubtitle(wvSubTitle);
+			InputStream is = null;
+			try {
+				is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), id));
+				Bitmap icon = BitmapFactory.decodeStream(is);
+				if (icon != null)
+//					int width = icon.getWidth(), height = icon.getHeight();
+//					Matrix matrix = new Matrix();
+//					matrix.postScale(scale * 24f / icon.getWidth(), scale * 24f / icon.getHeight());
+//					Bitmap icons = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
+					toolbar.setLogo(cIcon(icon));
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (is != null) try {
+					is.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+			}
+		} catch (Exception e) {
+			e.printStackTrace();
 		}
 		wvs.setJavaScriptEnabled(true);
 		wv.loadUrl(ueu);
 		nextWikiIntent = null;
 		nextWikiSerial = -1;
+	}
+
+	private BitmapDrawable cIcon(Bitmap icon) {
+		Matrix matrix = new Matrix();
+		matrix.postScale(scale * 32f / icon.getWidth(), scale * 32f / icon.getHeight());
+		Bitmap icons = Bitmap.createBitmap(Math.round(scale * 40f), Math.round(scale * 32f), Bitmap.Config.ARGB_8888);
+		Canvas c = new Canvas(icons);
+		c.drawBitmap(icon, matrix, null);
+		c.save();
+		c.restore();
+		return new BitmapDrawable(getResources(),icons);
+	}
+
+	private void sIcon(Bitmap icon, File des) {
+		OutputStream os = null;
+		try {
+			os = new FileOutputStream(des);
+			icon.compress(Bitmap.CompressFormat.PNG, 100, os);
+			os.flush();
+		} catch (Exception e) {
+			e.printStackTrace();
+		} finally {
+			if (os != null)
+				try {
+					os.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+		}
 	}
 
 	@Override

@@ -12,6 +12,11 @@
         <item name="colorAccent">@color/design_default_color_accent</item>
     </style>
 
+    <style name="NoSpaceActionBarTheme" parent="Base.Widget.AppCompat.Toolbar">
+        <item name="contentInsetStart">0dp</item>
+        <item name="contentInsetStartWithNavigation">0dp</item>
+    </style>
+
     <style name="Toolbar.TitleText" parent="TextAppearance.Widget.AppCompat.Toolbar.Title">
         <item name="android:textSize">16sp</item>
     </style>
