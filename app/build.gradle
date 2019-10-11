@@ -21,9 +21,9 @@ properties.load(inputStream)
 android {
     signingConfigs {
         donmor {
-            storeFile file('../../donmor.jks')
+            storeFile file(properties.getProperty('keyFile'))
             storePassword properties.getProperty('signPassword')
-            keyAlias = 'key0'
+            keyAlias = properties.getProperty('keyAlias')
             keyPassword properties.getProperty('signPassword')
         }
     }
@@ -33,8 +33,8 @@ android {
         minSdkVersion 16
         //noinspection OldTargetApi
         targetSdkVersion 28
-        versionCode 29
-        versionName "1.3.1"
+        versionCode 30
+        versionName "1.3.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }
