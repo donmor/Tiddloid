@@ -41,7 +41,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	private ReloadListener mReloadListener;
 	private final LayoutInflater inflater;
 	private final Vibrator vibrator;
-	private float scale;
+	private final float scale;
 
 	WikiListAdapter(Context context, JSONObject db) {
 		this.context = context;
@@ -74,7 +74,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	}
 
 	@Override
-	public void onBindViewHolder(@NonNull final WikiListHolder holder, final int position) {
+	public void onBindViewHolder(@NonNull WikiListHolder holder, final int position) {
 		try {
 			final JSONObject w = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(position);
 			holder.path = w.getString(MainActivity.DB_KEY_PATH);

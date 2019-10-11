@@ -58,21 +58,19 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	}
 
 	@Override
-	public void onBindViewHolder(@NonNull BackupListHolder holder, int position) {
-		final int pos = position;
-
+	public void onBindViewHolder(@NonNull BackupListHolder holder, final int position) {
 		try {
 			holder.lblBackupFile.setText(SimpleDateFormat.getDateTimeInstance().format(dt[position]));
 			holder.btnRollBack.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mBtnClickListener.onBtnClick(pos, 1);
+					mBtnClickListener.onBtnClick(position, 1);
 				}
 			});
 			holder.btnDelBackup.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mBtnClickListener.onBtnClick(pos, 2);
+					mBtnClickListener.onBtnClick(position, 2);
 				}
 			});
 		} catch (Exception e) {
@@ -116,7 +114,8 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 		this.mf = mainFile;
 		count = 0;
 		try {
-			String mfp = mf.getParentFile().getAbsolutePath(), mfn = mf.getName();
+			String mfp = mf.getParentFile().getAbsolutePath();
+			String mfn = mf.getName();
 			File mfd = new File(mfp + '/' + mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
 			if (mfd.isDirectory())
 				bk = sortFile(mfd.listFiles(new FileFilter() {

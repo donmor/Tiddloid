@@ -257,30 +257,11 @@ public class MainActivity extends AppCompatActivity {
 		});
 		wikiListAdapter.setOnItemClickListener(new WikiListAdapter.ItemClickListener() {
 			@Override
-			public void onItemClick(final int position, String id, final File file) {
-//				String id = wikiListAdapter.getId(position);
-//				if (new TWInfo(MainActivity.this, file).isWiki)
-//				String vp = null;
-//				int mp = 0, ep = 0;
-//				try {
-//					ep = db.getJSONArray(DB_KEY_WIKI).length();
-//					for (int i = 0; i < ep; i++) {
-//						if (db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(KEY_ID).equals(id)) {
-//							vp = db.getJSONArray(DB_KEY_WIKI).getJSONObject(i).getString(DB_KEY_PATH);
-//							break;
-//						}
-//						mp++;
-//					}
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//				if (id != null && vp != null && mp < ep) {
-//					File f = new File(vp);
+			public void onItemClick(final int position, String id, File file) {
 				if (new TWInfo(MainActivity.this, file).isWiki) {
 					if (!loadPage(id))
 						Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 				} else {
-//						final int p = mp;
 					new AlertDialog.Builder(MainActivity.this)
 							.setTitle(android.R.string.dialog_alert_title)
 							.setMessage(R.string.confirm_to_auto_remove_wiki)
@@ -301,15 +282,10 @@ public class MainActivity extends AppCompatActivity {
 								}
 							}).show();
 				}
-//				} else {
-//					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-//				}
 			}
 
 			@Override
-			public void onItemLongClick(final int position, final JSONObject w, final String id, final File file, final String name, final String sub, final Bitmap favicon) {
-//				try {
-//					final JSONObject wikiData = db.getJSONArray(DB_KEY_WIKI).getJSONObject(position);
+			public void onItemLongClick(final int position, final JSONObject w, final String id, File file, final String name, final String sub, Bitmap favicon) {
 				View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.wikiconfig_dialog, null);
 				final Button btnWikiConfigPath = view.findViewById(R.id.btnWikiConfigPath);
 				btnWikiConfigPath.setText(file.getAbsolutePath());
@@ -340,25 +316,13 @@ public class MainActivity extends AppCompatActivity {
 							}
 						})
 						.create();
-//					FileInputStream is = null;
-//					Bitmap iconX = null;
 				try {
-//						is = new FileInputStream(new File(getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), id));
-//						iconX = BitmapFactory.decodeStream(is);
 					if (favicon != null)
 						wikiConfigDialog.setIcon(new BitmapDrawable(getResources(), favicon));
 					else throw new Exception();
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-//					finally {
-//						if (is != null) try {
-//							is.close();
-//						} catch (Exception e) {
-//							e.printStackTrace();
-//						}
-//					}
-//					final Bitmap icon = iconX;
 				final IconCompat iconCompat = favicon != null ? IconCompat.createWithBitmap(favicon) : IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut);
 				final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
 				backupListAdapter.setOnBtnClickListener(new BackupListAdapter.BtnClickListener() {
@@ -496,7 +460,9 @@ public class MainActivity extends AppCompatActivity {
 											if (exist) {
 												Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 											} else {
-												String p = file.getAbsolutePath(), t = (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki), s = (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY;
+												String p = file.getAbsolutePath();
+												String t = (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki);
+												String s = (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY;
 												w.put(KEY_NAME, t);
 												w.put(DB_KEY_SUBTITLE, s);
 												w.put(DB_KEY_PATH, p);
@@ -592,16 +558,10 @@ public class MainActivity extends AppCompatActivity {
 					@Override
 					public void onClick(View v) {
 						try {
-//								String id = wikiData.getString(KEY_ID);
 							Bundle bu = new Bundle();
 							bu.putString(KEY_ID, id);
 							bu.putBoolean(KEY_SHORTCUT, true);
 							Intent in = new Intent(MainActivity.this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
-//								IconCompat iconCompat;
-//								if (icon != null) iconCompat = IconCompat.createWithBitmap(icon);
-//								else
-//									iconCompat = IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut);
-//								String lbl = wikiData.getString(MainActivity.KEY_NAME);
 							if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
 								ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
 										.setShortLabel(name)
@@ -619,10 +579,6 @@ public class MainActivity extends AppCompatActivity {
 						}
 					}
 				});
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-//				}
 			}
 		});
 	}
@@ -721,38 +677,16 @@ public class MainActivity extends AppCompatActivity {
 									TWInfo info = new TWInfo(MainActivity.this, file);
 									if (exist)
 										Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-//										new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id).delete();
 									else {
 										w = new JSONObject();
-//										w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
-//										w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
 										w.put(KEY_ID, id);
-//										w.put(DB_KEY_PATH, file.getAbsolutePath());
-//										w.put(DB_KEY_BACKUP, false);
 										db.getJSONArray(DB_KEY_WIKI).put(db.getJSONArray(DB_KEY_WIKI).length(), w);
 									}
 									w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
 									w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
 									w.put(DB_KEY_PATH, file.getAbsolutePath());
 									w.put(DB_KEY_BACKUP, false);
-									File fi = new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id);
-									if (info.favicon != null) {
-										OutputStream osf = null;
-										try {
-											osf = new FileOutputStream(fi);
-											info.favicon.compress(Bitmap.CompressFormat.PNG, 100, osf);
-											osf.flush();
-										} catch (Exception e) {
-											e.printStackTrace();
-										} finally {
-											if (osf != null)
-												try {
-													osf.close();
-												} catch (Exception e) {
-													e.printStackTrace();
-												}
-										}
-									} else fi.delete();
+									updateIcon(MainActivity.this, info.favicon, id);
 									db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
 									if (!MainActivity.writeJson(MainActivity.this, db))
 										throw new Exception();
@@ -865,24 +799,7 @@ public class MainActivity extends AppCompatActivity {
 									w.put(DB_KEY_PATH, file.getAbsolutePath());
 									w.put(DB_KEY_BACKUP, false);
 									db.getJSONArray(DB_KEY_WIKI).put(db.getJSONArray(DB_KEY_WIKI).length(), w);
-									File fi = new File(getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id);
-									if (info.favicon != null) {
-										OutputStream osf = null;
-										try {
-											osf = new FileOutputStream(fi);
-											info.favicon.compress(Bitmap.CompressFormat.PNG, 100, osf);
-											osf.flush();
-										} catch (Exception e) {
-											e.printStackTrace();
-										} finally {
-											if (osf != null)
-												try {
-													osf.close();
-												} catch (Exception e) {
-													e.printStackTrace();
-												}
-										}
-									} else fi.delete();
+									updateIcon(MainActivity.this, info.favicon, id);
 								}
 								db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
 								if (!MainActivity.writeJson(MainActivity.this, db))
@@ -1016,7 +933,8 @@ public class MainActivity extends AppCompatActivity {
 						new Thread() {
 							public void run() {
 								try {
-									String se = db.getString(DB_KEY_SEARCH_ENGINE), res;
+									String se = db.getString(DB_KEY_SEARCH_ENGINE);
+									String res;
 									Message msg = new Message();
 									Bundle data = new Bundle();
 									JSONArray array = null;
@@ -1242,9 +1160,9 @@ public class MainActivity extends AppCompatActivity {
 			});
 			return true;
 		} else if (id == R.id.action_about) {
-			final SpannableString spannableString = new SpannableString(getResources().getString(R.string.about));
+			SpannableString spannableString = new SpannableString(getResources().getString(R.string.about));
 			Linkify.addLinks(spannableString, Linkify.ALL);
-			final AlertDialog aboutDialog = new AlertDialog.Builder(this)
+			AlertDialog aboutDialog = new AlertDialog.Builder(this)
 					.setTitle(R.string.action_about)
 					.setMessage(spannableString)
 					.show();
@@ -1336,6 +1254,27 @@ public class MainActivity extends AppCompatActivity {
 		return v;
 	}
 
+	static void updateIcon(Context context, Bitmap icon, String id) {
+		File fi = new File(context.getDir(MainActivity.KEY_FAVICON, MODE_PRIVATE), id);
+		if (icon != null) {
+			OutputStream os = null;
+			try {
+				os = new FileOutputStream(fi);
+				icon.compress(Bitmap.CompressFormat.PNG, 100, os);
+				os.flush();
+			} catch (Exception e) {
+				e.printStackTrace();
+			} finally {
+				if (os != null)
+					try {
+						os.close();
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+			}
+		} else fi.delete();
+	}
+
 	@TargetApi(23)
 	private void checkPermission() {
 		if (ContextCompat.checkSelfPermission(this, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED) {
@@ -1370,22 +1309,7 @@ public class MainActivity extends AppCompatActivity {
 					Element fi = sa.getElementsByAttributeValue(KEY_TITLE, isClassic ? KEY_WIKI_FAVICON_C : KEY_WIKI_FAVICON).first();
 					byte[] b = fi != null ? Base64.decode(fi.getElementsByTag(KEY_PRE).first().html(), Base64.NO_PADDING) : new byte[0];
 					favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
-//					return;
 				}
-//				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
-//				isWiki = ele != null && ele.html().length() > 0;
-//				if (isWiki) {
-//					Element ti = doc.getElementsByTag(KEY_TITLE).first();
-//					title = ti != null ? ti.html() : null;
-//					Element sa = doc.getElementsByAttributeValue(KEY_ID, KEY_STORE_AREA).first();
-//					Element t1 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_TITLE_C).first();
-//					Element t2 = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_SUBTITLE_C).first();
-//					title = t1 != null ? t1.getElementsByTag(KEY_PRE).first().html() : title;
-//					subtitle = t2 != null ? t2.getElementsByTag(KEY_PRE).first().html() : null;
-//					Element fi = sa.getElementsByAttributeValue(KEY_TITLE, KEY_WIKI_FAVICON_C).first();
-//					byte[] b = fi != null ? Base64.decode(fi.getElementsByTag(KEY_PRE).first().html(), Base64.NO_PADDING) : new byte[0];
-//					favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
-//				}
 			} catch (Exception e) {
 				e.printStackTrace();
 			}
@@ -1465,7 +1389,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 
-	static void wGet(final Context parent, Uri uri, final File dest) {
+	static void wGet(Context parent, Uri uri, File dest) {
 		wGet(parent, uri, dest, false, false, null, null);
 	}
 
@@ -1508,7 +1432,7 @@ public class MainActivity extends AppCompatActivity {
 					InputStream is = null, is2 = null;
 					OutputStream os = null, os2 = null;
 					try {
-						final HttpURLConnection httpURLConnection;
+						HttpURLConnection httpURLConnection;
 						int len;
 						if (uriX.getScheme() != null && uriX.getScheme().equals(SCHEME_BLOB_B64)) {
 							String b64 = uriX.getSchemeSpecificPart();

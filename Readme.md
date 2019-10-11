@@ -69,7 +69,7 @@ Here's the difference between Tiddloid and Tiddloid Lite:
 | Search-and-Fork system | Yes | No |
 | Downloader | Yes | No |
 | Local file direct access | Yes | No |
-| Cloud Service (via SAF) | No | Yes |
+| Cloud Service | No | Yes(via SAF) |
 | Template | Download on first startup | Download on creating new wiki
 | Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android version best and supports most of TW5 |
 | Recommended Android version | Android 16 ~ 28 | Android 21 ~ |
