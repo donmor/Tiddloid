@@ -22,7 +22,7 @@
     <string name="js_version" translatable="false">
         var wiki = typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\";
         var classic = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\";
-        window.twi.getVersion(wiki,classic);
+        window.twi.getVersion(wiki, classic);
         if (classic) {
             window.saveFile = function(path,text) {
                 window.twi.saveFile(path,text);
