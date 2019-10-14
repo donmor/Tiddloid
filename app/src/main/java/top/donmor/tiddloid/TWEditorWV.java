@@ -24,6 +24,7 @@ import android.os.Bundle;
 import android.os.Environment;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.WindowManager;
 import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
@@ -71,7 +72,6 @@ public class TWEditorWV extends AppCompatActivity {
 	private Intent nextWikiIntent;
 	private ValueCallback<Uri[]> uploadMessage;
 	private WebView wv;
-	private WebSettings wvs;
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private boolean isWiki, isClassic;
@@ -113,12 +113,12 @@ public class TWEditorWV extends AppCompatActivity {
 		}
 		toolbar = findViewById(R.id.wv_toolbar);
 		setSupportActionBar(toolbar);
-		this.setTitle(getResources().getString(R.string.app_name));
+		this.setTitle(R.string.app_name);
 		onConfigurationChanged(getResources().getConfiguration());
 		wv = findViewById(R.id.twWebView);
 		wvProgress = findViewById(R.id.progressBar);
 		wvProgress.setMax(100);
-		wvs = wv.getSettings();
+		WebSettings wvs = wv.getSettings();
 		wvs.setJavaScriptEnabled(true);
 		wvs.setDatabaseEnabled(true);
 		wvs.setDatabasePath(getCacheDir().getPath());
@@ -348,8 +348,8 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@SuppressWarnings("unused")
 			@JavascriptInterface
-			public void getVersion(String title, boolean classic) {
-				if (title.equals(getResources().getString(R.string.tiddlywiki))) {
+			public void getVersion(boolean wiki, boolean classic) {
+				if (wiki) {
 					isWiki = true;
 					if (wApp == null && !classic)
 						runOnUiThread(new Runnable() {
@@ -360,8 +360,8 @@ public class TWEditorWV extends AppCompatActivity {
 							}
 						});
 
-					wvs.setBuiltInZoomControls(classic);
-					wvs.setDisplayZoomControls(classic);
+					wv.getSettings().setBuiltInZoomControls(classic);
+					wv.getSettings().setDisplayZoomControls(classic);
 					isClassic = classic;
 				} else isWiki = false;
 			}
@@ -374,42 +374,11 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@SuppressWarnings("unused")
 			@JavascriptInterface
-			public void isDirtyOnQuit(boolean d) {
-				if (d) {
-					AlertDialog.Builder isExit = new AlertDialog.Builder(TWEditorWV.this);
-					isExit.setTitle(android.R.string.dialog_alert_title);
-					isExit.setMessage(R.string.confirm_to_exit_wiki);
-					isExit.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int which) {
-									quitting();
-									dialog.dismiss();
-								}
-							}
-					);
-					isExit.setNegativeButton(android.R.string.no, null);
-					isExit.setOnCancelListener(new DialogInterface.OnCancelListener() {
-						@Override
-						public void onCancel(DialogInterface dialog) {
-							nextWikiIntent = null;
-							nextWikiSerial = -1;
-						}
-					});
-					AlertDialog dialog = isExit.create();
-					dialog.setCanceledOnTouchOutside(false);
-					dialog.show();
-				} else {
-					quitting();
-				}
-			}
-
-			private void quitting() {
+			public void isDirtyOnQuit(final boolean dirty) {
 				runOnUiThread(new Runnable() {
 					@Override
 					public void run() {
-						if (nextWikiIntent == null)
-							TWEditorWV.super.onBackPressed();
-						else
-							nextWiki();
+						confirmAndExit(dirty);
 					}
 				});
 			}
@@ -417,7 +386,12 @@ public class TWEditorWV extends AppCompatActivity {
 			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void saveFile(String pathname, String data) {
-				saveWiki(data);
+				try {
+					if (wApp == null || !isClassic || pathname.equals(wApp.getString(MainActivity.DB_KEY_PATH)))
+						saveWiki(data);
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 
 			@SuppressWarnings("unused")
@@ -741,8 +715,29 @@ public class TWEditorWV extends AppCompatActivity {
 				if (wApp == null) toolbar.setLogo(R.drawable.ic_language);
 			}
 
-			public void onPageFinished(WebView view, String url) {
-				view.loadUrl(SCH_JS + ':' + getResources().getString(R.string.js_version));
+			public void onPageFinished(final WebView view, String url) {
+				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+					view.evaluateJavascript(getString(R.string.js_is_wiki), new ValueCallback<String>() {
+						@Override
+						public void onReceiveValue(String value) {
+							isWiki = Boolean.parseBoolean(value);
+							if (isWiki)
+								view.evaluateJavascript(getString(R.string.js_is_classic), new ValueCallback<String>() {
+									@Override
+									public void onReceiveValue(String value) {
+										isClassic = Boolean.parseBoolean(value);
+										if (wApp == null && !isClassic) {
+											Toast.makeText(TWEditorWV.this, R.string.ready_to_fork, Toast.LENGTH_SHORT).show();
+											toolbar.setLogo(R.drawable.ic_fork);
+										}
+										view.getSettings().setBuiltInZoomControls(isClassic);
+										view.getSettings().setDisplayZoomControls(isClassic);
+									}
+								});
+						}
+					});
+				else
+					view.loadUrl(SCH_JS + ':' + getString(R.string.js_version));
 				if (wApp != null) view.clearHistory();
 			}
 		});
@@ -764,7 +759,7 @@ public class TWEditorWV extends AppCompatActivity {
 						if (files != null && files.length > 0) {
 							String scheme = Uri.parse(url) != null ? Uri.parse(url).getScheme() : null;
 							if (scheme != null && scheme.equals(SCH_BLOB)) {
-								wv.loadUrl(SCH_JS + ':' + getResources().getString(R.string.js_blob).replace(PREF_BLOB, url).replace(PREF_DEST, files[0].getAbsolutePath()));
+								wv.loadUrl(SCH_JS + ':' + getString(R.string.js_blob).replace(PREF_BLOB, url).replace(PREF_DEST, files[0].getAbsolutePath()));
 							} else
 								MainActivity.wGet(TWEditorWV.this, Uri.parse(url), files[0]);
 						}
@@ -805,9 +800,17 @@ public class TWEditorWV extends AppCompatActivity {
 					if (new MainActivity.TWInfo(this, new File(w.getString(MainActivity.DB_KEY_PATH))).isWiki) {
 						nextWikiIntent = intent;
 						nextWikiSerial = ser;
-						if (isWiki)
-							wv.loadUrl(SCH_JS + ':' + getResources().getString(isClassic ? R.string.js_quit_c : R.string.js_quit));
-						else nextWiki();
+						if (isWiki) {
+							if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+								wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), new ValueCallback<String>() {
+									@Override
+									public void onReceiveValue(String value) {
+										confirmAndExit(Boolean.parseBoolean(value));
+									}
+								});
+							else
+								wv.loadUrl(SCH_JS + ':' + getString(isClassic ? R.string.js_quit_c : R.string.js_quit));
+						} else nextWiki();
 					} else {
 						final int p = ser;
 						new AlertDialog.Builder(this)
@@ -836,14 +839,47 @@ public class TWEditorWV extends AppCompatActivity {
 		}
 	}
 
+	private void confirmAndExit(boolean dirty) {
+		if (dirty) {
+			AlertDialog isExit = new AlertDialog.Builder(TWEditorWV.this)
+					.setTitle(android.R.string.dialog_alert_title)
+					.setMessage(R.string.confirm_to_exit_wiki)
+					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
+								public void onClick(DialogInterface dialog, int which) {
+									if (nextWikiIntent == null)
+										TWEditorWV.super.onBackPressed();
+									else
+										nextWiki();
+									dialog.dismiss();
+								}
+							}
+					)
+					.setNegativeButton(android.R.string.no, null)
+					.setOnCancelListener(new DialogInterface.OnCancelListener() {
+						@Override
+						public void onCancel(DialogInterface dialog) {
+							nextWikiIntent = null;
+							nextWikiSerial = -1;
+						}
+					})
+					.show();
+			isExit.setCanceledOnTouchOutside(false);
+		} else {
+			if (nextWikiIntent == null)
+				TWEditorWV.super.onBackPressed();
+			else
+				nextWiki();
+		}
+	}
+
 	private void nextWiki() {
 		String ueu = null;
 		toolbar.setLogo(null);
-		wvs.setBuiltInZoomControls(false);
-		wvs.setDisplayZoomControls(false);
+		wv.getSettings().setBuiltInZoomControls(false);
+		wv.getSettings().setDisplayZoomControls(false);
 		wApp = null;
-		wvs.setJavaScriptEnabled(false);
-		wv.loadUrl(null);
+		wv.getSettings().setJavaScriptEnabled(false);
+		wv.loadUrl(URL_BLANK);
 		setIntent(nextWikiIntent);
 		String wvTitle = null, wvSubTitle = null;
 		try {
@@ -882,7 +918,7 @@ public class TWEditorWV extends AppCompatActivity {
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
-		wvs.setJavaScriptEnabled(true);
+		wv.getSettings().setJavaScriptEnabled(true);
 		wv.loadUrl(ueu);
 		nextWikiIntent = null;
 		nextWikiSerial = -1;
@@ -906,7 +942,15 @@ public class TWEditorWV extends AppCompatActivity {
 		else if (wv.canGoBack())
 			wv.goBack();
 		else if (isWiki) {
-			wv.loadUrl(SCH_JS + ':' + getResources().getString(isClassic ? R.string.js_quit_c : R.string.js_quit));
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.KITKAT)
+				wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), new ValueCallback<String>() {
+					@Override
+					public void onReceiveValue(String value) {
+						confirmAndExit(Boolean.parseBoolean(value));
+					}
+				});
+			else
+				wv.loadUrl(SCH_JS + ':' + getString(isClassic ? R.string.js_quit_c : R.string.js_quit));
 		} else {
 			TWEditorWV.super.onBackPressed();
 		}
@@ -945,9 +989,15 @@ public class TWEditorWV extends AppCompatActivity {
 	@Override
 	protected void onDestroy() {
 		if (wv != null) {
-			wvs.setJavaScriptEnabled(false);
+			ViewParent parent = wv.getParent();
+			if (parent != null) ((ViewGroup) parent).removeView(wv);
+			wv.stopLoading();
+			wv.getSettings().setJavaScriptEnabled(false);
+			wv.removeJavascriptInterface(JSI);
+			wv.clearHistory();
 			wv.loadUrl(URL_BLANK);
-			((ViewGroup) wv.getParent()).removeView(wv);
+			wv.removeAllViews();
+			wv.destroyDrawingCache();
 			wv.destroy();
 			wv = null;
 		}

@@ -2,14 +2,37 @@
     <string name="app_name" translatable="false">Tiddloid</string>
     <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
     <!--JS-->
+    <string name="js_is_wiki" translatable="false">
+        (function(){
+            return (typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\");
+        })();
+    </string>
+    <string name="js_is_classic" translatable="false">
+        (function(){
+            var classic = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\";
+            if (classic) {
+                window.saveFile = function(path,text) {
+                    window.twi.saveFile(path,text);
+                    return true;
+                }
+            }
+            return classic;
+        })();
+    </string>
     <string name="js_version" translatable="false">
-        var appName = typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\" ? version.title : undefined;
-        var verMajor = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\" ? version.major : undefined;
-        window.twi.getVersion(appName,typeof(verMajor)==\"number\");
+        var wiki = typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\";
+        var classic = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\";
+        window.twi.getVersion(wiki,classic);
+        if (classic) {
+            window.saveFile = function(path,text) {
+                window.twi.saveFile(path,text);
+                return true;
+            }
+        }
     </string>
     <string name="js_blob" translatable="false">
         var reader = new FileReader();
-        reader.onload = function () {
+        reader.onload = function() {
             window.twi.getB64(reader.result.replace(/^data:.+;base64,/, \'\'),\'$dest$\');
         };
         var blobString = \'$blob$\';
@@ -28,6 +51,16 @@
     </string>
     <string name="js_quit_c" translatable="false">
         window.twi.isDirtyOnQuit(store.dirty || story.areAnyDirty());
+    </string>
+    <string name="js_exit" translatable="false">
+        (function(){
+            return document.body.classList.contains(\"tc-dirty\");
+        })();
+    </string>
+    <string name="js_exit_c" translatable="false">
+        (function(){
+            return (store.dirty || story.areAnyDirty());
+        })();
     </string>
     <!--Misc-->
     <string name="logo" translatable="false">logo</string>

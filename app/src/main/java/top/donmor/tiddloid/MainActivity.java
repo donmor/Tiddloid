@@ -157,13 +157,13 @@ public class MainActivity extends AppCompatActivity {
 		File templateOnStart = new File(getFilesDir(), TEMPLATE_FILE_NAME);
 		if (!templateOnStart.exists() || !(new TWInfo(MainActivity.this, templateOnStart).isWiki)) {
 			final ProgressDialog progressDialog = new ProgressDialog(this);
-			progressDialog.setMessage(getResources().getString(R.string.please_wait));
+			progressDialog.setMessage(getString(R.string.please_wait));
 			progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 			progressDialog.setCancelable(false);
 			progressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 				@Override
 				public void onShow(DialogInterface dialog) {
-					wGet(MainActivity.this, Uri.parse(getResources().getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
+					wGet(MainActivity.this, Uri.parse(getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
 						@Override
 						public boolean checkNg(File file) {
 							return !(new TWInfo(MainActivity.this, file).isWiki);
@@ -461,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
 												Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 											} else {
 												String p = file.getAbsolutePath();
-												String t = (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki);
+												String t = (info.title != null && info.title.length() > 0) ? info.title : getString(R.string.tiddlywiki);
 												String s = (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY;
 												w.put(KEY_NAME, t);
 												w.put(DB_KEY_SUBTITLE, s);
@@ -682,7 +682,7 @@ public class MainActivity extends AppCompatActivity {
 										w.put(KEY_ID, id);
 										db.getJSONArray(DB_KEY_WIKI).put(db.getJSONArray(DB_KEY_WIKI).length(), w);
 									}
-									w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
+									w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getString(R.string.tiddlywiki));
 									w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
 									w.put(DB_KEY_PATH, file.getAbsolutePath());
 									w.put(DB_KEY_BACKUP, false);
@@ -724,13 +724,13 @@ public class MainActivity extends AppCompatActivity {
 				});
 			} else {
 				final ProgressDialog progressDialog = new ProgressDialog(this);
-				progressDialog.setMessage(getResources().getString(R.string.please_wait));
+				progressDialog.setMessage(getString(R.string.please_wait));
 				progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 				progressDialog.setCancelable(false);
 				progressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 					@Override
 					public void onShow(DialogInterface dialog) {
-						wGet(MainActivity.this, Uri.parse(getResources().getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
+						wGet(MainActivity.this, Uri.parse(getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
 							@Override
 							public boolean checkNg(File file) {
 								return !(new TWInfo(MainActivity.this, file).isWiki);
@@ -793,7 +793,7 @@ public class MainActivity extends AppCompatActivity {
 									Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 								} else {
 									JSONObject w = new JSONObject();
-									w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getResources().getString(R.string.tiddlywiki));
+									w.put(KEY_NAME, (info.title != null && info.title.length() > 0) ? info.title : getString(R.string.tiddlywiki));
 									w.put(DB_KEY_SUBTITLE, (info.subtitle != null && info.subtitle.length() > 0) ? info.subtitle : STR_EMPTY);
 									w.put(KEY_ID, id);
 									w.put(DB_KEY_PATH, file.getAbsolutePath());
@@ -829,7 +829,7 @@ public class MainActivity extends AppCompatActivity {
 			final SearchView view = new SearchView(this);
 			view.setInputType(InputType.TYPE_TEXT_VARIATION_URI);
 			view.setImeOptions(EditorInfo.IME_ACTION_GO);
-			view.setQueryHint(getResources().getString(R.string.url));
+			view.setQueryHint(getString(R.string.url));
 			view.onActionViewExpanded();
 			view.setSubmitButtonEnabled(true);
 			final String STR_EMPTY = "",
@@ -860,14 +860,14 @@ public class MainActivity extends AppCompatActivity {
 					Uri uri1 = sch == null ? Uri.parse(SCH_EX_HTTP + src) : null;
 					String hos1 = uri1 != null ? uri1.getHost() : null;
 					if (sch != null && sch.length() > 0 || hos1 != null && hos1.indexOf('.') > 0 && hos1.length() > hos1.indexOf('.') + 1) {
-						cursor.addRow(new CharSequence[]{String.valueOf(i), src, getResources().getString(R.string.mark_Go), STR_EMPTY, getResources().getString(R.string.mark_Return)});
+						cursor.addRow(new CharSequence[]{String.valueOf(i), src, getString(R.string.mark_Go), STR_EMPTY, getString(R.string.mark_Return)});
 						i++;
 					}
-					cursor.addRow(new CharSequence[]{String.valueOf(i), src, getResources().getString(R.string.mark_Search), se != null ? se : STR_EMPTY, i > 0 ? STR_EMPTY : getResources().getString(R.string.mark_Return)});
+					cursor.addRow(new CharSequence[]{String.valueOf(i), src, getString(R.string.mark_Search), se != null ? se : STR_EMPTY, i > 0 ? STR_EMPTY : getString(R.string.mark_Return)});
 					i++;
 					if (sug != null)
 						for (String v : sug) {
-							cursor.addRow(new CharSequence[]{String.valueOf(i), v, getResources().getString(R.string.mark_Search), se, i > 0 ? STR_EMPTY : getResources().getString(R.string.mark_Return)});
+							cursor.addRow(new CharSequence[]{String.valueOf(i), v, getString(R.string.mark_Search), se, i > 0 ? STR_EMPTY : getString(R.string.mark_Return)});
 							i++;
 						}
 					if (view.getSuggestionsAdapter() == null) {
@@ -942,30 +942,30 @@ public class MainActivity extends AppCompatActivity {
 									try {
 										switch (se) {
 											case SE_GOOGLE:
-												List<String> attrs = Jsoup.connect(getResources().getString(R.string.su_google).replace(PREF_SU, newText)).ignoreContentType(true).get().getElementsByTag(KEY_SUGGESTION).eachAttr(KEY_DATA);
+												List<String> attrs = Jsoup.connect(getString(R.string.su_google).replace(PREF_SU, newText)).ignoreContentType(true).get().getElementsByTag(KEY_SUGGESTION).eachAttr(KEY_DATA);
 												String[] vGoogle = attrs.toArray(new String[0]);
 												data.putStringArray(KEY_SUG, vGoogle);
-												ses = getResources().getString(R.string.google);
+												ses = getString(R.string.google);
 												break;
 											case SE_BING:
-												res = Jsoup.connect(getResources().getString(R.string.su_bing).replace(PREF_SU, newText)).ignoreContentType(true).get().body().html();
+												res = Jsoup.connect(getString(R.string.su_bing).replace(PREF_SU, newText)).ignoreContentType(true).get().body().html();
 												JSONArray arrayBing = new JSONObject(res).getJSONObject(KEY_AS).getJSONArray(KEY_RESULTS).getJSONObject(0).getJSONArray(KEY_SUGGESTS);
 												int k = arrayBing.length();
 												String[] vBing = new String[k];
 												for (int i = 0; i < k; i++)
 													vBing[i] = arrayBing.getJSONObject(i).getString(KEY_TXT);
 												data.putStringArray(KEY_SUG, vBing);
-												ses = getResources().getString(R.string.bing);
+												ses = getString(R.string.bing);
 												break;
 											case SE_BAIDU:
-												res = Jsoup.connect(getResources().getString(R.string.su_baidu).replace(PREF_SU, newText)).get().body().html();
+												res = Jsoup.connect(getString(R.string.su_baidu).replace(PREF_SU, newText)).get().body().html();
 												array = new JSONObject(res.substring(res.indexOf('(') + 1, res.lastIndexOf(')'))).getJSONArray(KEY_S);
-												ses = getResources().getString(R.string.baidu);
+												ses = getString(R.string.baidu);
 												break;
 											case SE_SOGOU:
-												res = Jsoup.connect(getResources().getString(R.string.su_sogou).replace(PREF_SU, newText)).ignoreContentType(true).get().body().html();
+												res = Jsoup.connect(getString(R.string.su_sogou).replace(PREF_SU, newText)).ignoreContentType(true).get().body().html();
 												array = new JSONObject(STR_EMPTY + '{' + '"' + 's' + '"' + ':' + res.substring(res.indexOf('['), res.lastIndexOf(']') + 1) + '}').getJSONArray(KEY_S).getJSONArray(1);
-												ses = getResources().getString(R.string.sogou);
+												ses = getString(R.string.sogou);
 												break;
 										}
 									} catch (Exception e) {
@@ -994,11 +994,11 @@ public class MainActivity extends AppCompatActivity {
 			final View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.settings_dialog, null);
 			final Spinner spnSE = view.findViewById(R.id.spnSE);
 			spnSE.setAdapter(new ArrayAdapter<>(view.getContext(), R.layout.ext_slot, new String[]{
-					getResources().getText(R.string.google).toString(),
-					getResources().getText(R.string.bing).toString(),
-					getResources().getText(R.string.baidu).toString(),
-					getResources().getText(R.string.sogou).toString(),
-					getResources().getText(R.string.custom).toString()
+					getText(R.string.google).toString(),
+					getText(R.string.bing).toString(),
+					getText(R.string.baidu).toString(),
+					getText(R.string.sogou).toString(),
+					getText(R.string.custom).toString()
 			}));
 			final EditText vCSE = view.findViewById(R.id.customSE);
 			final CheckBox sh = view.findViewById(R.id.cbHidden);
@@ -1097,13 +1097,13 @@ public class MainActivity extends AppCompatActivity {
 				@Override
 				public void onClick(View v) {
 					final ProgressDialog progressDialog = new ProgressDialog(view.getContext());
-					progressDialog.setMessage(getResources().getString(R.string.please_wait));
+					progressDialog.setMessage(getString(R.string.please_wait));
 					progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 					progressDialog.setCancelable(false);
 					progressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
 						@Override
 						public void onShow(DialogInterface dialog) {
-							wGet(MainActivity.this, Uri.parse(getResources().getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
+							wGet(MainActivity.this, Uri.parse(getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
 								@Override
 								public boolean checkNg(File file) {
 									return !(new TWInfo(MainActivity.this, file).isWiki);
@@ -1160,7 +1160,7 @@ public class MainActivity extends AppCompatActivity {
 			});
 			return true;
 		} else if (id == R.id.action_about) {
-			SpannableString spannableString = new SpannableString(getResources().getString(R.string.about));
+			SpannableString spannableString = new SpannableString(getString(R.string.about));
 			Linkify.addLinks(spannableString, Linkify.ALL);
 			AlertDialog aboutDialog = new AlertDialog.Builder(this)
 					.setTitle(R.string.action_about)
@@ -1297,7 +1297,7 @@ public class MainActivity extends AppCompatActivity {
 				Element an = doc.getElementsByAttributeValue(KEY_NAME, KEY_APPLICATION_NAME).first();
 				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
 				isClassic = ele != null && ele.html().length() > 0;
-				isWiki = isClassic || an != null && an.attr(KEY_CONTENT).equals(context.getResources().getString(R.string.tiddlywiki));
+				isWiki = isClassic || an != null && an.attr(KEY_CONTENT).equals(context.getString(R.string.tiddlywiki));
 				if (isWiki) {
 					Element ti = doc.getElementsByTag(KEY_TITLE).first();
 					title = ti != null ? ti.html() : null;
@@ -1352,21 +1352,21 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private String wSearch(String arg) {
-		String ws = getResources().getString(R.string.s_google).replace(PREF_S, arg);
+		String ws = getString(R.string.s_google).replace(PREF_S, arg);
 		try {
 			String se = db.getString(DB_KEY_SEARCH_ENGINE);
 			switch (se) {
 				case SE_GOOGLE:
-					ws = getResources().getString(R.string.s_google).replace(PREF_S, arg);
+					ws = getString(R.string.s_google).replace(PREF_S, arg);
 					break;
 				case SE_BING:
-					ws = getResources().getString(R.string.s_bing).replace(PREF_S, arg);
+					ws = getString(R.string.s_bing).replace(PREF_S, arg);
 					break;
 				case SE_BAIDU:
-					ws = getResources().getString(R.string.s_baidu).replace(PREF_S, arg);
+					ws = getString(R.string.s_baidu).replace(PREF_S, arg);
 					break;
 				case SE_SOGOU:
-					ws = getResources().getString(R.string.s_sogou).replace(PREF_S, arg);
+					ws = getString(R.string.s_sogou).replace(PREF_S, arg);
 					break;
 				case SE_CUSTOM:
 					ws = db.getString(DB_KEY_CSE).replace(PREF_S, arg);
@@ -1475,7 +1475,7 @@ public class MainActivity extends AppCompatActivity {
 							if (!noNotification) {
 								notification = new NotificationCompat.Builder(parent, id)
 										.setSmallIcon(R.drawable.ic_download)
-										.setContentTitle(parent.getResources().getString(R.string.downloading))
+										.setContentTitle(parent.getString(R.string.downloading))
 										.setContentText(String.valueOf(p) + '%')
 										.setOngoing(true)
 										.setShowWhen(true)
@@ -1491,7 +1491,7 @@ public class MainActivity extends AppCompatActivity {
 						if (!noNotification) {
 							notification = new NotificationCompat.Builder(parent, id)
 									.setSmallIcon(R.drawable.ic_download)
-									.setContentTitle(parent.getResources().getString(R.string.downloading))
+									.setContentTitle(parent.getString(R.string.downloading))
 									.setOngoing(true)
 									.setShowWhen(true)
 									.setProgress(0, 0, true)
