@@ -91,7 +91,6 @@ public class TWEditorWV extends AppCompatActivity {
 			SCH_TEL = "tel",
 			SCH_MAILTO = "mailto",
 			SCH_JS = "javascript",
-			SCH_EX_FILE = "file://",
 			PREF_BLOB = "$blob$",
 			PREF_DEST = "$dest$",
 			URL_BLANK = "about:blank";
@@ -318,7 +317,7 @@ public class TWEditorWV extends AppCompatActivity {
 		}
 
 		if (wApp != null) try {
-			ueu = SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
+			ueu = MainActivity.SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
 			if (wvTitle != null && wvTitle.length() > 0) this.setTitle(wvTitle);
 			if (wvSubTitle != null && wvSubTitle.length() > 0) toolbar.setSubtitle(wvSubTitle);
 			InputStream is = null;
@@ -886,7 +885,7 @@ public class TWEditorWV extends AppCompatActivity {
 			wApp = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(nextWikiSerial);
 			if (wApp == null) throw new Exception();
 			id = wApp.getString(MainActivity.KEY_ID);
-			ueu = SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
+			ueu = MainActivity.SCH_EX_FILE + wApp.getString(MainActivity.DB_KEY_PATH);
 			wvTitle = wApp.getString(MainActivity.KEY_NAME);
 			try {
 				wvSubTitle = wApp.getString(MainActivity.DB_KEY_SUBTITLE);

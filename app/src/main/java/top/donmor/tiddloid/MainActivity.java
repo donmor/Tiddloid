@@ -78,6 +78,7 @@ import org.jsoup.Jsoup;
 import org.jsoup.nodes.Document;
 import org.jsoup.nodes.Element;
 
+import java.io.BufferedInputStream;
 import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileFilter;
@@ -119,6 +120,7 @@ public class MainActivity extends AppCompatActivity {
 			KEY_SHORTCUT = "shortcut",
 			DB_KEY_SUBTITLE = "subtitle",
 			DB_KEY_BACKUP = "backup",
+			SCH_EX_FILE = "file://",
 			STR_EMPTY = "";
 	private static final String
 			DB_FILE_NAME = "data.json",
@@ -1292,8 +1294,12 @@ public class MainActivity extends AppCompatActivity {
 		Bitmap favicon = null;
 
 		TWInfo(Context context, File file) {
+			InputStream is = null;
 			try {
-				Document doc = Jsoup.parse(file, null);
+				is = new BufferedInputStream(new FileInputStream(file));
+				byte[] bytes = new byte[is.available()];
+				is.read(bytes);
+				Document doc = Jsoup.parse(new String(bytes), SCH_EX_FILE + file.getAbsolutePath());
 				Element an = doc.getElementsByAttributeValue(KEY_NAME, KEY_APPLICATION_NAME).first();
 				Element ele = doc.getElementsByAttributeValue(KEY_ID, KEY_VERSION_AREA).first();
 				isClassic = ele != null && ele.html().length() > 0;
@@ -1312,6 +1318,12 @@ public class MainActivity extends AppCompatActivity {
 				}
 			} catch (Exception e) {
 				e.printStackTrace();
+			} finally {
+				if (is != null) try {
+					is.close();
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
 			}
 		}
 	}
