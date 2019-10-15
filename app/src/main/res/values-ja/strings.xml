@@ -2,7 +2,7 @@
 <resources>
     <!--JSON and Settings-->
     <string name="default_se">Google</string>
-	<string name="template_repo">https://tiddlywiki.com/empty.html</string>
+	<string name="template_repo">https://tiddlywiki.com/languages/ja-JP/empty.html</string>
     <!--UI-->
     <string name="action_new">新しいWikiを作成する</string>
 	<string name="action_import">ファイルをインポートする</string>
