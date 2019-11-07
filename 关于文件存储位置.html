@@ -1,0 +1,15 @@
+Donmor你好，我在使用tiddloid，感觉挺好的，不过有2个疑问：
+
+1,在创建新wiki时，需要单独选或者创建一个文件夹来存储新wiki，不知道是否可以设置一个默认的存储位置？
+2,在tiddlywiki中有个...宏？可以在页面中直接点击按钮保存文件，不需要区目录栏目,代码如下：
+
+\define lingo-base() $:/language/ControlPanel/Tools/Download/
+<$button class="tc-btn-big-green">
+<$action-sendmessage $message="tm-download-file" $param="$:/core/save/all" filename="Tiddlywiki.html"/>
+<<lingo Full/Caption>> {{$:/core/images/save-button}}
+</$button>
+
+我在tiddloid中使用了这个，结果点击保存时会保存一个.bin文件，不知道可以解决吗？
+
+期待能有回复，谢谢 : )
+
