@@ -354,9 +354,11 @@ public class MainActivity extends AppCompatActivity {
 															lengthTotal += length;
 														}
 														os.flush();
+														os.close();
 														if (lengthTotal != len)
 															throw new Exception();
 														wikiConfigDialog.dismiss();
+														f.delete();
 														Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
 														loadPage(id);
 													} catch (Exception e) {

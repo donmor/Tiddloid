@@ -345,7 +345,6 @@ public class TWEditorWV extends AppCompatActivity {
 
 		final class JavaScriptCallback {
 
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void getVersion(boolean wiki, boolean classic) {
 				if (wiki) {
@@ -365,13 +364,11 @@ public class TWEditorWV extends AppCompatActivity {
 				} else isWiki = false;
 			}
 
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void getB64(String data, String dest) {
 				MainActivity.wGet(TWEditorWV.this, Uri.parse(MainActivity.SCHEME_BLOB_B64 + ':' + data), new File(dest));
 			}
 
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void isDirtyOnQuit(final boolean dirty) {
 				runOnUiThread(new Runnable() {
@@ -382,7 +379,6 @@ public class TWEditorWV extends AppCompatActivity {
 				});
 			}
 
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void saveFile(String pathname, String data) {
 				try {
@@ -393,9 +389,13 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 			}
 
-			@SuppressWarnings("unused")
 			@JavascriptInterface
 			public void saveDownload(String data) {
+				saveDownload(data, null);
+			}
+
+			@JavascriptInterface
+			public void saveDownload(String data, String filename) {
 				final InputStream is = new ByteArrayInputStream(data.getBytes(Charset.forName(CHARSET_NAME_UTF_8)));
 				File lastDir = Environment.getExternalStorageDirectory();
 				boolean showHidden = false;
@@ -405,7 +405,7 @@ public class TWEditorWV extends AppCompatActivity {
 				} catch (Exception e) {
 					e.printStackTrace();
 				}
-				FileDialog.fileSave(TWEditorWV.this, lastDir, new FileDialogFilter[]{FileDialog.ALL}, showHidden, new FileDialog.OnFileTouchedListener() {
+				FileDialog.fileSave(TWEditorWV.this, lastDir, filename != null && filename.length() > 0 ? filename : null, new FileDialogFilter[]{FileDialog.ALL}, showHidden, new FileDialog.OnFileTouchedListener() {
 					@Override
 					public void onFileTouched(File[] files) {
 						OutputStream os = null;
@@ -452,7 +452,6 @@ public class TWEditorWV extends AppCompatActivity {
 				});
 			}
 
-			@SuppressWarnings({"unused", "WeakerAccess"})
 			@JavascriptInterface
 			public void saveWiki(String data) {
 				final ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(Charset.forName(CHARSET_NAME_UTF_8)));
