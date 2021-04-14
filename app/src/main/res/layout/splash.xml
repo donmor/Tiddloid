@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?>
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:orientation="vertical" android:layout_width="match_parent"
+    android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:background="@color/design_default_color_primary"
+    android:orientation="vertical"
     android:paddingTop="144dp"
-    android:paddingBottom="144dp"
-    android:background="@color/design_default_color_primary">
+    android:paddingBottom="144dp">
 
     <LinearLayout
         android:layout_width="match_parent"
@@ -14,10 +15,9 @@
         android:gravity="center"
         android:orientation="horizontal">
 
-        <ImageView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:background="@drawable/ic_splash"
+        <androidx.appcompat.widget.AppCompatImageView
+            android:layout_width="216dp"
+            android:layout_height="216dp"
             android:contentDescription="@string/logo"
             app:srcCompat="@drawable/ic_splash" />
     </LinearLayout>
@@ -25,10 +25,10 @@
     <TextView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
+        android:fontFamily="sans-serif-light"
+        android:gravity="center"
         android:paddingTop="24dp"
         android:paddingBottom="24dp"
-        android:gravity="center"
-        android:fontFamily="sans-serif-light"
         android:text="@string/app_name"
         android:textAlignment="center"
         android:textAllCaps="false"

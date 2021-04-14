@@ -9,6 +9,7 @@ package top.donmor.tiddloid;
 import android.app.Activity;
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.ActivityInfo;
 import android.graphics.PixelFormat;
 import android.os.Bundle;
 import android.os.Handler;
@@ -26,6 +27,7 @@ public class SplashActivity extends Activity {
 		super.onCreate(savedInstanceState);
 		getWindow().setFormat(PixelFormat.RGBA_8888);
 		getWindow().addFlags(WindowManager.LayoutParams.FLAG_FULLSCREEN | WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+		setRequestedOrientation(ActivityInfo.SCREEN_ORIENTATION_LOCKED);
 		setContentView(R.layout.splash);
 		TextView ver = findViewById(R.id.textVersionSplash);
 		ver.setText(BuildConfig.VERSION_NAME);

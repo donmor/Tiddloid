@@ -33,7 +33,7 @@
 	<string name="update_template">テンプレートを更新する</string>
 	<string name="e_g_cse">例: google.com/search?q=%s</string>
 	<string name="ready_to_fork">このWikiをフォークする準備ができました。[Save Changes]をクリックして続行します。</string>
-	<string name="failed">失敗しました</string>
+	<string name="failed">失敗</string>
 	<string name="cancelled">キャンセル</string>
 	<string name="wiki_replaced">既存のWikiを上書きされました</string>
 	<string name="file_deleted">ファイルが削除されました</string>

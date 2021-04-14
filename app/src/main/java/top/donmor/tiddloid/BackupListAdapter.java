@@ -16,30 +16,33 @@ import android.widget.TextView;
 import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
-import net.danlew.android.joda.JodaTimeAndroid;
-
-import org.joda.time.DateTime;
-import org.joda.time.DateTimeZone;
-
 import java.io.File;
 import java.io.FileFilter;
+import java.io.IOException;
+import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.Locale;
 import java.util.TimeZone;
 
 public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.BackupListHolder> {
 
 	private File mf;
 	private File[] bk;
-	private long[] dt;
-	private int count;
+//	private int count;
+	private LoadListener mLoadListener;
+	private BtnClickListener mBtnClickListener;
 	private final LayoutInflater inflater;
 
+
+	private static final int ROLLBACK = 1, DELETE = 2;
+
 	BackupListAdapter(Context context) {
-		count = 0;
+//		count = 0;
 		inflater = LayoutInflater.from(context);
 	}
 
-	class BackupListHolder extends RecyclerView.ViewHolder {
+	static class BackupListHolder extends RecyclerView.ViewHolder {
 		private final ImageButton btnRollBack, btnDelBackup;
 		private final TextView lblBackupFile;
 
@@ -58,19 +61,23 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	}
 
 	@Override
-	public void onBindViewHolder(@NonNull BackupListHolder holder, final int position) {
+	public void onBindViewHolder(@NonNull final BackupListHolder holder, int position) {
 		try {
-			holder.lblBackupFile.setText(SimpleDateFormat.getDateTimeInstance().format(dt[position]));
+			String efn = bk[position].getName();
+			int efp1, efp2;
+			efp1 = efn.lastIndexOf('.', (efp2 = efn.lastIndexOf('.')) - 1);
+			holder.lblBackupFile.setText(SimpleDateFormat.getDateTimeInstance().format(parseUTCString(efn.substring(efp1 + 1, efp2)).getTime()));
+//			final File f = bk[position];
 			holder.btnRollBack.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mBtnClickListener.onBtnClick(position, 1);
+					mBtnClickListener.onBtnClick(holder.getAdapterPosition(), ROLLBACK);
 				}
 			});
 			holder.btnDelBackup.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
-					mBtnClickListener.onBtnClick(position, 2);
+					mBtnClickListener.onBtnClick(holder.getAdapterPosition(), DELETE);
 				}
 			});
 		} catch (Exception e) {
@@ -80,13 +87,12 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	@Override
 	public int getItemCount() {
-		return count;
+		return bk != null ? bk.length : 0;
 	}
 
-	private BtnClickListener mBtnClickListener;
 
 	interface BtnClickListener {
-		void onBtnClick(int position, int which);
+		void onBtnClick(int pos, int which);
 	}
 
 	void setOnBtnClickListener(BtnClickListener btnClickListener) {
@@ -94,7 +100,6 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	}
 
-	private LoadListener mLoadListener;
 
 	interface LoadListener {
 		void onLoad(int count);
@@ -106,39 +111,39 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	}
 
 	File getBackupFile(int position) {
-		if (position < count) return bk[position];
-		else return null;
+		return position < getItemCount() ? bk[position] : null;
 	}
 
-	void reload(Context context, File mainFile) {
+	void reload(File mainFile) {
 		this.mf = mainFile;
-		count = 0;
+//		count = 0;
 		try {
-			String mfp = mf.getParentFile().getAbsolutePath();
 			String mfn = mf.getName();
-			File mfd = new File(mfp + '/' + mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
-			if (mfd.isDirectory())
-				bk = sortFile(mfd.listFiles(new FileFilter() {
-					@Override
-					public boolean accept(File pathname) {
-						return MainActivity.isBackupFile(mf, pathname);
-					}
-				}), mfn.substring(0, mfn.indexOf('.')));
-			if (bk != null) count = bk.length;
-			JodaTimeAndroid.init(context);
-			dt = new long[count];
-			for (int i = 0; i < count; i++) {
-				dt[i] = parseUTCString(bk[i].getName().substring(mfn.indexOf('.') + 1, mfn.indexOf('.') + 18)).getMillis();
-			}
-			mLoadListener.onLoad(count);
+			File mfd = new File(mf.getParentFile(), mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
+			int x;
+			if (!mfd.isDirectory()) throw new IOException();
+			bk = sortFile(mfd.listFiles(new FileFilter() {
+				@Override
+				public boolean accept(File pathname) {
+					return MainActivity.isBackupFile(mf, pathname);
+				}
+			}), (x = mfn.lastIndexOf('.')) < 0 ? mfn : mfn.substring(0, x));
+//			count = bk != null ? bk.length : 0;
+//			JodaTimeAndroid.init(context);
+//			long[] dt = new long[count];
+//			for (int i = 0; i < count; i++) {
+//				dt[i] = parseUTCString(bk[i].getName().substring(mfn.indexOf('.') + 1, mfn.indexOf('.') + 18)).getTime();
+//			}
+			mLoadListener.onLoad(getItemCount());
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
 
 	}
 
+	// 排序
 	private File[] sortFile(File[] src, String mfn) {
-		if (src.length == 0) return src;
+		if (src == null || src.length == 0) return src;
 		int p = mfn.length() + 1;
 		for (int i = 0; i < src.length; i++) {
 			for (int j = 0; j < src.length - i - 1; j++) {
@@ -152,13 +157,17 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 		return src;
 	}
 
-	private DateTime parseUTCString(String v) {
-		return new DateTime(Integer.parseInt(v.substring(0, 4)),
-				Integer.parseInt(v.substring(4, 6)),
-				Integer.parseInt(v.substring(6, 8)),
-				Integer.parseInt(v.substring(8, 10)),
-				Integer.parseInt(v.substring(10, 12)),
-				Integer.parseInt(v.substring(12, 14)),
-				Integer.parseInt(v.substring(14, 17)), DateTimeZone.UTC).withZone(DateTimeZone.forTimeZone(TimeZone.getDefault()));
+	private Date parseUTCString(String v) throws ParseException {
+//	private DateTime parseUTCString(String v) throws ParseException {
+		SimpleDateFormat format = new SimpleDateFormat(MainActivity.MASK_SDF_BACKUP, Locale.US);
+		format.setTimeZone(TimeZone.getTimeZone(MainActivity.KEY_TZ_UTC));
+		return format.parse(v);
+//		return new DateTime(Integer.parseInt(v.substring(0, 4)),
+//				Integer.parseInt(v.substring(4, 6)),
+//				Integer.parseInt(v.substring(6, 8)),
+//				Integer.parseInt(v.substring(8, 10)),
+//				Integer.parseInt(v.substring(10, 12)),
+//				Integer.parseInt(v.substring(12, 14)),
+//				Integer.parseInt(v.substring(14, 17)), DateTimeZone.UTC).withZone(DateTimeZone.forTimeZone(TimeZone.getDefault()));
 	}
 }

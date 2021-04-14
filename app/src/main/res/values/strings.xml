@@ -19,17 +19,17 @@
             return classic;
         })();
     </string>
-    <string name="js_version" translatable="false">
-        var wiki = typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\";
-        var classic = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\";
-        window.twi.getVersion(wiki,classic);
-        if (classic) {
-            window.saveFile = function(path,text) {
-                window.twi.saveFile(path,text);
-                return true;
-            }
-        }
-    </string>
+<!--    <string name="js_version" translatable="false">-->
+<!--        var wiki = typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\";-->
+<!--        var classic = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\";-->
+<!--        window.twi.getVersion(wiki,classic);-->
+<!--        if (classic) {-->
+<!--            window.saveFile = function(path,text) {-->
+<!--                window.twi.saveFile(path,text);-->
+<!--                return true;-->
+<!--            }-->
+<!--        }-->
+<!--    </string>-->
     <string name="js_blob" translatable="false">
         var reader = new FileReader();
         reader.onload = function() {
@@ -46,12 +46,12 @@
         };
         xhr.send();
     </string>
-    <string name="js_quit" translatable="false">
-        window.twi.isDirtyOnQuit(document.body.classList.contains(\"tc-dirty\"));
-    </string>
-    <string name="js_quit_c" translatable="false">
-        window.twi.isDirtyOnQuit(store.dirty || story.areAnyDirty());
-    </string>
+<!--    <string name="js_quit" translatable="false">-->
+<!--        window.twi.isDirtyOnQuit(document.body.classList.contains(\"tc-dirty\"));-->
+<!--    </string>-->
+<!--    <string name="js_quit_c" translatable="false">-->
+<!--        window.twi.isDirtyOnQuit(store.dirty || story.areAnyDirty());-->
+<!--    </string>-->
     <string name="js_exit" translatable="false">
         (function(){
             return document.body.classList.contains(\"tc-dirty\");
@@ -60,6 +60,64 @@
     <string name="js_exit_c" translatable="false">
         (function(){
             return (store.dirty || story.areAnyDirty());
+        })();
+    </string>
+    <string name="js_info" translatable="false">
+        (function(){
+            var tl_title = $tw.wiki.getTiddler(\"$:/SiteTitle\").getFieldString(\"text\");
+            var tl_sub = $tw.wiki.getTiddler(\"$:/SiteSubtitle\").getFieldString(\"text\");
+            var tl_c_hex = \"\";
+            var tl_tb_hide = \"no\";
+            var tl_tb_conf = $tw.wiki.getTiddler(\"$:/config/Tiddloid/HideToolbar\");
+            if (tl_tb_conf != undefined) tl_tb_hide = tl_tb_conf.getFieldString(\"text\");
+            var tl_c_conf = $tw.wiki.getTiddler(\"$:/config/Tiddloid/ApplyTheme\");
+            if (tl_c_conf != undefined) {
+                var tl_apply_color = tl_c_conf.getFieldString(\"text\");
+                if (\"yes\" == tl_apply_color) {
+                    var tl_c_map = $tw.utils.parseFields($tw.wiki.getTiddler($tw.wiki.getTiddler(\"$:/palette\").getFieldString(\"text\")).getFieldString(\"text\"));
+                    var tl_color = tl_c_map[\"page-background\"];
+                    if (tl_color != undefined) {
+                        while (tl_color.indexOf(\"&lt;&lt;colour\") == 0) {
+                            tl_color = tl_c_map[tl_color.substr(9, tl_color.lastIndexOf(\"&gt;&gt;\") - 9)];
+                            if (tl_color == undefined) {
+                                 tl_color = \"\";
+                            }
+                        }
+                        if (tl_color.indexOf(\"rgb(\") == 0) {
+                            var tl_c_o = 4;
+                            var tl_c_p = tl_color.indexOf(\",\",tl_c_o);
+                            var tl_c_red = tl_color.substring(tl_c_o,tl_c_p);
+                            tl_c_o = tl_c_p + 1;
+                            tl_c_p = tl_color.indexOf(\",\",tl_c_o);
+                            var tl_c_green = tl_color.substring(tl_c_o,tl_c_p);
+                            tl_c_o = tl_c_p + 1;
+                            tl_c_p = tl_color.indexOf(\")\",tl_c_o);
+                            var tl_c_blue = tl_color.substring(tl_c_o,tl_c_p);
+                            tl_c_pre = \"#\";
+                            tl_color = tl_c_pre.concat(Number.parseInt(tl_c_red).toString(16),Number.parseInt(tl_c_green).toString(16),Number.parseInt(tl_c_blue).toString(16));
+                        }
+                        tl_c_hex = tl_color;
+                    }
+                }
+            }
+            var tl_favicon = \"\";
+            var tl_fic = $tw.wiki.getTiddler(\"$:/favicon.ico\");
+            if (tl_fic != undefined) {
+                tl_favicon = tl_fic.getFieldString(\"text\");
+            }
+            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon]
+        })();
+    </string>
+    <string name="js_info_c" translatable="false">
+        (function(){
+            var tl_title = store.fetchTiddler(\"$:/SiteTitle\").text;
+            var tl_sub = store.fetchTiddler(\"$:/SiteSubtitle\").text;
+            var tl_favicon = \"\";
+            var tl_fic = store.fetchTiddler(\"favicon.ico\");
+            if (tl_fic != undefined) {
+                tl_favicon = tl_fic.text;
+            }
+            return [tl_title, tl_sub, \"no\", \"\", tl_favicon]
         })();
     </string>
     <!--Misc-->
@@ -134,8 +192,8 @@
     <string name="data_error">Data error</string>
     <string name="confirm_to_del_backup">Are you sure you want to delete this version?</string>
     <string name="confirm_to_remove_wiki">Are you sure you want to remove this Wiki from Tiddloid?</string>
-    <string name="confirm_to_auto_remove_wiki">The item selected is not a TiddlyWiki. Do you want to remove it?</string>
-    <string name="confirm_to_rollback">Are you sure you want to replace this Wiki with the backup version? This operation cannot be undone!</string>
+    <string name="confirm_to_auto_remove_wiki">The wiki is no longer available. Do you want to remove it?</string><!--TODO: translate-->
+    <string name="confirm_to_rollback">Are you sure you want to replace this Wiki with the backup version? A backup of the previous version will generated.</string><!--TODO: translate-->
     <string name="confirm_to_exit_wiki">Unsaved changes detected. Are you sure you want to quit?</string>
     <string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
     <string name="third_part_rising">The page is trying to start another application. Do you want to continue?</string>

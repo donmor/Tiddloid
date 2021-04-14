@@ -54,7 +54,7 @@
 	<string name="confirm_to_del_backup">¿Estás seguro de que quieres eliminar esta versión?</string>
 	<string name="confirm_to_remove_wiki">¿Estás seguro de que deseas eliminar esta Wiki de Tiddloid?</string>
 	<string name="confirm_to_auto_remove_wiki">El elemento seleccionado no es un TiddlyWiki. ¿Quieres eliminarlo?</string>
-	<string name="confirm_to_rollback">¿Está seguro de que desea reemplazar este Wiki con la versión de respaldo? Esta operación no se puede deshacer!</string>
+	<string name="confirm_to_rollback">¿Está seguro de que desea reemplazar este Wiki con la versión de respaldo? Se generará una copia de seguridad de la versión anterior.</string>
 	<string name="confirm_to_exit_wiki">Los cambios no se han guardado. ¿Estás seguro de que quieres dejar de fumar?</string>
     <string name="wiki_rolled_back_successfully">Wiki revierte con éxito</string>
 	<string name="third_part_rising">La página está intentando iniciar otra aplicación. ¿Quieres continuar?</string>
