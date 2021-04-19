@@ -53,34 +53,22 @@
 	<string name="data_error">數據錯誤</string>
 	<string name="confirm_to_del_backup">您確定要刪除此版本嗎？</string>
 	<string name="confirm_to_remove_wiki">你確定要從Tiddloid中刪除這個Wiki嗎？</string>
-	<string name="confirm_to_auto_remove_wiki">所選項目不是TiddlyWiki。你想刪除它嗎？</string>
-	<string name="confirm_to_rollback">您確定要用備份版本替換此Wiki嗎？此操作無法撤消！</string>
+	<string name="confirm_to_auto_remove_wiki">所選的維基不再可用。你想刪除它嗎？</string>
+	<string name="confirm_to_rollback">"您要還原到以前的備份嗎？ 將生成當前版本的備份。 "</string>
 	<string name="confirm_to_exit_wiki">檢測到未保存的更改。你確定要退出嗎？</string>
     <string name="wiki_rolled_back_successfully">Wiki成功回滾</string>
 	<string name="third_part_rising">另一個應用程序將由此頁面打開。你想繼續嗎？</string>
 	<string name="backup_deleted">備份已刪除</string>
 	<string name="action_about">關於Tiddloid</string>
+	<string name="market">為此應用評分</string>
 	<string name="about">
 		Tiddloid是一款適用於本地存儲的TiddlyWiki的應用程序。一旦有了一些想法，您可以立即將它們寫下來，以便您可以隨時隨地訪問這些想法。有關TiddlyWiki的更多詳細信息，請參閱https://tiddlywiki.com/。 \n
         \n
-        本應用程序遵循GPLv2許可發布，\n
-        （1）商業用途\n
-        （2）修改\n
-        （3）分發\n
-        （4）私人使用\n
-        在這些條件下是允許的:\n
-        （1）提供此許可和版權聲明\n
-        （2）聲明改動\n
-        （3）開放源代碼，\n
-        （4）使用相同的許可證\n
-        \n
-        本應用程序的完成離不開這些開源項目的幫助：\n
-        FileDialog - https://github.com/donmor/FileDialog ,\n
+        本應用程序遵循GPLv2許可發布，其完成離不開這些開源項目的幫助：\n
         Json - https://json.org/ ,\n
         Jsoup - https://jsoup.org/ ,\n
-        Joda-Time - https://www.joda.org/joda-time/ .\n
         許可證文件與代碼一起提供。 \n
         \n
-        有關本應用程序的更多詳細信息，請訪問https://github.com/donmor/Tiddloid。
+        有關本應用程式的更多詳細信息，請訪問項目頁面（ https://github.com/donmor/Tiddloid/ ）或我的主頁（ https://donmor.top/ ）。
 	</string>
 </resources>

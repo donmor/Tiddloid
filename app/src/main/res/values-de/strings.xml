@@ -53,34 +53,22 @@
 	<string name="data_error">Datenfehler</string>
 	<string name="confirm_to_del_backup">Möchten Sie diese Version wirklich löschen?</string>
 	<string name="confirm_to_remove_wiki">Möchtest du dieses Wiki wirklich von Tiddloid entfernen?</string>
-	<string name="confirm_to_auto_remove_wiki">Der ausgewählte Gegenstand ist kein TiddlyWiki. Möchten Sie es entfernen?</string>
-	<string name="confirm_to_rollback">Möchten Sie dieses Wiki wirklich durch die Sicherungsversion ersetzen? Dieser Vorgang kann nicht rückgängig gemacht werden!</string>
+	<string name="confirm_to_auto_remove_wiki">Das Wiki ist nicht mehr verfügbar. Möchten Sie es entfernen?</string>
+	<string name="confirm_to_rollback">Wollen Sie zum vorherigen Sicherung wiederhergestellt werden? Ein Backup der vorherigen Version wird erstellt.</string>
 	<string name="confirm_to_exit_wiki">Nicht gespeicherte Änderungen erkannt. Möchtest du kündigen?</string>
     <string name="wiki_rolled_back_successfully">Wiki zurückgerollt erfolgreich</string>
 	<string name="third_part_rising">Die Seite versucht, eine andere Anwendung zu starten. Möchtest du fortfahren?</string>
 	<string name="backup_deleted">Backup gelöscht</string>
     <string name="action_about">Über Tiddloid</string>
+	<string name="market">Bewerte diese App</string>
 	<string name="about">
         Tiddloid ist eine App zum Arbeiten mit lokal gespeicherten TiddlyWikis. Sobald einige Ideen haben, können Sie sie sofort aufschreiben, damit Sie sie überall zugreifen können. Weitere Informationen zu TiddlyWiki finden Sie unter https://tiddlywiki.com/ .\n
         \n
-        Diese App ist unter der GPL v2 Lizenz,\n
-        (1)Kommerzielle Nutzung\n
-        (2)Modifikation\n
-        (3)Distribution\n
-        (4)Private Nutzung\n
-        ist UNTER DIESEN BEDINGUNGEN GESTATTET:\n
-        (1) Geben Sie diesen Lizenz-und Urheberrechtshinweis an\n
-		(2) Öffentliche Änderungen \n
-		(3) Open Source\n
-		(4) Unter derselben Lizenz\n
-        \n
-        Die Fertigstellung dieser App ist untrennbar mit Hilfe dieser Open-Source-Projekte verbunden:\n
-        FileDialog - https://github.com/donmor/FileDialog ,\n
+        Diese App ist unter der GPLv2 Lizenz mit Hilfe dieser Open-Source-Projekte verbunden:\n
         Json - https://json.org/ ,\n
         Jsoup - https://jsoup.org/ ,\n
-        Joda-Time - https://www.joda.org/joda-time/ .\n
         Lizenzdateien mit Quellcodes zur Verfügung gestellt.\n
         \n
-        Weitere Informationen zu dieser App finden Sie unter https://github.com/donmor/Tiddloid .
+        Weitere Informationen zu dieser App finden Sie auf der Projektseite ( https://github.com/donmor/Tiddloid/ ) oder auf meiner Homepage ( https://donmor.top/ ).
     </string>
 </resources>

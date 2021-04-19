@@ -29,7 +29,6 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	private File mf;
 	private File[] bk;
-//	private int count;
 	private LoadListener mLoadListener;
 	private BtnClickListener mBtnClickListener;
 	private final LayoutInflater inflater;
@@ -38,7 +37,6 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	private static final int ROLLBACK = 1, DELETE = 2;
 
 	BackupListAdapter(Context context) {
-//		count = 0;
 		inflater = LayoutInflater.from(context);
 	}
 
@@ -67,7 +65,6 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 			int efp1, efp2;
 			efp1 = efn.lastIndexOf('.', (efp2 = efn.lastIndexOf('.')) - 1);
 			holder.lblBackupFile.setText(SimpleDateFormat.getDateTimeInstance().format(parseUTCString(efn.substring(efp1 + 1, efp2)).getTime()));
-//			final File f = bk[position];
 			holder.btnRollBack.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -116,7 +113,6 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	void reload(File mainFile) {
 		this.mf = mainFile;
-//		count = 0;
 		try {
 			String mfn = mf.getName();
 			File mfd = new File(mf.getParentFile(), mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
@@ -128,12 +124,6 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 					return MainActivity.isBackupFile(mf, pathname);
 				}
 			}), (x = mfn.lastIndexOf('.')) < 0 ? mfn : mfn.substring(0, x));
-//			count = bk != null ? bk.length : 0;
-//			JodaTimeAndroid.init(context);
-//			long[] dt = new long[count];
-//			for (int i = 0; i < count; i++) {
-//				dt[i] = parseUTCString(bk[i].getName().substring(mfn.indexOf('.') + 1, mfn.indexOf('.') + 18)).getTime();
-//			}
 			mLoadListener.onLoad(getItemCount());
 		} catch (Exception e) {
 			e.printStackTrace();
@@ -158,16 +148,8 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	}
 
 	private Date parseUTCString(String v) throws ParseException {
-//	private DateTime parseUTCString(String v) throws ParseException {
 		SimpleDateFormat format = new SimpleDateFormat(MainActivity.MASK_SDF_BACKUP, Locale.US);
 		format.setTimeZone(TimeZone.getTimeZone(MainActivity.KEY_TZ_UTC));
 		return format.parse(v);
-//		return new DateTime(Integer.parseInt(v.substring(0, 4)),
-//				Integer.parseInt(v.substring(4, 6)),
-//				Integer.parseInt(v.substring(6, 8)),
-//				Integer.parseInt(v.substring(8, 10)),
-//				Integer.parseInt(v.substring(10, 12)),
-//				Integer.parseInt(v.substring(12, 14)),
-//				Integer.parseInt(v.substring(14, 17)), DateTimeZone.UTC).withZone(DateTimeZone.forTimeZone(TimeZone.getDefault()));
 	}
 }

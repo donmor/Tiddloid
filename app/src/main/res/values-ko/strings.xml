@@ -53,34 +53,22 @@
 	<string name="data_error">데이터 오류</string>
 	<string name="confirm_to_del_backup">이 버전을 삭제 하시겠습니까?</string>
 	<string name="confirm_to_remove_wiki">당신은 당신이 Tiddloid에서이 위키를 삭제 하시겠습니까?</string>
-	<string name="confirm_to_auto_remove_wiki">선택한 항목이 TiddlyWiki가 아닙니다. 그것을 제거 하시겠습니까?</string>
-	<string name="confirm_to_rollback">이 Wiki를 백업 버전으로 대체 하시겠습니까? 이 작업은 실행 취소 할 수 없습니다!</string>
+	<string name="confirm_to_auto_remove_wiki">위키는 더 이상 사용할 수 없습니다. 그것을 제거 하시겠습니까?</string>
+	<string name="confirm_to_rollback">이전 백업으로 복원 하시겠습니까? 이전 버전의 백업이 생성됩니다.</string>
 	<string name="confirm_to_exit_wiki">저장되지 않은 변경 사항이 감지되었습니다. 종료 하시겠습니까?</string>
     <string name="wiki_rolled_back_successfully">위키가 성공적으로 롤백되었습니다</string>
 	<string name="third_part_rising">페이지가 다른 응용 프로그램을 열려고합니다. 계속 하시겠습니까?</string>
 	<string name="backup_deleted">백업이 삭제되었습니다</string>
     <string name="action_about">Tiddloid에 대하여</string>
+	<string name="market">이 앱을 평가 해주십시오</string>
 	<string name="about">
 		Tiddloid는 로컬에 저장된 TiddlyWiki와 함께 작동하는 앱입니다. 일단 아이디어가 있으면 즉시 적어두고 어디서나 액세스 할 수 있습니다. TiddlyWiki에 대한 자세한 내용은 https://tiddlywiki.com/을 참조하십시오.\n
         \n
-        이 응용 프로그램은 GPLv2에 라이센스 문제를 다음,이러한 조건 하에서 :\n
-        (1)이 라이센스 및 저작권 공지 제공\n
-        (2)변경 사항 공개\n
-        (3)동일한 라이선스 사용\n
-		(4)오픈 소스 코드
-        다음 작업을 허용하십시오:\n
-        (1)상업적 사용\n
-        (2)가감\n
-        (3)분포\n
-        (4)사용\n
-        \n
-        이 응용 프로그램의 완성은 다음과 같은 오픈 소스 프로젝트의 도움에서 분리 할 수 없습니다:\n
-        FileDialog - https://github.com/donmor/FileDialog ,\n
+        이 앱은 이러한 오픈 소스 프로젝트의 도움으로 GPLv2 라이선스로 출시되었습니다:\n
         Json - https://json.org/ ,\n
         Jsoup - https://jsoup.org/ ,\n
-        Joda-Time - https://www.joda.org/joda-time/ .\n
         라이센스 파일은 소스 코드와 함께 배포됩니다.\n
         \n
-        이 응용 프로그램에 대한 자세한 내용은 https://github.com/donmor/Tiddloid를 참조하십시오.
+        이 응용 프로그램에 대한 자세한 내용은 프로젝트 페이지 ( https://github.com/donmor/Tiddloid/ ) 또는 내 홈페이지 ( https://donmor.top/ )를 방문하십시오.
 	</string>
 </resources>

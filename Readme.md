@@ -20,6 +20,18 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 * Backup system that compatible with TiddlyDesktop, the desktop TiddlyWiki saver
 * Creating shortcuts to existing wiki on desktop
 
+### Please notice (1.4 and above)
+
+* Tiddloid now supports wiki list data importing/exporting. 
+    * To import: Copy `data.json` to `INTERNAL/Android/data/top.donmor.tiddloid/files/` before running for the first time. If you have previously run the program, clear the data in `Settings/Apps` and copy the file.
+    * To export: Create a tiddler with: `<a href="javascript:window.twi.exportDB()">export</a>` and click the link. A `data.json` will be generated under `INTERNAL/Android/data/top.donmor.tiddloid/files/`.
+* Now supports Applying theme color to the window or hiding the toolbar on loaded depending on configurations inside wiki.
+    * Apply theme color: Check `Control Panel/Appearance/Client Tweaks/Tiddloid/Apply theme color to system bars` (in future versions) or create the tiddler: `$:/config/Tiddloid/ApplyTheme` with `yes`.
+    * Hide toolbar: Check `Control Panel/Appearance/Client Tweaks/Tiddloid/Hide toolbar on loading complete` (in future versions) or create the tiddler: `$:/config/Tiddloid/HideToolbar` with `yes`.
+* Now supports forking TiddlyWiki Classic.
+    * No backstage/save button: Go back and enter the same page again.
+* TiddlyWiki 5.1.23 has dropped support for Android 5.1 and below (WebView 39). Another thing is that JSON behaves differently between 5.0+ and 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all features.
+
 ### License
 
 This app is under GPL v2 license,
@@ -72,7 +84,7 @@ Here's the difference between Tiddloid and Tiddloid Lite:
 | Cloud Service | No | Yes(via SAF) |
 | Template | Download on first startup | Download on creating new wiki
 | Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android version best and supports most of TW5 |
-| Recommended Android version | Android 16 ~ 28 | Android 21 ~ |
+| Recommended Android version | Android 19 ~ 28 | Android 21 ~ |
 
 ### About us
 

@@ -53,34 +53,22 @@
 	<string name="data_error">データエラー</string>
 	<string name="confirm_to_del_backup">このバージョンを削除してもよろしいですか？</string>
 	<string name="confirm_to_remove_wiki">このWikiをTiddloidから削除しますか？</string>
-	<string name="confirm_to_auto_remove_wiki">選択した項目はTiddlyWikiのではありません。削除しますか？</string>
-	<string name="confirm_to_rollback">このWikiをバックアップバージョンに置き換えますか？この操作は元に戻せません。</string>
+	<string name="confirm_to_auto_remove_wiki">Wikiは利用できなくなりました。削除しますか？</string>
+	<string name="confirm_to_rollback">以前のバックアップに復元しますか？ 現在のバージョンをバックアップします。</string>
 	<string name="confirm_to_exit_wiki">未保存の変更があります。本当に終了しますか？</string>
     <string name="wiki_rolled_back_successfully">Wikiはロールバックされました</string>
 	<string name="third_part_rising">このページから別のアプリケーションが開かれます。続行しますか？</string>
 	<string name="backup_deleted">バックアップを削除しました</string>
     <string name="action_about">Tiddloidについて</string>
+	<string name="market">評価する</string>
     <string name="about">
 		Tiddloidは、ローカルに保存されているTiddlyWikiを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めてどこにでもアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com を参照してください。\n
         \n
-        このアプリはGPLv2ライセンスの下でリリースされています、\n
-        （1）商用利用\n
-        （2）修正する\n
-        （3）配付\n
-        （4）私的使用\n
-        は、これらの条件で許可されています：\n
-        （1）このライセンスと著作権表示の提供\n
-        （2）変更の宣言\n
-        （3）同じライセンスを使用して\n
-        （4）ソースコードを公開します\n
-        \n
-        このアプリの完成は、これらのオープンソースプロジェクトの助けを借りることと不可分です：\n
-        FileDialog - https://github.com/donmor/FileDialog ,\n
+        このアプリは、これらのオープンソースプロジェクトの助けを借りて、GPLv2ライセンスの下でリリースされています：\n
         Json - https://json.org/ ,\n
         Jsoup - https://jsoup.org/ ,\n
-        Joda-Time - https://www.joda.org/joda-time/ .\n
         ライセンスファイルはソースコードとともに提供されます。\n
         \n
-        このアプリの詳細については、https://github.com/donmor/Tiddloid をご覧ください。
+        このアプリの詳細については、プロジェクトページ（ https://github.com/donmor/Tiddloid/ ）または私のホームページ（ https://donmor.top/ ）をご覧ください。
 	</string>
 </resources>

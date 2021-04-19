@@ -20,7 +20,7 @@
         tools:targetApi="m">
         <activity
             android:name=".SplashActivity"
-            android:configChanges="keyboardHidden|orientation|screenSize|uiMode">
+            android:configChanges="uiMode">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <action android:name="android.intent.action.VIEW" />

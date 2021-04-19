@@ -42,7 +42,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	private final Context context;
 	private JSONObject wl;
 	private ArrayList<String> ids;
-	//	private int count;
 	private ItemClickListener mItemClickListener;
 	private ReloadListener mReloadListener;
 	private final LayoutInflater inflater;
@@ -58,23 +57,11 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		scale = context.getResources().getDisplayMetrics().density;
 		vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
 		reload(db);
-//		this.wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
-//		Iterator<String> iterator = wl.keys();
-//		ids = new ArrayList<>();
-//		while (iterator.hasNext()) {
-//			ids.add(iterator.next());
-//		}
-//		try {
-//			count = db.getJSONArray(MainActivity.DB_KEY_WIKI).length();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
 		inflater = LayoutInflater.from(context);
 	}
 
 	static class WikiListHolder extends RecyclerView.ViewHolder {
 		private final Button btnWiki;
-//		private String path;
 
 		WikiListHolder(View itemView) {
 			super(itemView);
@@ -95,8 +82,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			final String id = ids.get(position);
 			JSONObject wa = wl.getJSONObject(id);
-//			final JSONObject wa = db.getJSONArray(MainActivity.DB_KEY_WIKI).getJSONObject(position);
-//			holder.path = wa.getString(MainActivity.DB_KEY_PATH);
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
 			if (fib64.length() > 0) {
 				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
@@ -108,40 +93,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
 				}
 			}
-//			String vs = null;
-//			try {
-//				vs = wa.getString(MainActivity.DB_KEY_SUBTITLE);
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			}
-//			final String n = wa.getString(MainActivity.KEY_NAME), s = vs, id = wa.getString(MainActivity.KEY_ID);
-//			FileInputStream is = null;
-//			Bitmap icon = null;
-//			try {
-//				File iconFile = new File(context.getDir(MainActivity.KEY_FAVICON, Context.MODE_PRIVATE), id);
-//				if (iconFile.exists() && iconFile.length() > 0) {
-//					is = new FileInputStream(iconFile);
-//					icon = BitmapFactory.decodeStream(is);
-//					if (icon != null) {
-//						Matrix matrix = new Matrix();
-//						int width = icon.getWidth(), height = icon.getHeight();
-//						matrix.postScale(scale * 24f / width, scale * 24f / height);
-//						Bitmap favicon = Bitmap.createBitmap(icon, 0, 0, width, height, matrix, true);
-//						holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(new BitmapDrawable(context.getResources(), favicon), null, null, null);
-//					}
-//				}
-//			} catch (Exception e) {
-//				e.printStackTrace();
-//			} finally {
-//				if (is != null) try {
-//					is.close();
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
-//			}
-//			final Bitmap fi = icon;
-//			final File f = new File(holder.path);
-			// 调用接口
 			holder.btnWiki.setOnClickListener(new View.OnClickListener() {
 				@Override
 				public void onClick(View v) {
@@ -214,20 +165,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		ids = new ArrayList<>();
 		while (iterator.hasNext())
 			ids.add(iterator.next());
-//		while (iterator.hasNext()) {
-//			String nid = iterator.next();
-//			JSONObject wa = wl.getJSONObject(nid);
-//			if (wa.has(MainActivity.DB_KEY_URI) && wa.has(MainActivity.KEY_NAME))
-//			ids.add(nid);
-//			else wl.remove(nid);
-//		}
-//		try {
-//			count = this.db.getJSONArray(MainActivity.DB_KEY_WIKI).length();
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
 		if (mReloadListener != null) mReloadListener.onReloaded(this.getItemCount());
-//		notifyDataSetChanged();
 	}
 
 	// 格式化大小
