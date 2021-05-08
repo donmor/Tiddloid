@@ -17,7 +17,6 @@ import androidx.annotation.NonNull;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
-import java.io.FileFilter;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -65,18 +64,8 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 			int efp1, efp2;
 			efp1 = efn.lastIndexOf('.', (efp2 = efn.lastIndexOf('.')) - 1);
 			holder.lblBackupFile.setText(SimpleDateFormat.getDateTimeInstance().format(parseUTCString(efn.substring(efp1 + 1, efp2)).getTime()));
-			holder.btnRollBack.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					mBtnClickListener.onBtnClick(holder.getAdapterPosition(), ROLLBACK);
-				}
-			});
-			holder.btnDelBackup.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					mBtnClickListener.onBtnClick(holder.getAdapterPosition(), DELETE);
-				}
-			});
+			holder.btnRollBack.setOnClickListener(v -> mBtnClickListener.onBtnClick(holder.getAdapterPosition(), ROLLBACK));
+			holder.btnDelBackup.setOnClickListener(v -> mBtnClickListener.onBtnClick(holder.getAdapterPosition(), DELETE));
 		} catch (Exception e) {
 			e.printStackTrace();
 		}
@@ -118,12 +107,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 			File mfd = new File(mf.getParentFile(), mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
 			int x;
 			if (!mfd.isDirectory()) throw new IOException();
-			bk = sortFile(mfd.listFiles(new FileFilter() {
-				@Override
-				public boolean accept(File pathname) {
-					return MainActivity.isBackupFile(mf, pathname);
-				}
-			}), (x = mfn.lastIndexOf('.')) < 0 ? mfn : mfn.substring(0, x));
+			bk = sortFile(mfd.listFiles(pathname -> MainActivity.isBackupFile(mf, pathname)), (x = mfn.lastIndexOf('.')) < 0 ? mfn : mfn.substring(0, x));
 			mLoadListener.onLoad(getItemCount());
 		} catch (Exception e) {
 			e.printStackTrace();

@@ -14,7 +14,6 @@ import android.app.NotificationChannel;
 import android.app.NotificationManager;
 import android.app.ProgressDialog;
 import android.content.Context;
-import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
@@ -48,7 +47,6 @@ import android.widget.AdapterView;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.CheckBox;
-import android.widget.CompoundButton;
 import android.widget.EditText;
 import android.widget.SearchView;
 import android.widget.SimpleCursorAdapter;
@@ -86,7 +84,6 @@ import org.jsoup.select.Evaluator;
 
 import java.io.ByteArrayInputStream;
 import java.io.File;
-import java.io.FileFilter;
 import java.io.FileInputStream;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -146,8 +143,8 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_PATH = "path",
 			KEY_APPLICATION_NAME = "application-name",
 			KEY_VERSION_AREA = "versionArea",
-//			KEY_STORE_AREA = "storeArea",
-			KEY_CONTENT = "content",
+	//			KEY_STORE_AREA = "storeArea",
+	KEY_CONTENT = "content",
 			KEY_URI_RATE = "market://details?id=",
 			SE_GOOGLE = "Google",
 			SE_BING = "Bing",
@@ -192,17 +189,10 @@ public class MainActivity extends AppCompatActivity {
 		setSupportActionBar(toolbar);
 		noWiki = findViewById(R.id.t_noWiki);
 		final SwipeRefreshLayout refreshLayout = findViewById(R.id.refresh);
-		refreshLayout.setOnRefreshListener(new SwipeRefreshLayout.OnRefreshListener() {
-			@Override
-			public void onRefresh() {
-				new Handler().postDelayed(new Runnable() {
-					public void run() {
-						MainActivity.this.onResume();
-						refreshLayout.setRefreshing(false);
-					}
-				}, 500);
-			}
-		});
+		refreshLayout.setOnRefreshListener(() -> new Handler().postDelayed(() -> {
+			MainActivity.this.onResume();
+			refreshLayout.setRefreshing(false);
+		}, 500));
 		RecyclerView rvWikiList = findViewById(R.id.rvWikiList);
 		rvWikiList.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 		rvWikiList.setItemAnimator(new DefaultItemAnimator());
@@ -212,12 +202,7 @@ public class MainActivity extends AppCompatActivity {
 			e.printStackTrace();
 		}
 		rvWikiList.setAdapter(wikiListAdapter);
-		wikiListAdapter.setReloadListener(new WikiListAdapter.ReloadListener() {
-			@Override
-			public void onReloaded(int count) {
-				noWiki.setVisibility(count > 0 ? View.GONE : View.VISIBLE);
-			}
-		});
+		wikiListAdapter.setReloadListener(count -> noWiki.setVisibility(count > 0 ? View.GONE : View.VISIBLE));
 		wikiListAdapter.setOnItemClickListener(new WikiListAdapter.ItemClickListener() {
 			// 点击打开
 			@Override
@@ -230,15 +215,12 @@ public class MainActivity extends AppCompatActivity {
 								.setTitle(android.R.string.dialog_alert_title)
 								.setMessage(R.string.confirm_to_auto_remove_wiki)
 								.setNegativeButton(android.R.string.no, null)
-								.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										removeWiki(id, false, false);
-										if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT || pos == -1)
-											wikiListAdapter.notifyDataSetChanged();
-										else
-											wikiListAdapter.notifyItemRemoved(pos);
-									}
+								.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+									removeWiki(id, false, false);
+									if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT || pos == -1)
+										wikiListAdapter.notifyDataSetChanged();
+									else
+										wikiListAdapter.notifyItemRemoved(pos);
 								}).show();
 					} else if (!loadPage(id))
 						Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
@@ -305,159 +287,130 @@ public class MainActivity extends AppCompatActivity {
 
 				// 备份系统
 				final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
-				backupListAdapter.setOnBtnClickListener(new BackupListAdapter.BtnClickListener() {
-					@Override
-					public void onBtnClick(final int pos, int which) {
-						final File f = backupListAdapter.getBackupFile(pos);
-						if (f != null && f.exists())
-							switch (which) {
-								case 1:        // 回滚
-									new AlertDialog.Builder(wikiConfigDialog.getContext())
-											.setTitle(android.R.string.dialog_alert_title)
-											.setMessage(R.string.confirm_to_rollback)
-											.setNegativeButton(android.R.string.no, null)
-											.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-												@Override
-												public void onClick(DialogInterface dialog, int which) {
-													try {
-														backup(file);
-														try (FileInputStream is = new FileInputStream(f);
-															 FileOutputStream os = new FileOutputStream(file);
-															 FileChannel ic = is.getChannel();
-															 FileChannel oc = os.getChannel()) {
-															ic.transferTo(0, ic.size(), oc);
-															ic.force(true);
-															wikiConfigDialog.dismiss();
-															Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
-															loadPage(id);
-														} catch (Resources.NotFoundException | IOException e) {
-															e.printStackTrace();
-															Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
-														}
-													} catch (IOException e) {
-														e.printStackTrace();
-													}
+				backupListAdapter.setOnBtnClickListener((pos1, which) -> {
+					final File f = backupListAdapter.getBackupFile(pos1);
+					if (f != null && f.exists())
+						switch (which) {
+							case 1:        // 回滚
+								new AlertDialog.Builder(wikiConfigDialog.getContext())
+										.setTitle(android.R.string.dialog_alert_title)
+										.setMessage(R.string.confirm_to_rollback)
+										.setNegativeButton(android.R.string.no, null)
+										.setPositiveButton(android.R.string.yes, (dialog, which12) -> {
+											try {
+												backup(file);
+												try (FileInputStream is = new FileInputStream(f);
+													 FileOutputStream os = new FileOutputStream(file);
+													 FileChannel ic = is.getChannel();
+													 FileChannel oc = os.getChannel()) {
+													ic.transferTo(0, ic.size(), oc);
+													ic.force(true);
+													wikiConfigDialog.dismiss();
+													Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
+													loadPage(id);
+												} catch (Resources.NotFoundException | IOException e) {
+													e.printStackTrace();
+													Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
 												}
-											})
-											.show();
-									break;
-								case 2:        // 移除备份
-									new AlertDialog.Builder(wikiConfigDialog.getContext())
-											.setTitle(android.R.string.dialog_alert_title)
-											.setMessage(R.string.confirm_to_del_backup)
-											.setNegativeButton(android.R.string.no, null)
-											.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-												@Override
-												public void onClick(DialogInterface dialog, int which) {
-													try {
-														if (f.delete())
-															Toast.makeText(wikiConfigDialog.getContext(), R.string.backup_deleted, Toast.LENGTH_SHORT).show();
-														else throw new IOException();
-														backupListAdapter.reload(file);
-														if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
-															backupListAdapter.notifyDataSetChanged();
-														backupListAdapter.notifyItemRemoved(pos);
-													} catch (Resources.NotFoundException | IOException e) {
-														e.printStackTrace();
-														Toast.makeText(wikiConfigDialog.getContext(), R.string.failed_deleting_file, Toast.LENGTH_SHORT).show();
-													}
-												}
-											})
-											.show();
-									break;
-							}
-					}
+											} catch (IOException e) {
+												e.printStackTrace();
+											}
+										})
+										.show();
+								break;
+							case 2:        // 移除备份
+								new AlertDialog.Builder(wikiConfigDialog.getContext())
+										.setTitle(android.R.string.dialog_alert_title)
+										.setMessage(R.string.confirm_to_del_backup)
+										.setNegativeButton(android.R.string.no, null)
+										.setPositiveButton(android.R.string.yes, (dialog, which1) -> {
+											try {
+												if (f.delete())
+													Toast.makeText(wikiConfigDialog.getContext(), R.string.backup_deleted, Toast.LENGTH_SHORT).show();
+												else throw new IOException();
+												backupListAdapter.reload(file);
+												if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
+													backupListAdapter.notifyDataSetChanged();
+												backupListAdapter.notifyItemRemoved(pos1);
+											} catch (Resources.NotFoundException | IOException e) {
+												e.printStackTrace();
+												Toast.makeText(wikiConfigDialog.getContext(), R.string.failed_deleting_file, Toast.LENGTH_SHORT).show();
+											}
+										})
+										.show();
+								break;
+						}
 				});
-				backupListAdapter.setOnLoadListener(new BackupListAdapter.LoadListener() {
-					@Override
-					public void onLoad(int count) {
-						if (count > 0)
-							lblNoBackup.setVisibility(View.GONE);
-						else
-							lblNoBackup.setVisibility(View.VISIBLE);
-					}
+				backupListAdapter.setOnLoadListener(count -> {
+					if (count > 0)
+						lblNoBackup.setVisibility(View.GONE);
+					else
+						lblNoBackup.setVisibility(View.VISIBLE);
 				});
 				if (cbBackup.isChecked()) backupListAdapter.reload(file);
 				rvBackupList.setAdapter(backupListAdapter);
 				rvBackupList.setItemAnimator(new DefaultItemAnimator());
-				cbBackup.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-					@Override
-					public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-						try {
-							wa.put(DB_KEY_BACKUP, isChecked);
-							writeJson(MainActivity.this, db);
-							frmBackupList.setVisibility(cbBackup.isChecked() ? View.VISIBLE : View.GONE);
-							backupListAdapter.reload(file);
-							backupListAdapter.notifyDataSetChanged();
-						} catch (Exception e) {
-							e.printStackTrace();
-							Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
-						}
+				cbBackup.setOnCheckedChangeListener((buttonView, isChecked) -> {
+					try {
+						wa.put(DB_KEY_BACKUP, isChecked);
+						writeJson(MainActivity.this, db);
+						frmBackupList.setVisibility(cbBackup.isChecked() ? View.VISIBLE : View.GONE);
+						backupListAdapter.reload(file);
+						backupListAdapter.notifyDataSetChanged();
+					} catch (Exception e) {
+						e.printStackTrace();
+						Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
 					}
 				});
 				wikiConfigDialog.setCanceledOnTouchOutside(false);
 				wikiConfigDialog.show();
-				btnRemoveWiki.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						View view1 = LayoutInflater.from(wikiConfigDialog.getContext()).inflate(R.layout.del_confirm, null);
-						final CheckBox cbDelFile = view1.findViewById(R.id.cbDelFile);
-						final CheckBox cbDelBackups = view1.findViewById(R.id.cbDelBackups);
-						cbDelBackups.setEnabled(false);
-						cbDelFile.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
-							@Override
-							public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-								cbDelBackups.setEnabled(isChecked);
-							}
-						});
-						AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(wikiConfigDialog.getContext())
-								.setTitle(android.R.string.dialog_alert_title)
-								.setMessage(R.string.confirm_to_remove_wiki)
-								.setView(view1)
-								.setNegativeButton(android.R.string.cancel, null)
-								.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-									@Override
-									public void onClick(DialogInterface dialog, int which) {
-										try {
-											removeWiki(id, cbDelFile.isChecked(), cbDelBackups.isChecked());
-											if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT || pos == -1)
-												wikiListAdapter.notifyDataSetChanged();
-											else
-												wikiListAdapter.notifyItemRemoved(pos);
-										} catch (Exception e) {
-											e.printStackTrace();
-										}
-										wikiConfigDialog.dismiss();
-									}
-								})
-								.create();
-						removeWikiConfirmationDialog.show();
-					}
+				btnRemoveWiki.setOnClickListener(v -> {
+					View view1 = LayoutInflater.from(wikiConfigDialog.getContext()).inflate(R.layout.del_confirm, null);
+					final CheckBox cbDelFile = view1.findViewById(R.id.cbDelFile);
+					final CheckBox cbDelBackups = view1.findViewById(R.id.cbDelBackups);
+					cbDelBackups.setEnabled(false);
+					cbDelFile.setOnCheckedChangeListener((buttonView, isChecked) -> cbDelBackups.setEnabled(isChecked));
+					AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(wikiConfigDialog.getContext())
+							.setTitle(android.R.string.dialog_alert_title)
+							.setMessage(R.string.confirm_to_remove_wiki)
+							.setView(view1)
+							.setNegativeButton(android.R.string.cancel, null)
+							.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+								try {
+									removeWiki(id, cbDelFile.isChecked(), cbDelBackups.isChecked());
+									if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT || pos == -1)
+										wikiListAdapter.notifyDataSetChanged();
+									else
+										wikiListAdapter.notifyItemRemoved(pos);
+								} catch (Exception e) {
+									e.printStackTrace();
+								}
+								wikiConfigDialog.dismiss();
+							})
+							.create();
+					removeWikiConfirmationDialog.show();
 				});
-				btnCreateShortcut.setOnClickListener(new View.OnClickListener() {
-					@Override
-					public void onClick(View v) {
-						try {
-							String sub = wa.optString(DB_KEY_SUBTITLE);
-							Bundle bu = new Bundle();
-							bu.putString(KEY_ID, id);
-							bu.putBoolean(KEY_SHORTCUT, true);
-							Intent in = new Intent(MainActivity.this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
-							if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
-								ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
-										.setShortLabel(name)
-										.setLongLabel(name + (sub.length() > 0 ? KEY_LBL + sub : sub))
-										.setIcon(favicon != null ? IconCompat.createWithBitmap(favicon) : IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut))
-										.setIntent(in)
-										.build();
-								if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
-									Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
-								else throw new Exception();
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
-							Toast.makeText(MainActivity.this, R.string.shortcut_failed, Toast.LENGTH_SHORT).show();
+				btnCreateShortcut.setOnClickListener(v -> {
+					try {
+						String sub = wa.optString(DB_KEY_SUBTITLE);
+						Bundle bu = new Bundle();
+						bu.putString(KEY_ID, id);
+						bu.putBoolean(KEY_SHORTCUT, true);
+						Intent in = new Intent(MainActivity.this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
+						if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
+							ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
+									.setShortLabel(name)
+									.setLongLabel(name + (sub.length() > 0 ? KEY_LBL + sub : sub))
+									.setIcon(favicon != null ? IconCompat.createWithBitmap(favicon) : IconCompat.createWithResource(MainActivity.this, Build.VERSION.SDK_INT > Build.VERSION_CODES.KITKAT ? R.drawable.ic_shortcut : R.mipmap.ic_shortcut))
+									.setIntent(in)
+									.build();
+							if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
+								Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
+							else throw new Exception();
 						}
+					} catch (Exception e) {
+						e.printStackTrace();
+						Toast.makeText(MainActivity.this, R.string.shortcut_failed, Toast.LENGTH_SHORT).show();
 					}
 				});
 			}
@@ -470,44 +423,29 @@ public class MainActivity extends AppCompatActivity {
 		progressDialog.setMessage(getString(R.string.please_wait));
 		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
 		progressDialog.setCancelable(false);
-		progressDialog.setOnShowListener(new DialogInterface.OnShowListener() {
+		progressDialog.setOnShowListener(dialog -> wGet(MainActivity.this, Uri.parse(getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, file -> !isWiki(file), new OnDownloadCompleteListener() {
 			@Override
-			public void onShow(DialogInterface dialog) {
-				wGet(MainActivity.this, Uri.parse(getString(R.string.template_repo)), new File(getFilesDir(), TEMPLATE_FILE_NAME), true, true, new DownloadChecker() {
-					@Override
-					public boolean checkNg(File file) {
-						return !isWiki(file);
-					}
-				}, new OnDownloadCompleteListener() {
-					@Override
-					public void onDownloadComplete(File file) {
-						if (file.exists()) {
-							Toast.makeText(MainActivity.this, R.string.download_complete, Toast.LENGTH_SHORT).show();
-							if (n) newWiki();
-						} else
-							Toast.makeText(MainActivity.this, R.string.download_failed, Toast.LENGTH_SHORT).show();
-						progressDialog.dismiss();
-					}
-
-					@Override
-					public void onDownloadFailed() {
-						Toast.makeText(MainActivity.this, R.string.download_failed, Toast.LENGTH_SHORT).show();
-						progressDialog.dismiss();
-					}
-				});
+			public void onDownloadComplete(File file) {
+				if (file.exists()) {
+					Toast.makeText(MainActivity.this, R.string.download_complete, Toast.LENGTH_SHORT).show();
+					if (n) newWiki();
+				} else
+					Toast.makeText(MainActivity.this, R.string.download_failed, Toast.LENGTH_SHORT).show();
+				progressDialog.dismiss();
 			}
-		});
+
+			@Override
+			public void onDownloadFailed() {
+				Toast.makeText(MainActivity.this, R.string.download_failed, Toast.LENGTH_SHORT).show();
+				progressDialog.dismiss();
+			}
+		}));
 		AlertDialog dialog = new AlertDialog.Builder(this)
 				.setTitle(android.R.string.dialog_alert_title)
 				.setMessage(R.string.missing_template)
 				.setPositiveButton(android.R.string.ok, null)
 				.show();
-		dialog.setOnDismissListener(new DialogInterface.OnDismissListener() {
-			@Override
-			public void onDismiss(DialogInterface dialog) {
-				progressDialog.show();
-			}
-		});
+		dialog.setOnDismissListener(dialog1 -> progressDialog.show());
 	}
 
 	private Boolean loadPage(String id) {
@@ -535,12 +473,7 @@ public class MainActivity extends AppCompatActivity {
 				if (delBackup && f.exists()) try {
 					File fb = new File(f.getParentFile(), f.getName() + BACKUP_DIRECTORY_PATH_PREFIX);
 					if (fb.isDirectory()) {
-						File[] b = fb.listFiles(new FileFilter() {
-							@Override
-							public boolean accept(File pathname) {
-								return isBackupFile(f, pathname);
-							}
-						});
+						File[] b = fb.listFiles(pathname -> isBackupFile(f, pathname));
 						for (File f1 : b)
 							f1.delete();
 						fb.delete();
@@ -609,14 +542,11 @@ public class MainActivity extends AppCompatActivity {
 						.setTitle(R.string.action_about)
 						.setMessage(spannableString)
 						.setPositiveButton(android.R.string.ok, null)
-						.setNeutralButton(R.string.market, new DialogInterface.OnClickListener() {
-							@Override
-							public void onClick(DialogInterface dialog, int which) {
-								try {
-									startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(KEY_URI_RATE + getPackageName())));
-								} catch (Exception e) {
-									e.printStackTrace();
-								}
+						.setNeutralButton(R.string.market, (dialog, which) -> {
+							try {
+								startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(KEY_URI_RATE + getPackageName())));
+							} catch (Exception e) {
+								e.printStackTrace();
 							}
 						})
 						.show();
@@ -783,36 +713,33 @@ public class MainActivity extends AppCompatActivity {
 				KEY_DATA = "data";
 		final String[] SUG_COLUMNS = {"_id", "name", "mark", "mark2", "mark3"},
 				SUG_ADAPTER_COLUMNS = {"mark", MainActivity.KEY_NAME, "mark3", "mark2"};
-		final NoLeakHandler handler = new NoLeakHandler(new NoLeakHandler.MessageHandledListener() {
-			@Override
-			public void onMessageHandled(Message msg) {
-				Bundle data = msg.getData();
-				String src = data.getString(KEY_SRC);
-				String se = data.getString(KEY_SE);
-				Uri uri = Uri.parse(src);
-				String sch = uri.getScheme();
-				String[] sug = data.getStringArray(KEY_SUG);
-				MatrixCursor cursor = new MatrixCursor(SUG_COLUMNS);
-				int i = 0;
-				Uri uri1 = sch == null ? Uri.parse(SCH_EX_HTTP + src) : null;
-				String hos1 = uri1 != null ? uri1.getHost() : null;
-				if (sch != null && sch.length() > 0 || hos1 != null && hos1.indexOf('.') > 0 && hos1.length() > hos1.indexOf('.') + 1) {
-					cursor.addRow(new CharSequence[]{String.valueOf(i), src, getString(R.string.mark_Go), STR_EMPTY, getString(R.string.mark_Return)});
+		final NoLeakHandler handler = new NoLeakHandler(msg -> {
+			Bundle data = msg.getData();
+			String src = data.getString(KEY_SRC);
+			String se = data.getString(KEY_SE);
+			Uri uri = Uri.parse(src);
+			String sch = uri.getScheme();
+			String[] sug = data.getStringArray(KEY_SUG);
+			MatrixCursor cursor = new MatrixCursor(SUG_COLUMNS);
+			int i = 0;
+			Uri uri1 = sch == null ? Uri.parse(SCH_EX_HTTP + src) : null;
+			String hos1 = uri1 != null ? uri1.getHost() : null;
+			if (sch != null && sch.length() > 0 || hos1 != null && hos1.indexOf('.') > 0 && hos1.length() > hos1.indexOf('.') + 1) {
+				cursor.addRow(new CharSequence[]{String.valueOf(i), src, getString(R.string.mark_Go), STR_EMPTY, getString(R.string.mark_Return)});
+				i++;
+			}
+			cursor.addRow(new CharSequence[]{String.valueOf(i), src, getString(R.string.mark_Search), se != null ? se : STR_EMPTY, i > 0 ? STR_EMPTY : getString(R.string.mark_Return)});
+			i++;
+			if (sug != null)
+				for (String v : sug) {
+					cursor.addRow(new CharSequence[]{String.valueOf(i), v, getString(R.string.mark_Search), se, i > 0 ? STR_EMPTY : getString(R.string.mark_Return)});
 					i++;
 				}
-				cursor.addRow(new CharSequence[]{String.valueOf(i), src, getString(R.string.mark_Search), se != null ? se : STR_EMPTY, i > 0 ? STR_EMPTY : getString(R.string.mark_Return)});
-				i++;
-				if (sug != null)
-					for (String v : sug) {
-						cursor.addRow(new CharSequence[]{String.valueOf(i), v, getString(R.string.mark_Search), se, i > 0 ? STR_EMPTY : getString(R.string.mark_Return)});
-						i++;
-					}
-				if (view.getSuggestionsAdapter() == null) {
-					SimpleCursorAdapter simpleCursorAdapter = new SimpleCursorAdapter(view.getContext(), R.layout.suggestion_slot, cursor, SUG_ADAPTER_COLUMNS, new int[]{R.id.t_sug_mark, R.id.t_sug, R.id.t_sug_first, R.id.t_sug_se}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
-					view.setSuggestionsAdapter(simpleCursorAdapter);
-				} else {
-					view.getSuggestionsAdapter().changeCursor(cursor);
-				}
+			if (view.getSuggestionsAdapter() == null) {
+				SimpleCursorAdapter simpleCursorAdapter = new SimpleCursorAdapter(view.getContext(), R.layout.suggestion_slot, cursor, SUG_ADAPTER_COLUMNS, new int[]{R.id.t_sug_mark, R.id.t_sug, R.id.t_sug_first, R.id.t_sug_se}, CursorAdapter.FLAG_REGISTER_CONTENT_OBSERVER);
+				view.setSuggestionsAdapter(simpleCursorAdapter);
+			} else {
+				view.getSuggestionsAdapter().changeCursor(cursor);
 			}
 		});
 		final AlertDialog URLDialog = new AlertDialog.Builder(MainActivity.this)
@@ -978,66 +905,58 @@ public class MainActivity extends AppCompatActivity {
 				.setTitle(R.string.action_settings)
 				.setView(view)
 				.setNegativeButton(android.R.string.cancel, null)
-				.setPositiveButton(android.R.string.ok, new DialogInterface.OnClickListener() {
-					@Override
-					public void onClick(DialogInterface dialog, int which) {
-						try {
-							String vse = SE_GOOGLE;
-							switch (spnSE.getSelectedItemPosition()) {
-								case 0:
-									vse = SE_GOOGLE;
-									break;
-								case 1:
-									vse = SE_BING;
-									break;
-								case 2:
-									vse = SE_BAIDU;
-									break;
-								case 3:
-									vse = SE_SOGOU;
-									break;
-								case 4:
-									vse = SE_CUSTOM;
-									break;
-							}
-							db.put(DB_KEY_SEARCH_ENGINE, vse);
-						} catch (Exception e) {
-							e.printStackTrace();
+				.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+					try {
+						String vse = SE_GOOGLE;
+						switch (spnSE.getSelectedItemPosition()) {
+							case 0:
+								vse = SE_GOOGLE;
+								break;
+							case 1:
+								vse = SE_BING;
+								break;
+							case 2:
+								vse = SE_BAIDU;
+								break;
+							case 3:
+								vse = SE_SOGOU;
+								break;
+							case 4:
+								vse = SE_CUSTOM;
+								break;
 						}
-						try {
-							String cse = vCSE.getText().toString();
-							if (cse.length() > 0) {
-								Uri uri = Uri.parse(vCSE.getText().toString());
-								String sch = uri.getScheme();
-								if (sch == null)
-									uri = Uri.parse(SCH_EX_HTTP + uri.toString());
-								db.put(DB_KEY_CSE, uri.toString());
-							}
-						} catch (Exception e) {
-							e.printStackTrace();
+						db.put(DB_KEY_SEARCH_ENGINE, vse);
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					try {
+						String cse = vCSE.getText().toString();
+						if (cse.length() > 0) {
+							Uri uri = Uri.parse(vCSE.getText().toString());
+							String sch = uri.getScheme();
+							if (sch == null)
+								uri = Uri.parse(SCH_EX_HTTP + uri.toString());
+							db.put(DB_KEY_CSE, uri.toString());
 						}
-						try {
-							db.put(DB_KEY_SHOW_HIDDEN, sh.isChecked());
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
-						try {
-							writeJson(MainActivity.this, db);
-						} catch (Exception e) {
-							e.printStackTrace();
-						}
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					try {
+						db.put(DB_KEY_SHOW_HIDDEN, sh.isChecked());
+					} catch (Exception e) {
+						e.printStackTrace();
+					}
+					try {
+						writeJson(MainActivity.this, db);
+					} catch (Exception e) {
+						e.printStackTrace();
 					}
 				})
 				.create();
 		settingDialog.setCanceledOnTouchOutside(false);
 		settingDialog.show();
 		final Button ok = settingDialog.getButton(AlertDialog.BUTTON_POSITIVE);
-		view.findViewById(R.id.btnUpdateTemplate).setOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				getTemplate(false);
-			}
-		});
+		view.findViewById(R.id.btnUpdateTemplate).setOnClickListener(v -> getTemplate(false));
 		spnSE.setOnItemSelectedListener(new AdapterView.OnItemSelectedListener() {
 			@Override
 			public void onItemSelected(AdapterView<?> parent, View view, int position, long id) {
@@ -1296,131 +1215,123 @@ public class MainActivity extends AppCompatActivity {
 			final int idt = Integer.parseInt(id, 16);
 			final File cacheFile = new File(parent.getCacheDir(), id);
 			final Uri uriX = uri;
-			final NoLeakHandler handler = new NoLeakHandler(new NoLeakHandler.MessageHandledListener() {
-				@Override
-				public void onMessageHandled(Message msg) {
-					if (msg != null) {
-						Bundle data = msg.getData();
-						if (data != null) {
-							int toast = data.getInt(KEY_TOAST, -1);
-							String filepath = data.getString(KEY_FILEPATH);
-							if (toast != -1)
-								Toast.makeText(parent, toast, Toast.LENGTH_SHORT).show();
-							if (data.getBoolean(KEY_COMPLETE) && filepath != null && listener != null)
-								listener.onDownloadComplete(new File(filepath));
-							else if (data.getBoolean(KEY_FAILED) && listener != null)
-								listener.onDownloadFailed();
-						}
+			final NoLeakHandler handler = new NoLeakHandler(msg -> {
+				if (msg != null) {
+					Bundle data = msg.getData();
+					if (data != null) {
+						int toast = data.getInt(KEY_TOAST, -1);
+						String filepath = data.getString(KEY_FILEPATH);
+						if (toast != -1)
+							Toast.makeText(parent, toast, Toast.LENGTH_SHORT).show();
+						if (data.getBoolean(KEY_COMPLETE) && filepath != null && listener != null)
+							listener.onDownloadComplete(new File(filepath));
+						else if (data.getBoolean(KEY_FAILED) && listener != null)
+							listener.onDownloadFailed();
 					}
 				}
 			});
-			new Thread(new Runnable() {
-				@Override
-				public void run() {
-					Message msg;
-					Bundle bundle = new Bundle();
-					final int[] len = new int[1];
-					class AdaptiveUriInputStream {
-						private final InputStream is;
+			new Thread(() -> {
+				Message msg;
+				Bundle bundle = new Bundle();
+				final int[] len = new int[1];
+				class AdaptiveUriInputStream {
+					private final InputStream is;
 
-						private AdaptiveUriInputStream(Uri uri) throws IOException, NoSuchAlgorithmException, KeyManagementException {
-							if (uri.getScheme() != null && uri.getScheme().equals(SCHEME_BLOB_B64)) {
-								String b64 = uri.getSchemeSpecificPart();
-								byte[] bytes = Base64.decode(b64, Base64.NO_PADDING);
-								is = new ByteArrayInputStream(bytes);
-								len[0] = bytes.length;
-							} else {
-								HttpURLConnection httpURLConnection;
-								URL url = new URL(uri.normalizeScheme().toString());
-								if (uri.getScheme() != null && uri.getScheme().equals("https")) {
-									httpURLConnection = (HttpsURLConnection) url.openConnection();
-									if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
-										((HttpsURLConnection) httpURLConnection).setSSLSocketFactory(new TLSSocketFactory());
-								} else httpURLConnection = (HttpURLConnection) url.openConnection();
-								httpURLConnection.connect();
-								len[0] = httpURLConnection.getContentLength();
-								is = httpURLConnection.getInputStream();
-							}
-						}
-
-						private InputStream get() {
-							return is;
+					private AdaptiveUriInputStream(Uri uri1) throws IOException, NoSuchAlgorithmException, KeyManagementException {
+						if (uri1.getScheme() != null && uri1.getScheme().equals(SCHEME_BLOB_B64)) {
+							String b64 = uri1.getSchemeSpecificPart();
+							byte[] bytes = Base64.decode(b64, Base64.NO_PADDING);
+							is = new ByteArrayInputStream(bytes);
+							len[0] = bytes.length;
+						} else {
+							HttpURLConnection httpURLConnection;
+							URL url = new URL(uri1.normalizeScheme().toString());
+							if (uri1.getScheme() != null && uri1.getScheme().equals("https")) {
+								httpURLConnection = (HttpsURLConnection) url.openConnection();
+								if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
+									((HttpsURLConnection) httpURLConnection).setSSLSocketFactory(new TLSSocketFactory());
+							} else httpURLConnection = (HttpURLConnection) url.openConnection();
+							httpURLConnection.connect();
+							len[0] = httpURLConnection.getContentLength();
+							is = httpURLConnection.getInputStream();
 						}
 					}
-					try (InputStream isw = new AdaptiveUriInputStream(uriX).get();
-						 FileOutputStream osw = new FileOutputStream(cacheFile);
-						 FileInputStream is = new FileInputStream(cacheFile);
-						 FileOutputStream os = new FileOutputStream(dest);
-						 FileChannel ic = is.getChannel();
-						 FileChannel oc = os.getChannel()) {
-						int length;
-						int lengthTotal = 0;
-						byte[] bytes = new byte[4096];
-						if (!noToast) {
-							bundle.putInt(KEY_TOAST, R.string.downloading);
-							msg = new Message();
-							msg.setData(bundle);
-							handler.sendMessage(msg);
-						}
-						Notification notification;
-						NotificationManager notificationManager = (NotificationManager) parent.getSystemService(Context.NOTIFICATION_SERVICE);
-						if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
-							notificationManager.createNotificationChannel(new NotificationChannel(id, id, NotificationManager.IMPORTANCE_LOW));
-						while ((length = isw.read(bytes)) != -1) {
-							osw.write(bytes, 0, length);
-							lengthTotal += length;
-							int p = Math.round((float) lengthTotal / (float) len[0] * 100);
-							if (!noNotification) {
-								notification = new NotificationCompat.Builder(parent, id)
-										.setSmallIcon(R.drawable.ic_download)
-										.setContentTitle(parent.getString(R.string.downloading))
-										.setContentText(String.valueOf(p) + '%')
-										.setOngoing(true)
-										.setShowWhen(true)
-										.setProgress(100, p, false)
-										.build();
-								notificationManager.notify(id, idt, notification);
-							}
 
-						}
-						osw.flush();
-						if (len[0] > 0 && lengthTotal < len[0] || checker != null && checker.checkNg(cacheFile))
-							throw new Exception();
+					private InputStream get() {
+						return is;
+					}
+				}
+				try (InputStream isw = new AdaptiveUriInputStream(uriX).get();
+					 FileOutputStream osw = new FileOutputStream(cacheFile);
+					 FileInputStream is = new FileInputStream(cacheFile);
+					 FileOutputStream os = new FileOutputStream(dest);
+					 FileChannel ic = is.getChannel();
+					 FileChannel oc = os.getChannel()) {
+					int length;
+					int lengthTotal = 0;
+					byte[] bytes = new byte[4096];
+					if (!noToast) {
+						bundle.putInt(KEY_TOAST, R.string.downloading);
+						msg = new Message();
+						msg.setData(bundle);
+						handler.sendMessage(msg);
+					}
+					Notification notification;
+					NotificationManager notificationManager = (NotificationManager) parent.getSystemService(Context.NOTIFICATION_SERVICE);
+					if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O)
+						notificationManager.createNotificationChannel(new NotificationChannel(id, id, NotificationManager.IMPORTANCE_LOW));
+					while ((length = isw.read(bytes)) != -1) {
+						osw.write(bytes, 0, length);
+						lengthTotal += length;
+						int p = Math.round((float) lengthTotal / (float) len[0] * 100);
 						if (!noNotification) {
 							notification = new NotificationCompat.Builder(parent, id)
 									.setSmallIcon(R.drawable.ic_download)
 									.setContentTitle(parent.getString(R.string.downloading))
+									.setContentText(String.valueOf(p) + '%')
 									.setOngoing(true)
 									.setShowWhen(true)
-									.setProgress(0, 0, true)
+									.setProgress(100, p, false)
 									.build();
 							notificationManager.notify(id, idt, notification);
 						}
-						ic.transferTo(0, ic.size(), oc);
-						ic.force(true);
-						if (!noNotification) notificationManager.cancel(id, idt);
-						if (!noToast)
-							bundle.putInt(KEY_TOAST, R.string.download_complete);
-						bundle.putBoolean(KEY_COMPLETE, true);
-						bundle.putString(KEY_FILEPATH, dest.getAbsolutePath());
-						msg = new Message();
-						msg.setData(bundle);
-						handler.sendMessage(msg);
-						cacheFile.delete();
-					} catch (Exception e) {
-						e.printStackTrace();
-						if (!noToast) {
-							bundle.putInt(KEY_TOAST, R.string.download_failed);
-						}
-						bundle.putBoolean(KEY_FAILED, true);
-						msg = new Message();
-						msg.setData(bundle);
-						handler.sendMessage(msg);
-						cacheFile.delete();
+
 					}
+					osw.flush();
+					if (len[0] > 0 && lengthTotal < len[0] || checker != null && checker.checkNg(cacheFile))
+						throw new Exception();
+					if (!noNotification) {
+						notification = new NotificationCompat.Builder(parent, id)
+								.setSmallIcon(R.drawable.ic_download)
+								.setContentTitle(parent.getString(R.string.downloading))
+								.setOngoing(true)
+								.setShowWhen(true)
+								.setProgress(0, 0, true)
+								.build();
+						notificationManager.notify(id, idt, notification);
+					}
+					ic.transferTo(0, ic.size(), oc);
+					ic.force(true);
+					if (!noNotification) notificationManager.cancel(id, idt);
+					if (!noToast)
+						bundle.putInt(KEY_TOAST, R.string.download_complete);
+					bundle.putBoolean(KEY_COMPLETE, true);
+					bundle.putString(KEY_FILEPATH, dest.getAbsolutePath());
+					msg = new Message();
+					msg.setData(bundle);
+					handler.sendMessage(msg);
+					cacheFile.delete();
+				} catch (Exception e) {
+					e.printStackTrace();
+					if (!noToast) {
+						bundle.putInt(KEY_TOAST, R.string.download_failed);
+					}
+					bundle.putBoolean(KEY_FAILED, true);
+					msg = new Message();
+					msg.setData(bundle);
+					handler.sendMessage(msg);
+					cacheFile.delete();
 				}
-
-
 			}).start();
 		} catch (Exception e) {
 			e.printStackTrace();

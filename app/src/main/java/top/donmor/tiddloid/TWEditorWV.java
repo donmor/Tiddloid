@@ -7,7 +7,7 @@
 package top.donmor.tiddloid;
 
 import android.annotation.TargetApi;
-import android.content.DialogInterface;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -23,13 +23,15 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.print.PrintAttributes;
+import android.print.PrintDocumentAdapter;
+import android.print.PrintManager;
 import android.util.Base64;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
-import android.webkit.DownloadListener;
 import android.webkit.JavascriptInterface;
 import android.webkit.URLUtil;
 import android.webkit.ValueCallback;
@@ -87,9 +89,10 @@ public class TWEditorWV extends AppCompatActivity {
 	// CONSTANT
 	private static final String
 			JSI = "twi",
-			STR_JS_PRE = "(function(){new $tw.Story().navigateTiddler(\"",
-			STR_JS_POST = "\");})();",
-			STR_JS_C_SETTINGS = "(function(){config.options.chkSaveBackups=false;config.options.chkHttpReadOnly=false;for(k in config.options) {config.optionsSource[k]=\"setting\";}})();",
+			STR_JS_POP_PRE = "(function(){new $tw.Story().navigateTiddler(\"",
+			STR_JS_POP_POST = "\");})();",
+			STR_JS_C_SETTINGS = "(function(){setOption(\"chkSaveBackups\",false);saveOption(\"chkSaveBackups\");setOption(\"chkHttpReadOnly\",false);saveOption(\"chkHttpReadOnly\");for(k in config.options){config.optionsSource[k]=\"setting\";}})();",
+			STR_JS_PRINT = "(function(){window.print=function(){window.twi.print();}})();",
 			KEY_YES = "yes",
 			SCH_ABOUT = "about",
 			SCH_BLOB = "blob",
@@ -234,8 +237,7 @@ public class TWEditorWV extends AppCompatActivity {
 
 			// 全屏
 			@Override
-			public void onShowCustomView(View view,
-										 CustomViewCallback callback) {
+			public void onShowCustomView(View view, CustomViewCallback callback) {
 				if (mCustomView != null) {
 					onHideCustomView();
 					return;
@@ -264,20 +266,20 @@ public class TWEditorWV extends AppCompatActivity {
 			public boolean onCreateWindow(WebView view, boolean isDialog, boolean isUserGesture, Message resultMsg) {
 				WebView.HitTestResult result = view.getHitTestResult();
 				String data = result.getExtra();
-				if (data != null) return overrideUrlLoading(view, Uri.parse(data));
+				Uri cu;
+				if (data != null && !isDialog) {
+					if (!overrideUrlLoading(view, cu = Uri.parse(data)))
+						view.loadUrl(cu.toString());
+					return false;
+				}
 				final WebView nwv = new WebView(TWEditorWV.this);
-				final AlertDialog dialog = new AlertDialog.Builder(TWEditorWV.this).setView(nwv).setPositiveButton(android.R.string.ok, null).setOnDismissListener(new DialogInterface.OnDismissListener() {
-					@Override
-					public void onDismiss(DialogInterface dialog) {
-						nwv.destroy();
-					}
-				}).create();
+				final AlertDialog dialog = new AlertDialog.Builder(TWEditorWV.this).setView(nwv).setPositiveButton(android.R.string.ok, null).setOnDismissListener(dialog1 -> nwv.destroy()).create();
 				nwv.setWebViewClient(new WebViewClient() {
 					@Override
 					public void onPageFinished(WebView view, String url) {
 						if (url.startsWith(TWEditorWV.this.uri.toString())) {
 							String p = url.substring(url.indexOf('#') + 1);
-							wv.evaluateJavascript(STR_JS_PRE + Uri.decode(p) + STR_JS_POST, null);
+							wv.evaluateJavascript(STR_JS_POP_PRE + Uri.decode(p) + STR_JS_POP_POST, null);
 							dialog.dismiss();
 						}
 						super.onPageFinished(view, url);
@@ -305,18 +307,22 @@ public class TWEditorWV extends AppCompatActivity {
 
 		};
 		wv.setWebChromeClient(wcc);
-		toolbar.setNavigationOnClickListener(new View.OnClickListener() {
-			@Override
-			public void onClick(View v) {
-				onBackPressed();
-			}
-		});
+		toolbar.setNavigationOnClickListener(v -> onBackPressed());
 		// JS请求处理
 		final class JavaScriptCallback {
-
 			@JavascriptInterface
 			public void getB64(String data, String dest) {
 				MainActivity.wGet(TWEditorWV.this, Uri.parse(MainActivity.SCHEME_BLOB_B64 + ':' + data), new File(dest));
+			}
+
+			// 打印
+			@JavascriptInterface
+			public void print() {
+				runOnUiThread(() -> {
+					PrintManager printManager = (PrintManager) TWEditorWV.this.getSystemService(Context.PRINT_SERVICE);
+					PrintDocumentAdapter printDocumentAdapter = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP ? wv.createPrintDocumentAdapter(getTitle().toString()) : wv.createPrintDocumentAdapter();
+					printManager.print(getTitle().toString(), printDocumentAdapter, new PrintAttributes.Builder().build());
+				});
 			}
 
 			@JavascriptInterface
@@ -402,12 +408,7 @@ public class TWEditorWV extends AppCompatActivity {
 						}
 						os.flush();
 						if (lengthTotal != len) throw new IOException();
-						runOnUiThread(new Runnable() {
-							@Override
-							public void run() {
-								getInfo(wv);
-							}
-						});
+						runOnUiThread(() -> getInfo(wv));
 					} catch (Exception e) {
 						e.printStackTrace();
 						Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
@@ -467,12 +468,9 @@ public class TWEditorWV extends AppCompatActivity {
 								if (!MainActivity.writeJson(TWEditorWV.this, db))
 									throw new IOException();
 								if (wApp != null) {
-									runOnUiThread(new Runnable() {
-										@Override
-										public void run() {
-											getInfo(wv);
-											wv.clearHistory();
-										}
+									runOnUiThread(() -> {
+										getInfo(wv);
+										wv.clearHistory();
 									});
 								}
 							} catch (Exception e) {
@@ -508,7 +506,7 @@ public class TWEditorWV extends AppCompatActivity {
 			@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
-				return TWEditorWV.this.overrideUrlLoading(view, request.getUrl());
+				return overrideUrlLoading(view, request.getUrl());
 			}
 
 			// 浏览器图标
@@ -519,66 +517,65 @@ public class TWEditorWV extends AppCompatActivity {
 
 			// 加载完成回调
 			public void onPageFinished(final WebView view, String url) {
-				view.evaluateJavascript(getString(R.string.js_is_wiki), new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String value) {
-						isWiki = Boolean.parseBoolean(value);
-						if (isWiki)
-							view.evaluateJavascript(getString(R.string.js_is_classic), new ValueCallback<String>() {
-								@Override
-								public void onReceiveValue(String value) {
-									isClassic = Boolean.parseBoolean(value);
-									if (wApp == null) {
-										Toast.makeText(TWEditorWV.this, R.string.ready_to_fork, Toast.LENGTH_SHORT).show();
-										toolbar.setLogo(R.drawable.ic_fork);
-									}
-									getInfo(view);
-									view.getSettings().setBuiltInZoomControls(isClassic);
-									view.getSettings().setDisplayZoomControls(isClassic);
-									if (isClassic) view.evaluateJavascript(STR_JS_C_SETTINGS,null);
-								}
-							});
-					}
+				view.evaluateJavascript(STR_JS_PRINT, null);
+				view.evaluateJavascript(getString(R.string.js_is_wiki), value -> {
+					isWiki = Boolean.parseBoolean(value);
+					if (isWiki)
+						view.evaluateJavascript(getString(R.string.js_is_classic), value1 -> {
+							isClassic = Boolean.parseBoolean(value1);
+							if (wApp == null) {
+								Toast.makeText(TWEditorWV.this, R.string.ready_to_fork, Toast.LENGTH_SHORT).show();
+								toolbar.setLogo(R.drawable.ic_fork);
+							}
+							getInfo(view);
+							view.getSettings().setBuiltInZoomControls(isClassic);
+							view.getSettings().setDisplayZoomControls(isClassic);
+							if (isClassic) view.evaluateJavascript(STR_JS_C_SETTINGS, null);
+						});
 				});
 				if (wApp != null) view.clearHistory();
 			}
 		});
 		// 下载服务
-		wv.setDownloadListener(new DownloadListener() {
-			@Override
-			public void onDownloadStart(final String url, String userAgent, String contentDisposition, String mimeType, long contentLength) {
-				File lastDir = Environment.getExternalStorageDirectory();
-				boolean showHidden = false;
-				try {
-					lastDir = new File(db.getString(MainActivity.DB_KEY_LAST_DIR));
-					showHidden = db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
-				String filenameProbable = URLUtil.guessFileName(url, contentDisposition, mimeType);
-				FileDialog.fileDialog(TWEditorWV.this, lastDir, filenameProbable, 3, 0, new String[]{mimeType, FileDialog.MIME_ALL}, 0, showHidden, false, new FileDialog.OnFileTouchedListener() {
-					@Override
-					public void onFileTouched(File[] files) {
-						String scheme = Uri.parse(url) != null ? Uri.parse(url).getScheme() : null;
-						if (scheme != null && scheme.equals(SCH_BLOB)) {
-							wv.loadUrl(SCH_JS + ':' + getString(R.string.js_blob).replace(PREF_BLOB, url).replace(PREF_DEST, files[0].getAbsolutePath()));
-						} else
-							MainActivity.wGet(TWEditorWV.this, Uri.parse(url), files[0]);
-					}
-
-					@Override
-					public void onCanceled() {
-						Toast.makeText(TWEditorWV.this, R.string.cancelled, Toast.LENGTH_SHORT).show();
-					}
-				});
+		wv.setDownloadListener((url, userAgent, contentDisposition, mimeType, contentLength) -> {
+			File lastDir = Environment.getExternalStorageDirectory();
+			boolean showHidden = false;
+			try {
+				lastDir = new File(db.getString(MainActivity.DB_KEY_LAST_DIR));
+				showHidden = db.getBoolean(MainActivity.DB_KEY_SHOW_HIDDEN);
+			} catch (Exception e) {
+				e.printStackTrace();
 			}
+			String filenameProbable = URLUtil.guessFileName(url, contentDisposition, mimeType);
+			FileDialog.fileDialog(TWEditorWV.this, lastDir, filenameProbable, 3, 0, new String[]{mimeType, FileDialog.MIME_ALL}, 0, showHidden, false, new FileDialog.OnFileTouchedListener() {
+				@Override
+				public void onFileTouched(File[] files) {
+					String scheme = Uri.parse(url) != null ? Uri.parse(url).getScheme() : null;
+					if (scheme != null && scheme.equals(SCH_BLOB)) {
+						wv.loadUrl(SCH_JS + ':' + getString(R.string.js_blob).replace(PREF_BLOB, url).replace(PREF_DEST, files[0].getAbsolutePath()));
+					} else
+						MainActivity.wGet(TWEditorWV.this, Uri.parse(url), files[0]);
+				}
+
+				@Override
+				public void onCanceled() {
+					Toast.makeText(TWEditorWV.this, R.string.cancelled, Toast.LENGTH_SHORT).show();
+				}
+			});
 		});
 		Intent intent;
 		Bundle bu;
-		if ((bu = (intent = getIntent()).getExtras()) != null && bu.getString(MainActivity.KEY_ID) == null) {
+		String fid = null;
+		if ((bu = (intent = getIntent()).getExtras()) != null && (fid = bu.getString(MainActivity.KEY_ID)) == null) {
 			wvs.setJavaScriptEnabled(true);
 			String vu;
 			wv.loadUrl((vu = bu.getString(MainActivity.KEY_URL)) != null ? vu : URL_BLANK);
+			return;
+		}
+		JSONObject wl;
+		if ((wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null || (wl.optJSONObject(fid)) == null) {
+			Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+			finish();
 			return;
 		}
 		nextWiki(intent);
@@ -590,33 +587,29 @@ public class TWEditorWV extends AppCompatActivity {
 		super.onNewIntent(intent);
 		Bundle bu;
 		String fid;
-		JSONObject wl;
-		try {
-			if ((bu = intent.getExtras()) == null || (fid = bu.getString(MainActivity.KEY_ID)) == null || fid.equals(wApp.getString(MainActivity.KEY_ID)))
-				return;
-			wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
-			if (!wl.has(fid)) {
-				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
-				return;
-			}
-			if (isWiki) {
-				wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), new ValueCallback<String>() {
-					@Override
-					public void onReceiveValue(String value) {
-						confirmAndExit(Boolean.parseBoolean(value), intent);
-					}
-				});
-			} else nextWiki(intent);
-		} catch (JSONException e) {
-			e.printStackTrace();
+		JSONObject wl, wa;
+		if ((bu = intent.getExtras()) == null || (fid = bu.getString(MainActivity.KEY_ID)) == null)
+			return;
+		if ((wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null || (wa = wl.optJSONObject(fid)) == null) {
+			Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+			return;
 		}
+		if (wa == wApp) return;
+		if (isWiki) {
+			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
+		} else nextWiki(intent);
 
 	}
 
 	// 处理跳转App
 	private boolean overrideUrlLoading(final WebView view, Uri u) {
+		String s1 = u.toString(), s2 = uri != null ? uri.toString() : MainActivity.STR_EMPTY;
+		int x;
+		int q1 = (x = s1.indexOf('?')) != -1 ? x : (x = s1.indexOf('#')) != -1 ? x : s1.length(),
+				q2 = (x = s2.indexOf('?')) != -1 ? x : (x = s2.indexOf('#')) != -1 ? x : s2.length();
+		if (s1.substring(0, q1).equals(s2.substring(0, q2))) return false;
 		String sch = u.getScheme();
-		boolean browse = sch != null && (sch.equals(SCH_ABOUT) || sch.equals(SCH_HTTP) || sch.equals(SCH_HTTPS));
+		boolean browse = SCH_ABOUT.equals(sch) || SCH_HTTP.equals(sch) || SCH_HTTPS.equals(sch);
 		if (sch == null || sch.length() == 0 || wApp == null && browse)
 			return false;
 		try {
@@ -642,14 +635,11 @@ public class TWEditorWV extends AppCompatActivity {
 							.setTitle(android.R.string.dialog_alert_title)
 							.setMessage(R.string.third_part_rising)
 							.setNegativeButton(android.R.string.no, null)
-							.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-								@Override
-								public void onClick(DialogInterface dialog, int which) {
-									try {
-										view.getContext().startActivity(intent);
-									} catch (Exception e) {
-										e.printStackTrace();
-									}
+							.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+								try {
+									view.getContext().startActivity(intent);
+								} catch (Exception e) {
+									e.printStackTrace();
 								}
 							}).show();
 					break;
@@ -663,37 +653,34 @@ public class TWEditorWV extends AppCompatActivity {
 
 	// 读配置 favicon 主题等
 	private void getInfo(WebView view) {
-		view.evaluateJavascript(getString(isClassic ? R.string.js_info_c : R.string.js_info), new ValueCallback<String>() {
-			@Override
-			public void onReceiveValue(String value) {
-				try {
-					JSONArray array = new JSONArray(value);
-					// 解取标题
-					String title = array.getString(0), subtitle = array.getString(1);
-					TWEditorWV.this.setTitle(title);
-					toolbar.setSubtitle(subtitle);
-					// appbar隐藏
-					hideAppbar = KEY_YES.equals(array.getString(2));
-					Configuration newConfig = getResources().getConfiguration();
-					toolbar.setVisibility(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE || hideAppbar && ready ? View.GONE : View.VISIBLE);
-					// 解取主题色
-					String color = array.getString(3);
-					if (color.length() == 7) themeColor = Color.parseColor(color);
-					else themeColor = null;
-					TWEditorWV.this.onConfigurationChanged(newConfig);
-					if (wApp != null) {
-						// 解取favicon
-						String fib64 = array.getString(4);
-						byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
-						Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
-						toolbar.setLogo(favicon != null ? cIcon(favicon) : null);
-						// 写Json
-						wApp.put(MainActivity.KEY_NAME, title).put(MainActivity.DB_KEY_SUBTITLE, subtitle).put(MainActivity.DB_KEY_COLOR, themeColor).put(MainActivity.KEY_FAVICON, fib64.length() > 0 ? fib64 : null);
-						MainActivity.writeJson(TWEditorWV.this, db);
-					}
-				} catch (JSONException e) {
-					e.printStackTrace();
+		view.evaluateJavascript(getString(isClassic ? R.string.js_info_c : R.string.js_info), value -> {
+			try {
+				JSONArray array = new JSONArray(value);
+				// 解取标题
+				String title = array.getString(0), subtitle = array.getString(1);
+				TWEditorWV.this.setTitle(title);
+				toolbar.setSubtitle(subtitle);
+				// appbar隐藏
+				hideAppbar = KEY_YES.equals(array.getString(2));
+				Configuration newConfig = getResources().getConfiguration();
+				toolbar.setVisibility(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE || hideAppbar && ready ? View.GONE : View.VISIBLE);
+				// 解取主题色
+				String color = array.getString(3);
+				if (color.length() == 7) themeColor = Color.parseColor(color);
+				else themeColor = null;
+				TWEditorWV.this.onConfigurationChanged(newConfig);
+				if (wApp != null) {
+					// 解取favicon
+					String fib64 = array.getString(4);
+					byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
+					Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
+					toolbar.setLogo(favicon != null ? cIcon(favicon) : null);
+					// 写Json
+					wApp.put(MainActivity.KEY_NAME, title).put(MainActivity.DB_KEY_SUBTITLE, subtitle).put(MainActivity.DB_KEY_COLOR, themeColor).put(MainActivity.KEY_FAVICON, fib64.length() > 0 ? fib64 : null);
+					MainActivity.writeJson(TWEditorWV.this, db);
 				}
+			} catch (JSONException e) {
+				e.printStackTrace();
 			}
 		});
 	}
@@ -704,15 +691,13 @@ public class TWEditorWV extends AppCompatActivity {
 			AlertDialog isExit = new AlertDialog.Builder(TWEditorWV.this)
 					.setTitle(android.R.string.dialog_alert_title)
 					.setMessage(R.string.confirm_to_exit_wiki)
-					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-								public void onClick(DialogInterface dialog, int which) {
-									if (nextWikiIntent == null)
-										TWEditorWV.super.onBackPressed();
-									else
-										nextWiki(nextWikiIntent);
-									dialog.dismiss();
-								}
-							}
+					.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+						if (nextWikiIntent == null)
+							TWEditorWV.super.onBackPressed();
+						else
+							nextWiki(nextWikiIntent);
+						dialog.dismiss();
+					}
 					)
 					.setNegativeButton(android.R.string.no, null)
 					.show();
@@ -746,22 +731,14 @@ public class TWEditorWV extends AppCompatActivity {
 					.setTitle(android.R.string.dialog_alert_title)
 					.setMessage(R.string.confirm_to_auto_remove_wiki)
 					.setNegativeButton(android.R.string.no, null)
-					.setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
-						@Override
-						public void onClick(DialogInterface dialog, int which) {
-							try {
-								wl.remove(nextWikiId);
-								MainActivity.writeJson(TWEditorWV.this, db);
-							} catch (Exception e) {
-								e.printStackTrace();
-							}
+					.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+						try {
+							wl.remove(nextWikiId);
+							MainActivity.writeJson(TWEditorWV.this, db);
+						} catch (Exception e) {
+							e.printStackTrace();
 						}
-					}).setOnDismissListener(new DialogInterface.OnDismissListener() {
-				@Override
-				public void onDismiss(DialogInterface dialogInterface) {
-					TWEditorWV.this.finish();
-				}
-			}).show();
+					}).setOnDismissListener(dialogInterface -> TWEditorWV.this.finish()).show();
 			return;
 		}
 		// 重置
@@ -818,12 +795,7 @@ public class TWEditorWV extends AppCompatActivity {
 		else if (wv.canGoBack())
 			wv.goBack();
 		else if (isWiki) {
-			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), new ValueCallback<String>() {
-				@Override
-				public void onReceiveValue(String value) {
-					confirmAndExit(Boolean.parseBoolean(value), null);
-				}
-			});
+			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), null));
 		} else {
 			TWEditorWV.super.onBackPressed();
 		}

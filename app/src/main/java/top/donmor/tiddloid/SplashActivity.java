@@ -32,13 +32,11 @@ public class SplashActivity extends Activity {
 		TextView ver = findViewById(R.id.textVersionSplash);
 		ver.setText(BuildConfig.VERSION_NAME);
 		startService(new Intent(getBaseContext(), OnClearFromRecentService.class));
-		new Handler().postDelayed(new Runnable() {
-			public void run() {
-				Intent mainIntent = new Intent(SplashActivity.this, MainActivity.class);
-				SplashActivity.this.startActivity(mainIntent);
-				SplashActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
-				SplashActivity.this.finish();
-			}
+		new Handler().postDelayed(() -> {
+			Intent mainIntent = new Intent(SplashActivity.this, MainActivity.class);
+			SplashActivity.this.startActivity(mainIntent);
+			SplashActivity.this.overridePendingTransition(android.R.anim.fade_in, android.R.anim.fade_out);
+			SplashActivity.this.finish();
 		}, LOAD_DISPLAY_TIME);
 	}
 

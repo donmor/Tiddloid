@@ -79,10 +79,10 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	@Override
 	public void onBindViewHolder(@NonNull final WikiListHolder holder, int position) {
 		try {
-			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			final String id = ids.get(position);
 			JSONObject wa = wl.getJSONObject(id);
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
+			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			if (fib64.length() > 0) {
 				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
 				Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
@@ -93,19 +93,11 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
 				}
 			}
-			holder.btnWiki.setOnClickListener(new View.OnClickListener() {
-				@Override
-				public void onClick(View v) {
-					mItemClickListener.onItemClick(holder.getAdapterPosition(), id);
-				}
-			});
-			holder.btnWiki.setOnLongClickListener(new View.OnLongClickListener() {
-				@Override
-				public boolean onLongClick(View v) {
-					vibrator.vibrate(new long[]{0, 1}, -1);
-					mItemClickListener.onItemLongClick(holder.getAdapterPosition(), id);
-					return true;
-				}
+			holder.btnWiki.setOnClickListener(v -> mItemClickListener.onItemClick(holder.getAdapterPosition(), id));
+			holder.btnWiki.setOnLongClickListener(v -> {
+				vibrator.vibrate(new long[]{0, 1}, -1);
+				mItemClickListener.onItemLongClick(holder.getAdapterPosition(), id);
+				return true;
 			});
 			// 条目显示
 			try {

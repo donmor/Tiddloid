@@ -31,7 +31,7 @@ android {
     defaultConfig {
         applicationId "top.donmor.tiddloid"
         minSdkVersion 19
-        //noinspection OldTargetApi
+        //noinspection ExpiredTargetSdkVersion
         targetSdkVersion 28
         versionCode 35
         versionName "1.4.0"
