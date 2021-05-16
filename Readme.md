@@ -14,7 +14,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * Create new Wikis with latest template
 * Import existing Wikis stored on a writable device
-* Browse on the Internet and fork Wiki sites interested (Supports TW5 only)
+* Browse on the Internet and fork Wiki sites interested
 * TiddlyWiki detection
 * Saving TiddlyWikis to local files by clicking the Save button
 * Backup system that compatible with TiddlyDesktop, the desktop TiddlyWiki saver
