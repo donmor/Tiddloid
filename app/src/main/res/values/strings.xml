@@ -4,7 +4,16 @@
     <!--JS-->
     <string name="js_is_wiki" translatable="false">
         (function(){
-            return (typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\");
+            var isTW = (mta = document.getElementsByTagName(\"meta\")[\"application-name\"])!= null &amp;&amp; mta.content==\"TiddlyWiki\" || typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\";
+            if (isTW &amp;&amp; $tw.wiki == undefined) {
+                document.body.addEventListener(\"DOMNodeInserted\", cbDecrypt = function () {
+                    if ((arg0 = arguments[0].srcElement.classList) != undefined &amp;&amp; arg0.value==\" tc-page-container-wrapper\") {
+                        document.body.removeEventListener(\"DOMNodeInserted\", cbDecrypt);
+                        window.twi.onDecrypted();
+                    }
+                });
+            }
+            return isTW;
         })();
     </string>
     <string name="js_is_classic" translatable="false">
@@ -37,7 +46,7 @@
     </string>
     <string name="js_exit" translatable="false">
         (function(){
-            return $tw.saverHandler.isDirty();
+            return $tw.saverHandler != undefined &amp;&amp; $tw.saverHandler.isDirty();
         })();
     </string>
     <string name="js_exit_c" translatable="false">
@@ -47,6 +56,9 @@
     </string>
     <string name="js_info" translatable="false">
         (function(){
+            if (undefined == $tw.wiki) {
+                return [document.title, \"\", \"enc\", \"enc\", \"enc\"]
+            }
             var tl_title = $tw.wiki.getTiddlerText(\"$:/SiteTitle\");
             var tl_sub = $tw.wiki.getTiddlerText(\"$:/SiteSubtitle\");
             var tl_c_hex = \"\";

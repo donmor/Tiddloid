@@ -3,41 +3,26 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:background="@color/design_default_color_primary"
-    android:orientation="vertical"
-    android:paddingTop="144dp"
-    android:paddingBottom="144dp">
+    android:gravity="center"
+    android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="0dp"
-        android:layout_weight="1"
-        android:gravity="center"
-        android:orientation="horizontal">
-
-        <androidx.appcompat.widget.AppCompatImageView
-            android:layout_width="216dp"
-            android:layout_height="216dp"
-            android:contentDescription="@string/logo"
-            app:srcCompat="@drawable/ic_splash" />
-    </LinearLayout>
+    <androidx.appcompat.widget.AppCompatImageView
+        android:layout_width="216dp"
+        android:layout_height="216dp"
+        android:layout_marginBottom="60dp"
+        android:contentDescription="@string/logo"
+        app:srcCompat="@drawable/ic_splash" />
 
     <TextView
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
+        android:layout_marginVertical="24dp"
         android:fontFamily="sans-serif-light"
-        android:gravity="center"
-        android:paddingTop="24dp"
-        android:paddingBottom="24dp"
         android:text="@string/app_name"
-        android:textAlignment="center"
-        android:textAllCaps="false"
         android:textSize="36sp" />
 
     <TextView
         android:id="@+id/textVersionSplash"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:gravity="center"
-        android:textAlignment="center" />
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content" />
 </LinearLayout>
