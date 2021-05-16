@@ -1,0 +1,14 @@
+Update details:
+
+- Main activity and splash now supports landscape mode
+- Now showing size of each files
+- Fixed the problem that "open in new window" operation crashes the page. Now opening a dialog for this operation.
+- Fixed the malfunction of encrypted wikis
+- Now supports changing theme color to adapt to the page, or hiding toolbar on page loaded (configure inside each wiki).
+- Now supports "print page" operation
+- Now supports forking TiddlyWiki Classic sites.
+- Refactored application data structure
+- Application data backup/restore(hidden operations)
+- Other bug fixes and performance improvements
+
+There is a plugin for per-wiki tweaks on GitHub.
