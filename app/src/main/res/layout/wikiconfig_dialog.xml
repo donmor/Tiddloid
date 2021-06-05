@@ -15,6 +15,7 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:layout_gravity="start"
+        android:layout_margin="6dp"
         android:contentDescription="@string/path"
         android:gravity="start"
         android:textAppearance="@style/TextAppearance.AppCompat.Small" />
@@ -51,18 +52,25 @@
             app:layout_constraintTop_toBottomOf="@id/lblNoBackup" />
     </androidx.constraintlayout.widget.ConstraintLayout>
 
-    <Button
-        android:id="@+id/btnCreateShortcut"
-        style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/create_shortcut" />
+<!--    <Button-->
+<!--        android:id="@+id/btnCreateShortcut"-->
+<!--        style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="@string/create_shortcut" />-->
 
-    <Button
-        android:id="@+id/btnRemoveWiki"
-        style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:text="@string/remove_wiki" />
+<!--    <Button-->
+<!--        android:id="@+id/btnCloneWiki"-->
+<!--        style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="Clone this Wiki" />-->
+
+<!--    <Button-->
+<!--        android:id="@+id/btnRemoveWiki"-->
+<!--        style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:text="@string/remove_wiki" />-->
 
 </LinearLayout>

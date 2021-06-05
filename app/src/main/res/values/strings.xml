@@ -5,7 +5,7 @@
     <string name="js_is_wiki" translatable="false">
         (function(){
             var isTW = (mta = document.getElementsByTagName(\"meta\")[\"application-name\"])!= null &amp;&amp; mta.content==\"TiddlyWiki\" || typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\";
-            if (isTW &amp;&amp; $tw.wiki == undefined) {
+            if (isTW &amp;&amp; typeof(version) == \"undefined\" &amp;&amp; $tw.wiki == undefined) {
                 document.body.addEventListener(\"DOMNodeInserted\", cbDecrypt = function () {
                     if ((arg0 = arguments[0].srcElement.classList) != undefined &amp;&amp; arg0.value==\" tc-page-container-wrapper\") {
                         document.body.removeEventListener(\"DOMNodeInserted\", cbDecrypt);
@@ -112,41 +112,46 @@
     <string name="rollback" translatable="false">rollback</string>
     <string name="del_backup" translatable="false">del_backup</string>
     <!--JSON and Settings-->
-    <string name="default_se">Google</string>
+<!--    <string name="default_se">Google</string>-->
     <string name="template_repo">https://tiddlywiki.com/empty.html</string>
-    <!--Search-->
-    <string name="mark_Go" translatable="false">&#127760;</string>
-    <string name="mark_Search" translatable="false">&#128269;</string>
-    <string name="mark_Return" translatable="false">&#9166;</string>
-    <string name="s_google" translatable="false">https://www.google.com/search?q=%s</string>
-    <string name="s_bing" translatable="false">https://www.bing.com/search?q=%s</string>
-    <string name="s_baidu" translatable="false">https://www.baidu.com/s?wd=%s</string>
-    <string name="s_sogou" translatable="false">https://www.sogou.com/web?query=%s</string>
-    <string name="su_google" translatable="false">http://suggestqueries.google.com/complete/search?output=toolbar&amp;q=#content#</string>
-    <string name="su_bing" translatable="false">http://api.bing.com/qsonhs.aspx?q=#content#</string>
-    <string name="su_baidu" translatable="false">http://suggestion.baidu.com/su?wd=#content#</string>
-    <string name="su_sogou" translatable="false">https://www.sogou.com/suggnew/ajajjson?type=web&amp;key=#content#</string>
+<!--    &lt;!&ndash;Search&ndash;&gt;-->
+<!--    <string name="mark_Go" translatable="false">&#127760;</string>-->
+<!--    <string name="mark_Search" translatable="false">&#128269;</string>-->
+<!--    <string name="mark_Return" translatable="false">&#9166;</string>-->
+<!--    <string name="s_google" translatable="false">https://www.google.com/search?q=%s</string>-->
+<!--    <string name="s_bing" translatable="false">https://www.bing.com/search?q=%s</string>-->
+<!--    <string name="s_baidu" translatable="false">https://www.baidu.com/s?wd=%s</string>-->
+<!--    <string name="s_sogou" translatable="false">https://www.sogou.com/web?query=%s</string>-->
+<!--    <string name="su_google" translatable="false">http://suggestqueries.google.com/complete/search?output=toolbar&amp;q=#content#</string>-->
+<!--    <string name="su_bing" translatable="false">http://api.bing.com/qsonhs.aspx?q=#content#</string>-->
+<!--    <string name="su_baidu" translatable="false">http://suggestion.baidu.com/su?wd=#content#</string>-->
+<!--    <string name="su_sogou" translatable="false">https://www.sogou.com/suggnew/ajajjson?type=web&amp;key=#content#</string>-->
     <!--UI-->
     <string name="action_new">New Wiki</string>
     <string name="action_import">Import a file</string>
     <string name="action_fork">Fork a website</string>
     <string name="action_settings">Settings</string>
     <string name="action_about">About Tiddloid</string>
-    <string name="there_is_no_wiki_here">There is nothing here</string>
+    <string name="no_wiki">There is nothing here</string>
     <string name="url">URL or keyword</string>
-    <string name="search">Search</string>
-    <string name="search_engine">Search Engine</string>
-    <string name="google">Google</string>
-    <string name="bing">Bing</string>
-    <string name="baidu">Baidu</string>
-    <string name="sogou">Sogou</string>
-    <string name="custom">Custom</string>
+    <string name="provider" translatable="false">Source:&#160;</string><!--TODO: Translate-->
+    <string name="pathDir" translatable="false">Path:&#160;</string><!--TODO: Translate-->
+    <string name="internet" translatable="false">Internet</string>
+    <string name="local_legacy" translatable="false">Local Disk(Legacy)</string><!--TODO: Translate-->
+    <string name="unknown" translatable="false">Unknown</string><!--TODO: Translate-->
+<!--    <string name="search">Search</string>-->
+<!--    <string name="search_engine">Search Engine</string>-->
+<!--    <string name="google">Google</string>-->
+<!--    <string name="bing">Bing</string>-->
+<!--    <string name="baidu">Baidu</string>-->
+<!--    <string name="sogou">Sogou</string>-->
+<!--    <string name="custom">Custom</string>-->
     <string name="enable_backup">Enable backup</string>
     <string name="no_backups">No backups</string>
     <string name="create_shortcut">Create a shortcut on desktop</string>
     <string name="shortcut_created">Shortcut successfully created</string>
     <string name="shortcut_failed">Failed to create shortcut</string>
-    <string name="remove_wiki">Remove Wiki</string>
+    <string name="remove_wiki">Remove this Wiki</string>
     <string name="downloading">Downloading</string>
     <string name="download_complete">Download complete</string>
     <string name="download_failed">Download failed</string>

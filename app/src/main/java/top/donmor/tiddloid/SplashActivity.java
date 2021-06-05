@@ -20,7 +20,7 @@ import android.widget.TextView;
 import androidx.core.app.NotificationManagerCompat;
 
 public class SplashActivity extends Activity {
-	private static final int LOAD_DISPLAY_TIME = 2000;
+	private static final int LOAD_DISPLAY_TIME = 1000;
 
 	@Override
 	public void onCreate(Bundle savedInstanceState) {

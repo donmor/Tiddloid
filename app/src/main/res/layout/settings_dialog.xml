@@ -6,104 +6,104 @@
     android:paddingStart="20dp"
     android:paddingEnd="20dp">
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<!--    <TableRow-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            android:layout_span="2"
-            android:layout_weight="1"
-            android:text="@string/search"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
-    </TableRow>
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="match_parent"-->
+<!--            android:layout_span="2"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="@string/search"-->
+<!--            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />-->
+<!--    </TableRow>-->
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<!--    <TableRow-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
 
-        <TextView
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:text="@string/search_engine" />
+<!--        <TextView-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:text="@string/search_engine" />-->
 
-        <Spinner
-            android:id="@+id/spnSE"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_weight="1" />
-    </TableRow>
+<!--        <Spinner-->
+<!--            android:id="@+id/spnSE"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1" />-->
+<!--    </TableRow>-->
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:animateLayoutChanges="true">
+<!--    <TableRow-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent"-->
+<!--        android:animateLayoutChanges="true">-->
 
-        <EditText
-            android:id="@+id/customSE"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_span="2"
-            android:layout_weight="1"
-            android:autofillHints="custom_se"
-            android:ems="10"
-            android:hint="@string/e_g_cse"
-            android:inputType="textPersonName"
-            android:visibility="gone"
-            tools:targetApi="o" />
-    </TableRow>
+<!--        <EditText-->
+<!--            android:id="@+id/customSE"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_span="2"-->
+<!--            android:layout_weight="1"-->
+<!--            android:autofillHints="custom_se"-->
+<!--            android:ems="10"-->
+<!--            android:hint="@string/e_g_cse"-->
+<!--            android:inputType="textPersonName"-->
+<!--            android:visibility="gone"-->
+<!--            tools:targetApi="o" />-->
+<!--    </TableRow>-->
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<!--    <TableRow-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_span="2"
-            android:layout_weight="1"
-            android:text="@string/filesystem"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
-    </TableRow>
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_span="2"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="@string/filesystem"-->
+<!--            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />-->
+<!--    </TableRow>-->
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<!--    <TableRow-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
 
-        <CheckBox
-            android:id="@+id/cbHidden"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_span="2"
-            android:layout_weight="1"
-            android:text="@string/show_hidden_files" />
-    </TableRow>
+<!--        <CheckBox-->
+<!--            android:id="@+id/cbHidden"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_span="2"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="@string/show_hidden_files" />-->
+<!--    </TableRow>-->
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<!--    <TableRow-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
 
-        <TextView
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:layout_span="2"
-            android:layout_weight="1"
-            android:text="@string/template"
-            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />
-    </TableRow>
+<!--        <TextView-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_span="2"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="@string/template"-->
+<!--            android:textAppearance="@style/TextAppearance.AppCompat.Medium" />-->
+<!--    </TableRow>-->
 
-    <TableRow
-        android:layout_width="match_parent"
-        android:layout_height="match_parent">
+<!--    <TableRow-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="match_parent">-->
 
-        <Button
-            android:id="@+id/btnUpdateTemplate"
-            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:layout_span="2"
-            android:layout_weight="1"
-            android:text="@string/update_template" />
-    </TableRow>
+<!--        <Button-->
+<!--            android:id="@+id/btnUpdateTemplate"-->
+<!--            style="@style/Widget.AppCompat.Button.ButtonBar.AlertDialog"-->
+<!--            android:layout_width="match_parent"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_span="2"-->
+<!--            android:layout_weight="1"-->
+<!--            android:text="@string/update_template" />-->
+<!--    </TableRow>-->
 </TableLayout>

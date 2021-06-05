@@ -1,0 +1,27 @@
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:animateLayoutChanges="true"
+    tools:context="top.donmor.tiddloid.TWEditorWV">
+    <!--        android:id="@+id/action_add_file"-->
+    <item
+        android:icon="@drawable/ic_save"
+        android:title="Save to Tiddloid"
+        android:visible="false"
+        app:showAsAction="ifRoom|withText" >
+        <menu>
+            <item android:id="@+id/action_save_file"
+                android:icon="@drawable/ic_description"
+                android:title="Save as new file" />
+            <item android:id="@+id/action_save_link"
+                android:icon="@drawable/ic_language"
+                android:title="Save as bookmark" />
+        </menu>
+    </item>
+    <item
+        android:id="@+id/action_save"
+        android:icon="@drawable/ic_save"
+        android:title="Save Wiki"
+        android:visible="false"
+        app:showAsAction="ifRoom|withText" />
+</menu>

@@ -8,7 +8,7 @@
 	<string name="action_import">Importieren Sie eine Datei</string>
 	<string name="action_fork">Fork eine Website</string>
 	<string name="action_settings">Einstellungen</string>
-	<string name="there_is_no_wiki_here">Hier ist nichts</string>
+	<string name="no_wiki">Hier ist nichts</string>
 	<string name="url">URL oder Keyword</string>
 	<string name="search">Suche</string>
 	<string name="search_engine">Suchmaschine</string>

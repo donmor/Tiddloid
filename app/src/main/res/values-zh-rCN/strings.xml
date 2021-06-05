@@ -8,7 +8,7 @@
 	<string name="action_import">导入已有Wiki文件</string>
 	<string name="action_fork">从Wiki站点创建副本</string>
 	<string name="action_settings">设置</string>
-	<string name="there_is_no_wiki_here">没有内容</string>
+	<string name="no_wiki">没有内容</string>
 	<string name="url">网址或关键字</string>
 	<string name="search">搜索</string>
 	<string name="search_engine">搜索引擎</string>

@@ -8,7 +8,7 @@
 	<string name="action_import">ファイルをインポートする</string>
 	<string name="action_fork">ウェブサイトをフォークする</string>
 	<string name="action_settings">設定</string>
-	<string name="there_is_no_wiki_here">ここには何もありません</string>
+	<string name="no_wiki">ここには何もありません</string>
 	<string name="url">URLまたはキーワード</string>
 	<string name="search">検索</string>
 	<string name="search_engine">検索エンジン</string>

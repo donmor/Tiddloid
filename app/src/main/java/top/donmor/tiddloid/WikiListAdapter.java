@@ -23,8 +23,10 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
+import android.widget.Toast;
 
 import androidx.annotation.NonNull;
+import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
 import org.json.JSONException;
@@ -82,6 +84,8 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			final String id = ids.get(position);
 			JSONObject wa = wl.getJSONObject(id);
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
+			if (MainActivity.SCH_FILE.equals(Uri.parse(wa.optString(MainActivity.DB_KEY_URI)).getScheme()))
+				MainActivity.checkPermission(context);
 			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			if (fib64.length() > 0) {
 				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
@@ -109,8 +113,26 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 				builder.append('\n');
 				ForegroundColorSpan fcs = new ForegroundColorSpan(context.getResources().getColor(R.color.content_sub));
 				builder.setSpan(fcs, p, builder.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-				File f = new File(Uri.parse(wa.optString(MainActivity.DB_KEY_URI)).getPath());
-				if (f.exists()) {
+				Uri u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI));
+				boolean legacy = MainActivity.SCH_FILE.equals(u.getScheme());
+//				Uri tu = null;
+				DocumentFile df = null;
+				if (!legacy) try {
+					DocumentFile mdf = DocumentFile.fromTreeUri(context, u), p0;
+					if (mdf == null || !mdf.isDirectory()) {
+						Toast.makeText(context, R.string.data_error, Toast.LENGTH_SHORT).show();
+						return;
+					}
+					df = (p0 = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p0.isFile() ? p0 : (p0 = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p0.isFile() ? p0 : null;
+					if (df == null || !df.isFile()) {
+						Toast.makeText(context, R.string.data_error, Toast.LENGTH_SHORT).show();
+						return;
+					}
+//					tu = df.getUri();
+				} catch (IllegalArgumentException ignored) {
+				}
+				DocumentFile f = legacy ? DocumentFile.fromFile(new File(u.getPath())) : df!=null?df:DocumentFile.fromSingleUri(context, u);
+				if (f != null && f.exists()) {
 					p = builder.length();
 					builder.append(SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified()))).append(formatSize(f.length()));
 					RelativeSizeSpan rss = new RelativeSizeSpan(0.8f);

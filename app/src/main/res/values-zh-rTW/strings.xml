@@ -8,7 +8,7 @@
 	<string name="action_import">導入現有維基</string>
 	<string name="action_fork">分叉一個維基網站</string>
 	<string name="action_settings">設置</string>
-	<string name="there_is_no_wiki_here">這裡什麼都沒有</string>
+	<string name="no_wiki">這裡什麼都沒有</string>
 	<string name="url">網址或關鍵字</string>
 	<string name="search">搜索</string>
 	<string name="search_engine">搜索引擎</string>

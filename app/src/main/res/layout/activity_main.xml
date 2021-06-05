@@ -37,7 +37,7 @@
                 android:padding="8dp"
                 android:gravity="center"
                 android:background="@color/design_default_color_primary"
-                android:text="@string/there_is_no_wiki_here"
+                android:text="@string/no_wiki"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
             <androidx.recyclerview.widget.RecyclerView

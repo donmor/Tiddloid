@@ -8,7 +8,7 @@
 	<string name="action_import">Importar un archivo</string>
 	<string name="action_fork">Bifurcar un sitio web</string>
 	<string name="action_settings">Ajustes</string>
-	<string name="there_is_no_wiki_here">No hay nada aquí</string>
+	<string name="no_wiki">No hay nada aquí</string>
 	<string name="url">URL o palabra clave</string>
 	<string name="search">Buscar</string>
 	<string name="search_engine">Buscador</string>

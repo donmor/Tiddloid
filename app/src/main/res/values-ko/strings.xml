@@ -8,7 +8,7 @@
 	<string name="action_import">파일 가져 오기</string>
 	<string name="action_fork">웹 사이트 포크</string>
 	<string name="action_settings">설정</string>
-	<string name="there_is_no_wiki_here">여기에 아무것도 없다</string>
+	<string name="no_wiki">여기에 아무것도 없다</string>
 	<string name="url">URL 또는 키워드</string>
 	<string name="search">탐구</string>
 	<string name="search_engine">검색 엔진</string>
