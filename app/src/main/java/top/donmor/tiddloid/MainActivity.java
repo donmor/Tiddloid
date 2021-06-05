@@ -40,6 +40,8 @@ import android.widget.CheckBox;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -55,8 +57,6 @@ import androidx.recyclerview.widget.DefaultItemAnimator;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
-
-import com.github.donmor.filedialog.lib.FileDialogFilter;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -96,9 +96,10 @@ public class MainActivity extends AppCompatActivity {
 	private TextView noWiki;
 	private WikiListAdapter wikiListAdapter;
 	private JSONObject db;
+	private ActivityResultLauncher<Intent> getChooserClone, getChooserCreate,getChooserImport, getChooserTree;
 
 	// CONSTANT
-	static final FileDialogFilter[] HTML_FILTERS = {new FileDialogFilter(".html;.htm", new String[]{".html", ".htm"})};
+//	static final FileDialogFilter[] HTML_FILTERS = {new FileDialogFilter(".html;.htm", new String[]{".html", ".htm"})};
 	static final int TAKE_FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION,
 			BUF_SIZE = 4096;
 	static final String
@@ -109,8 +110,8 @@ public class MainActivity extends AppCompatActivity {
 			KEY_LBL = " — ",
 			KEY_FAVICON = "favicon",
 			KEY_ID = "id",
-//			KEY_URL = "url",
-			KEY_TZ_UTC = "UTC",
+	//			KEY_URL = "url",
+	KEY_TZ_UTC = "UTC",
 	//			DB_KEY_SHOW_HIDDEN = "showHidden",
 //			DB_KEY_LAST_DIR = "lastDir",
 	DB_KEY_WIKI = "wiki",
@@ -121,8 +122,8 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_BACKUP = "backup",
 			KEY_FN_INDEX = "index.html",
 			KEY_FN_INDEX2 = "index.htm",
-//			KEY_FN_INDEX_D = "index",
-			MASK_SDF_BACKUP = "yyyyMMddHHmmssSSS",
+	//			KEY_FN_INDEX_D = "index",
+	MASK_SDF_BACKUP = "yyyyMMddHHmmssSSS",
 			SCH_CONTENT = "content",
 			SCH_FILE = "file",
 			SCH_HTTP = "http",
@@ -151,7 +152,7 @@ public class MainActivity extends AppCompatActivity {
 			CLONING_FILE_NAME = "cloning.html",
 			CLASS_MENU_BUILDER = "MenuBuilder",
 			METHOD_SET_OPTIONAL_ICONS_VISIBLE = "setOptionalIconsVisible";
-	static final int REQUEST_CLONE = 41, REQUEST_OPEN = 42, REQUEST_CREATE = 43, REQUEST_DIR = 44;
+//	static final int REQUEST_CLONE = 41, REQUEST_OPEN = 42, REQUEST_CREATE = 43, REQUEST_DIR = 44;
 
 
 	@Override
@@ -192,6 +193,26 @@ public class MainActivity extends AppCompatActivity {
 		RecyclerView rvWikiList = findViewById(R.id.rvWikiList);
 		rvWikiList.setLayoutManager(new LinearLayoutManager(MainActivity.this));
 		rvWikiList.setItemAnimator(new DefaultItemAnimator());
+		getChooserClone = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (result.getData() != null) {
+				cloneWiki(result.getData().getData());
+			}
+		});
+		getChooserCreate = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (result.getData() != null) {
+				createWiki(result.getData().getData());
+			}
+		});
+		getChooserImport = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (result.getData() != null) {
+				importWiki(result.getData().getData());
+			}
+		});
+		getChooserTree = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (result.getData() != null) {
+				addDir(result.getData().getData());
+			}
+		});
 		try {
 			wikiListAdapter = new WikiListAdapter(this, db);
 		} catch (JSONException e) {
@@ -219,6 +240,7 @@ public class MainActivity extends AppCompatActivity {
 					if (isWiki(MainActivity.this, u1)) {
 						if (SCH_CONTENT.equals(uri.getScheme()))
 							getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
+						else if (SCH_FILE.equals(uri.getScheme())) checkPermission(MainActivity.this);
 						if (!loadPage(id))
 							Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 					} else {
@@ -267,6 +289,7 @@ public class MainActivity extends AppCompatActivity {
 					provider = getString(R.string.internet);
 					path = u.toString();
 				} else if (legacy) {
+					checkPermission(MainActivity.this);
 					provider = getString(R.string.local_legacy);
 					path = u.getPath();
 				} else try {
@@ -328,7 +351,7 @@ public class MainActivity extends AppCompatActivity {
 				}
 				final Uri tu;
 				Uri tu1 = null;
-				DocumentFile mdf = null, df = null;
+				DocumentFile mdf, df;
 				if (!legacy) try {
 					mdf = DocumentFile.fromTreeUri(MainActivity.this, u);
 					DocumentFile p;
@@ -337,7 +360,8 @@ public class MainActivity extends AppCompatActivity {
 					if (df == null || !df.isFile()) throw new IOException();
 					tu1 = df.getUri();
 				} catch (IllegalArgumentException ignored) {
-				} catch (IOException e){e.printStackTrace();
+				} catch (IOException e) {
+					e.printStackTrace();
 					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
 				}
 				tu = tu1;
@@ -375,9 +399,10 @@ public class MainActivity extends AppCompatActivity {
 						})
 						.setNegativeButton("Clone", (dialog, which) -> {
 							dialog.dismiss();
-							if (SCH_HTTP.equals(u.getScheme()) || SCH_HTTPS.equals(u.getScheme()))
-								newWikiFromUri(u);
-							else try {
+//							if (SCH_HTTP.equals(u.getScheme()) || SCH_HTTPS.equals(u.getScheme()))
+//								newWikiFromUri(u);
+//							else
+							try {
 								Uri u1 = tu != null ? tu : u;
 								if (!isWiki(MainActivity.this, u1)) throw new IOException();
 								File dest = new File(getCacheDir(), CLONING_FILE_NAME);
@@ -393,7 +418,8 @@ public class MainActivity extends AppCompatActivity {
 									}
 									os.flush();
 									if (lenTotal != len) throw new IOException();
-									startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), REQUEST_CLONE);
+//									startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), REQUEST_CLONE);	// TODO: Refactor to registerForActivityResult
+									getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
 								}
 							} catch (IOException e) {
 								e.printStackTrace();
@@ -424,11 +450,10 @@ public class MainActivity extends AppCompatActivity {
 							}
 						}))
 						.create();
-
 				// 备份系统	TODO: Refactor
 				final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
-				DocumentFile finalMdf = mdf;
-				DocumentFile finalDf = df;
+//				DocumentFile finalMdf = mdf;
+//				DocumentFile finalDf = df;
 				backupListAdapter.setOnBtnClickListener((pos1, which) -> {
 					final File bf = tu == null ? backupListAdapter.getBackupFile(pos1) : null;
 					final DocumentFile bdf = tu != null ? backupListAdapter.getBackupDF(pos1) : null;
@@ -527,6 +552,7 @@ public class MainActivity extends AppCompatActivity {
 				});
 //				wikiConfigDialog.setCanceledOnTouchOutside(false);
 				wikiConfigDialog.show();
+				wikiConfigDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(!iNet);
 //				btnCreateShortcut.setOnClickListener(v -> {
 //					wikiConfigDialog.dismiss();
 //					try {
@@ -714,12 +740,14 @@ public class MainActivity extends AppCompatActivity {
 						e.printStackTrace();
 					}
 				} else {
-					f = legacy ? new File(u.getPath()) : new File(new File(getExternalFilesDir(null), Uri.encode(u.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(this, u)) != null ? df.getName() : null);    // real file in the dest dir for file:// or virtual file in ext files dir for content://
+					f = legacy ? new File(u.getPath()) : new File(new File(getExternalFilesDir(null), Uri.encode(u.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(this, u)) != null && df.getName() != null ? df.getName() : KEY_FN_INDEX);    // real file in the dest dir for file:// or virtual file in ext files dir for content://
 					if (delBackup) try {
 						File fb = new File(f.getParentFile(), f.getName() + BACKUP_POSTFIX);
 						if (fb.isDirectory()) {
-							for (File inner : fb.listFiles(pathname -> pathname.isFile() && isBackupFile(f.getName(), pathname.getName())))
-								inner.delete();
+							File[] fl;
+							if ((fl = fb.listFiles(pathname -> pathname.isFile() && isBackupFile(f.getName(), pathname.getName()))) != null)
+								for (File inner : fl)
+									inner.delete();
 							fb.delete();
 							File fv;
 							if (!legacy && (fv = f.getParentFile()) != null && fv.exists())
@@ -781,17 +809,21 @@ public class MainActivity extends AppCompatActivity {
 				idAbout = R.id.action_about;
 		switch (id) {
 			case idNew:
-				newWikiFromUri(null);
+				getChooserCreate.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
+//				startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), REQUEST_CREATE);
+//				newWikiFromUri();
 //				createWiki();
 				break;
 			case idImport:
 //				importWiki();
-				startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), REQUEST_OPEN);
+				getChooserImport.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
+//				startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), REQUEST_OPEN);
 				break;
 			case idDir:
 //				importWiki();
 				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP) {
-					startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION), REQUEST_DIR);
+					getChooserTree.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
+//					startActivityForResult(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION), REQUEST_DIR);
 				}
 				break;
 //			case idFork:
@@ -824,7 +856,96 @@ public class MainActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void newWikiFromUri(Uri uri) {
+//	private void newWikiFromUri() {
+//		getSrcFromUri(file -> startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), REQUEST_CREATE));
+//	}
+//	private void newWikiFromUri(Uri uri) {
+//		getSrcFromUri(uri, file -> startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), uri != null ? REQUEST_CLONE : REQUEST_CREATE));
+//	}
+
+	//	private void newWikiFromUri(Uri uri) {
+//		// 对话框等待
+//		final ProgressDialog progressDialog = new ProgressDialog(this);
+//		progressDialog.setMessage(getString(R.string.please_wait));
+//		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//		progressDialog.setCanceledOnTouchOutside(false);
+//		final Thread thread = new Thread(() -> {
+//			boolean interrupted = false;
+////			final boolean[] iNet = new boolean[3];
+//			class AdaptiveUriInputStream {
+//				private final InputStream is;
+//
+//				private AdaptiveUriInputStream(Uri uri1) throws NoSuchAlgorithmException, KeyManagementException, IOException {
+//					String scheme = uri1.getScheme();
+//					if (scheme == null || !SCH_HTTP.equals(scheme) && !SCH_HTTPS.equals(scheme))
+//						throw new IOException();
+//					HttpURLConnection httpURLConnection;
+//					URL url = new URL(uri1.normalizeScheme().toString());
+//					if (SCH_HTTPS.equals(scheme)) {
+//						httpURLConnection = (HttpsURLConnection) url.openConnection();
+//						if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
+//							((HttpsURLConnection) httpURLConnection).setSSLSocketFactory(new TLSSocketFactory());
+//					} else httpURLConnection = (HttpURLConnection) url.openConnection();
+//					httpURLConnection.connect();
+//					is = httpURLConnection.getInputStream();
+////					iNet[0] = true;
+//				}
+//
+//				private InputStream get() {
+//					return is;
+//				}
+//			}
+//			File cache = new File(getCacheDir(), genId());
+//			try (InputStream isw = new AdaptiveUriInputStream(uri == null ? Uri.parse(getString(R.string.template_repo)) : uri).get();
+//				 FileOutputStream osw = new FileOutputStream(cache);
+//				 FileInputStream is = new FileInputStream(cache);
+//				 FileOutputStream os = new FileOutputStream(new File(getCacheDir(), uri != null ? CLONING_FILE_NAME : TEMPLATE_FILE_NAME));
+//				 FileChannel ic = is.getChannel();
+//				 FileChannel oc = os.getChannel()) {
+//				// 下载到缓存
+//				int length;
+//				byte[] bytes = new byte[BUF_SIZE];
+//				while ((length = isw.read(bytes)) > -1) {
+//					osw.write(bytes, 0, length);
+//					if (Thread.currentThread().isInterrupted()) {
+//						interrupted = true;
+//						break;
+//					}
+//				}
+//				osw.flush();
+//				if (interrupted) throw new InterruptedException();
+//				if (!isWiki(cache)) throw new IOException();
+//				progressDialog.dismiss();
+//				ic.transferTo(0, ic.size(), oc);
+//				ic.force(true);
+//			} catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+//				e.printStackTrace();
+//				progressDialog.dismiss();
+////				try {
+////					DocumentsContract.deleteDocument(getContentResolver(), uri);
+////				} catch (FileNotFoundException e1) {
+////					e.printStackTrace();
+////				}
+////				final int fid = iNet[0] ? R.string.download_failed : R.string.no_internet;
+//			} catch (InterruptedException e1) {
+//				e1.printStackTrace();
+//				cache.delete();
+//				runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.cancelled, Toast.LENGTH_SHORT).show());
+//			} finally {
+//				startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), uri != null ? REQUEST_CLONE : REQUEST_CREATE);
+//			}
+//		});
+//
+//		progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getText(android.R.string.cancel), (dialogInterface, i) -> progressDialog.cancel());
+//		progressDialog.setOnShowListener(dialog -> thread.start());
+//		progressDialog.setOnCancelListener(dialogInterface -> thread.interrupt());
+//		progressDialog.show();
+//	}
+	private interface OnGetSrc {
+		void run(File file);
+	}
+
+	private void getSrcFromUri(OnGetSrc cb) {
 		// 对话框等待
 		final ProgressDialog progressDialog = new ProgressDialog(this);
 		progressDialog.setMessage(getString(R.string.please_wait));
@@ -856,11 +977,11 @@ public class MainActivity extends AppCompatActivity {
 					return is;
 				}
 			}
-			File cache = new File(getCacheDir(), genId());
-			try (InputStream isw = new AdaptiveUriInputStream(uri == null ? Uri.parse(getString(R.string.template_repo)) : uri).get();
+			File cache = new File(getCacheDir(), genId()), dest = null;
+			try (InputStream isw = new AdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo))).get();
 				 FileOutputStream osw = new FileOutputStream(cache);
 				 FileInputStream is = new FileInputStream(cache);
-				 FileOutputStream os = new FileOutputStream(new File(getCacheDir(), uri != null ? CLONING_FILE_NAME : TEMPLATE_FILE_NAME));
+				 FileOutputStream os = new FileOutputStream(dest = new File(getCacheDir(), TEMPLATE_FILE_NAME));
 				 FileChannel ic = is.getChannel();
 				 FileChannel oc = os.getChannel()) {
 				// 下载到缓存
@@ -893,7 +1014,7 @@ public class MainActivity extends AppCompatActivity {
 				cache.delete();
 				runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.cancelled, Toast.LENGTH_SHORT).show());
 			} finally {
-				startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML), uri != null ? REQUEST_CLONE : REQUEST_CREATE);
+				cb.run(dest);
 			}
 		});
 
@@ -902,32 +1023,110 @@ public class MainActivity extends AppCompatActivity {
 		progressDialog.setOnCancelListener(dialogInterface -> thread.interrupt());
 		progressDialog.show();
 	}
+//	private void getSrcFromUri(Uri uri, OnGetSrc cb) {
+//		// 对话框等待
+//		final ProgressDialog progressDialog = new ProgressDialog(this);
+//		progressDialog.setMessage(getString(R.string.please_wait));
+//		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+//		progressDialog.setCanceledOnTouchOutside(false);
+//		final Thread thread = new Thread(() -> {
+//			boolean interrupted = false;
+////			final boolean[] iNet = new boolean[3];
+//			class AdaptiveUriInputStream {
+//				private final InputStream is;
+//
+//				private AdaptiveUriInputStream(Uri uri1) throws NoSuchAlgorithmException, KeyManagementException, IOException {
+//					String scheme = uri1.getScheme();
+//					if (scheme == null || !SCH_HTTP.equals(scheme) && !SCH_HTTPS.equals(scheme))
+//						throw new IOException();
+//					HttpURLConnection httpURLConnection;
+//					URL url = new URL(uri1.normalizeScheme().toString());
+//					if (SCH_HTTPS.equals(scheme)) {
+//						httpURLConnection = (HttpsURLConnection) url.openConnection();
+//						if (Build.VERSION.SDK_INT <= Build.VERSION_CODES.KITKAT)
+//							((HttpsURLConnection) httpURLConnection).setSSLSocketFactory(new TLSSocketFactory());
+//					} else httpURLConnection = (HttpURLConnection) url.openConnection();
+//					httpURLConnection.connect();
+//					is = httpURLConnection.getInputStream();
+////					iNet[0] = true;
+//				}
+//
+//				private InputStream get() {
+//					return is;
+//				}
+//			}
+//			File cache = new File(getCacheDir(), genId()), dest = null;
+//			try (InputStream isw = new AdaptiveUriInputStream(uri == null ? Uri.parse(getString(R.string.template_repo)) : uri).get();
+//				 FileOutputStream osw = new FileOutputStream(cache);
+//				 FileInputStream is = new FileInputStream(cache);
+//				 FileOutputStream os = new FileOutputStream(dest = new File(getCacheDir(), uri != null ? CLONING_FILE_NAME : TEMPLATE_FILE_NAME));
+//				 FileChannel ic = is.getChannel();
+//				 FileChannel oc = os.getChannel()) {
+//				// 下载到缓存
+//				int length;
+//				byte[] bytes = new byte[BUF_SIZE];
+//				while ((length = isw.read(bytes)) > -1) {
+//					osw.write(bytes, 0, length);
+//					if (Thread.currentThread().isInterrupted()) {
+//						interrupted = true;
+//						break;
+//					}
+//				}
+//				osw.flush();
+//				if (interrupted) throw new InterruptedException();
+//				if (!isWiki(cache)) throw new IOException();
+//				progressDialog.dismiss();
+//				ic.transferTo(0, ic.size(), oc);
+//				ic.force(true);
+//			} catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+//				e.printStackTrace();
+//				progressDialog.dismiss();
+////				try {
+////					DocumentsContract.deleteDocument(getContentResolver(), uri);
+////				} catch (FileNotFoundException e1) {
+////					e.printStackTrace();
+////				}
+////				final int fid = iNet[0] ? R.string.download_failed : R.string.no_internet;
+//			} catch (InterruptedException e1) {
+//				e1.printStackTrace();
+//				cache.delete();
+//				runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.cancelled, Toast.LENGTH_SHORT).show());
+//			} finally {
+//				cb.run(dest);
+//			}
+//		});
+//
+//		progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getText(android.R.string.cancel), (dialogInterface, i) -> progressDialog.cancel());
+//		progressDialog.setOnShowListener(dialog -> thread.start());
+//		progressDialog.setOnCancelListener(dialogInterface -> thread.interrupt());
+//		progressDialog.show();
+//	}
 
-	// SAF处理
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-		super.onActivityResult(requestCode, resultCode, resultData);
-		File cloning = new File(getCacheDir(), CLONING_FILE_NAME);
-		if (resultCode == Activity.RESULT_OK && resultData != null) {
-			Uri uri = resultData.getData();
-			if (uri != null)
-				switch (requestCode) {
-					case REQUEST_CLONE:
-						cloneWiki(uri);
-						break;
-					case REQUEST_CREATE:    // 新建
-						createWiki(uri);
-						break;
-					case REQUEST_OPEN:    // 导入
-						importWiki(uri);
-						break;
-					case REQUEST_DIR:    // 导入
-						addDir(uri);
-						break;
-				}
-			else if (cloning.exists()) cloning.delete();
-		} else if (cloning.exists()) cloning.delete();
-	}
+//	// SAF处理
+//	@Override
+//	public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+//		super.onActivityResult(requestCode, resultCode, resultData);
+//		File cloning = new File(getCacheDir(), CLONING_FILE_NAME);
+//		if (resultCode == Activity.RESULT_OK && resultData != null) {
+//			Uri uri = resultData.getData();
+//			if (uri != null)
+//				switch (requestCode) {
+//					case REQUEST_CLONE:
+//						cloneWiki(uri);
+//						break;
+//					case REQUEST_CREATE:    // 新建
+//						createWiki(uri);
+//						break;
+//					case REQUEST_OPEN:    // 导入
+//						importWiki(uri);
+//						break;
+//					case REQUEST_DIR:    // 导入
+//						addDir(uri);
+//						break;
+//				}
+//			else if (cloning.exists()) cloning.delete();
+//		} else if (cloning.exists()) cloning.delete();
+//	}
 
 	private void cloneWiki(Uri uri) {
 		createWiki(uri, true);
@@ -938,8 +1137,9 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void createWiki(Uri uri, boolean clone) {
-		final File template = clone ? new File(getCacheDir(), CLONING_FILE_NAME) : new File(getCacheDir(), TEMPLATE_FILE_NAME);
-		if (template.exists() && isWiki(template)) {
+		OnGetSrc cb = file -> {
+//				final File template = clone ? new File(getCacheDir(), CLONING_FILE_NAME) : new File(getCacheDir(), TEMPLATE_FILE_NAME);
+			if (file.exists() && isWiki(file)) {
 //			File lastDir = Environment.getExternalStorageDirectory();
 //			boolean showHidden = false;
 //			try {
@@ -956,58 +1156,58 @@ public class MainActivity extends AppCompatActivity {
 //						return;
 //					}
 //					File file = files[0];
-			try (FileInputStream is = new FileInputStream(template);
-				 OutputStream os = getContentResolver().openOutputStream(uri)) {
+				try (FileInputStream is = new FileInputStream(file);
+					 OutputStream os = getContentResolver().openOutputStream(uri)) {
 //						ic.transferTo(0, ic.size(), oc);
 //						ic.force(true);
-				if (os == null) throw new FileNotFoundException();
-				// 查重
-				String id = null;
+					if (os == null) throw new FileNotFoundException();
+					// 查重
+					String id = null;
 //						String u = uri.toString();
 //						try {
-				JSONObject wl = db.getJSONObject(DB_KEY_WIKI), wa = null;
-				boolean exist = false;
-				Iterator<String> iterator = wl.keys();
-				while (iterator.hasNext()) {
-					exist = uri.toString().equals((wa = wl.getJSONObject((id = iterator.next()))).optString(DB_KEY_URI));
-					if (exist) break;
-				}
-				if (exist)
-					Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-				else {
-					wa = new JSONObject();
-					wa.put(DB_KEY_URI, uri.toString());
-					id = genId();
-					wl.put(id, wa);
-				}
-				wa.put(KEY_NAME, KEY_TW);
-				wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
-				wa.put(DB_KEY_BACKUP, false);
+					JSONObject wl = db.getJSONObject(DB_KEY_WIKI), wa = null;
+					boolean exist = false;
+					Iterator<String> iterator = wl.keys();
+					while (iterator.hasNext()) {
+						exist = uri.toString().equals((wa = wl.getJSONObject((id = iterator.next()))).optString(DB_KEY_URI));
+						if (exist) break;
+					}
+					if (exist)
+						Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
+					else {
+						wa = new JSONObject();
+						wa.put(DB_KEY_URI, uri.toString());
+						id = genId();
+						wl.put(id, wa);
+					}
+					wa.put(KEY_NAME, KEY_TW);
+					wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
+					wa.put(DB_KEY_BACKUP, false);
 //							db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-				if (!MainActivity.writeJson(MainActivity.this, db))
-					throw new JSONException((String) null);
-				int len = is.available(), length, lenTotal = 0;
-				byte[] bytes = new byte[BUF_SIZE];
-				while ((length = is.read(bytes)) > -1) {
-					os.write(bytes, 0, length);
-					lenTotal += length;
-				}
-				os.flush();
-				if (lenTotal != len) throw new IOException();
-				getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
+					if (!MainActivity.writeJson(MainActivity.this, db))
+						throw new JSONException((String) null);
+					int len = is.available(), length, lenTotal = 0;
+					byte[] bytes = new byte[BUF_SIZE];
+					while ((length = is.read(bytes)) > -1) {
+						os.write(bytes, 0, length);
+						lenTotal += length;
+					}
+					os.flush();
+					if (lenTotal != len) throw new IOException();
+					getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
 //						} catch (Exception e) {
 //							e.printStackTrace();
 //							Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
 //						}
-				if (!loadPage(id))
-					Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-			} catch (IOException e) {
-				e.printStackTrace();
-				Toast.makeText(MainActivity.this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
-			} catch (JSONException e) {
-				e.printStackTrace();
-				Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-			}
+					if (!loadPage(id))
+						Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
+				} catch (IOException e) {
+					e.printStackTrace();
+					Toast.makeText(MainActivity.this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+				} catch (JSONException e) {
+					e.printStackTrace();
+					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+				}
 //				}
 //
 //				@Override
@@ -1015,12 +1215,100 @@ public class MainActivity extends AppCompatActivity {
 //
 //				}
 //			});
-		} else {
-			Toast.makeText(this, R.string.download_failed, Toast.LENGTH_SHORT).show();
+			} else {
+				Toast.makeText(MainActivity.this, R.string.download_failed, Toast.LENGTH_SHORT).show();
 //			getTemplate(null);
-		}
-		if (clone) template.delete();
+			}
+			if (clone) file.delete();
+		};
+		if (clone) cb.run(new File(getCacheDir(), CLONING_FILE_NAME));
+		else getSrcFromUri(cb);
+//		else cb.run(new File(getCacheDir(), TEMPLATE_FILE_NAME));
 	}
+//	private void createWiki(Uri uri, boolean clone) {
+//		final File template = clone ? new File(getCacheDir(), CLONING_FILE_NAME) : new File(getCacheDir(), TEMPLATE_FILE_NAME);
+//		if (template.exists() && isWiki(template)) {
+////			File lastDir = Environment.getExternalStorageDirectory();
+////			boolean showHidden = false;
+////			try {
+////				lastDir = new File(db.getString(DB_KEY_LAST_DIR));
+////				showHidden = db.getBoolean(DB_KEY_SHOW_HIDDEN);
+////			} catch (Exception e) {
+////				e.printStackTrace();
+////			}
+////			FileDialog.fileSave(MainActivity.this, lastDir, HTML_FILTERS, showHidden, new FileDialog.OnFileTouchedListener() {
+////				@Override
+////				public void onFileTouched(File[] files) {
+////					if (files == null || files.length <= 0 || files[0] == null) {
+////						Toast.makeText(MainActivity.this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+////						return;
+////					}
+////					File file = files[0];
+//			try (FileInputStream is = new FileInputStream(template);
+//				 OutputStream os = getContentResolver().openOutputStream(uri)) {
+////						ic.transferTo(0, ic.size(), oc);
+////						ic.force(true);
+//				if (os == null) throw new FileNotFoundException();
+//				// 查重
+//				String id = null;
+////						String u = uri.toString();
+////						try {
+//				JSONObject wl = db.getJSONObject(DB_KEY_WIKI), wa = null;
+//				boolean exist = false;
+//				Iterator<String> iterator = wl.keys();
+//				while (iterator.hasNext()) {
+//					exist = uri.toString().equals((wa = wl.getJSONObject((id = iterator.next()))).optString(DB_KEY_URI));
+//					if (exist) break;
+//				}
+//				if (exist)
+//					Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
+//				else {
+//					wa = new JSONObject();
+//					wa.put(DB_KEY_URI, uri.toString());
+//					id = genId();
+//					wl.put(id, wa);
+//				}
+//				wa.put(KEY_NAME, KEY_TW);
+//				wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
+//				wa.put(DB_KEY_BACKUP, false);
+////							db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
+//				if (!MainActivity.writeJson(MainActivity.this, db))
+//					throw new JSONException((String) null);
+//				int len = is.available(), length, lenTotal = 0;
+//				byte[] bytes = new byte[BUF_SIZE];
+//				while ((length = is.read(bytes)) > -1) {
+//					os.write(bytes, 0, length);
+//					lenTotal += length;
+//				}
+//				os.flush();
+//				if (lenTotal != len) throw new IOException();
+//				getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
+////						} catch (Exception e) {
+////							e.printStackTrace();
+////							Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+////						}
+//				if (!loadPage(id))
+//					Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
+//			} catch (IOException e) {
+//				e.printStackTrace();
+//				Toast.makeText(MainActivity.this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+//			} catch (JSONException e) {
+//				e.printStackTrace();
+//				Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+//			}
+////				}
+////
+////				@Override
+////				public void onCanceled() {
+////
+////				}
+////			});
+//		} else {
+//			Toast.makeText(this, R.string.download_failed, Toast.LENGTH_SHORT).show();
+////			getTemplate(null);
+//		}
+//		if (clone) template.delete();
+//	}
 //	private void newWiki() {    // TODO: Refactor to SAF
 //		final File cloning;
 //		;
@@ -1221,14 +1509,40 @@ public class MainActivity extends AppCompatActivity {
 
 	private void addDir(Uri uri) {    // TODO: dev
 //		try {
-		DocumentFile df = DocumentFile.fromTreeUri(this, uri);
-		if (df == null || !df.isDirectory()) {
+		DocumentFile mdf = DocumentFile.fromTreeUri(this, uri);
+		if (mdf == null || !mdf.isDirectory()) {
 			Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 			return;
 		}
-		DocumentFile p, index = (p = df.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = df.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
-//			DocumentFile p, index = (p = df.findFile(KEY_FN_INDEX))!=null && p.isFile() ? p : (p = df.findFile(KEY_FN_INDEX2))!=null && p.isFile() ? p : df.createFile(TYPE_HTML, KEY_FN_INDEX_D);
-		if (index == null || !isWiki(this, index.getUri())) {
+		DocumentFile p, index = (p = mdf.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
+//			DocumentFile p, index = (p = mdf.findFile(KEY_FN_INDEX))!=null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2))!=null && p.isFile() ? p : mdf.createFile(TYPE_HTML, KEY_FN_INDEX_D);
+		if (index == null) {
+			DocumentFile nf = mdf.createFile(TYPE_HTML, KEY_FN_INDEX);
+			if (nf == null) {
+				Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+				return;
+			}
+			getSrcFromUri(file -> {
+				try (FileInputStream is = new FileInputStream(file);
+					 OutputStream os = getContentResolver().openOutputStream(nf.getUri())) {
+					if (os == null) throw new IOException();
+					int len = is.available(), length, lenTotal = 0;
+					byte[] bytes = new byte[BUF_SIZE];
+					while ((length = is.read(bytes)) > -1) {
+						os.write(bytes, 0, length);
+						lenTotal += length;
+					}
+					os.flush();
+					if (lenTotal != len) throw new IOException();
+				} catch (IOException e) {
+					e.printStackTrace();
+					Toast.makeText(MainActivity.this, R.string.download_failed, Toast.LENGTH_SHORT).show();
+				}
+				addDir(uri);
+			});
+//			Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+			return;
+		} else if (!isWiki(this, index.getUri())) {
 			Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 			return;
 		}
@@ -1754,7 +2068,8 @@ public class MainActivity extends AppCompatActivity {
 			DocumentFile p;
 			df = (p = mdf.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;    // index.htm(l)
 			String fn;
-			if ((df == null) || !df.isFile() || (fn = df.getName()) == null) throw new IOException();
+			if ((df == null) || !df.isFile() || (fn = df.getName()) == null)
+				throw new IOException();
 			if ((p = mdf.findFile(fn = fn + BACKUP_POSTFIX)) == null) {
 				mdf = mdf.createDirectory(fn);
 			} else mdf = p;
@@ -1767,7 +2082,7 @@ public class MainActivity extends AppCompatActivity {
 		String bfn;
 		File file = null, mfd = null;
 		if (!tree) {
-			file = legacy ? new File(u.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(u.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, u)) != null ? df.getName() : null);    // real file in the dest dir for file:// or virtual file in ext files dir for content://
+			file = legacy ? new File(u.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(u.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, u)) != null && df.getName() != null ? df.getName() : KEY_FN_INDEX);    // real file in the dest dir for file:// or virtual file in ext files dir for content://
 			df = legacy ? DocumentFile.fromFile(file) : df;
 			mfn = file.getName();
 //		System.out.println(file.getAbsolutePath());

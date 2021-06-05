@@ -44,6 +44,8 @@ import android.widget.FrameLayout;
 import android.widget.ProgressBar;
 import android.widget.Toast;
 
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
@@ -93,11 +95,13 @@ public class TWEditorWV extends AppCompatActivity {
 	private ProgressBar wvProgress;
 	private Uri uri = null;
 	private boolean isWiki, isClassic, hideAppbar = false, ready = false;
-	private static byte[] exData = null;
+	private byte[] exData = null;
 	private Menu optMenu;
 	private String id;
 	private HashMap<String, byte[]> hashes = null;
 	private DocumentFile tree = null, treeIndex = null;
+	private ActivityResultLauncher<Intent> getChooserDL, getChooserImport, getChooserClone;
+
 
 	// CONSTANT
 	private static final String
@@ -125,7 +129,7 @@ public class TWEditorWV extends AppCompatActivity {
 //			PREF_BLOB = "$blob$",
 //			PREF_DEST = "$dest$",
 	URL_BLANK = "about:blank";
-	private static final int REQUEST_DL = 906;
+//	private static final int REQUEST_DL = 906;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -167,6 +171,131 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setSupportMultipleWindows(true);
 		wvs.setMediaPlaybackRequiresUserGesture(false);
 		scale = getResources().getDisplayMetrics().density;
+		getChooserDL = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (result.getData() != null) {
+				if (exData == null) return;
+				uri = result.getData().getData();
+				if (uri != null)
+					try (OutputStream os = getContentResolver().openOutputStream(uri); InputStream is = new ByteArrayInputStream(exData)) {
+						if (os == null || exData == null) throw new FileNotFoundException();
+						int len = is.available();
+						int length;
+						int lengthTotal = 0;
+						byte[] bytes = new byte[4096];
+						while ((length = is.read(bytes)) > -1) {
+							os.write(bytes, 0, length);
+							lengthTotal += length;
+						}
+						os.flush();
+						if (lengthTotal != len) throw new IOException();
+					} catch (Exception e) {
+						e.printStackTrace();
+						try {
+							DocumentsContract.deleteDocument(getContentResolver(), uri);
+						} catch (Exception e1) {
+							e.printStackTrace();
+						}
+						Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+					}
+			}
+			exData = null;
+		});
+		getChooserImport = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+//			if (result.getData() != null) {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && uploadMessage != null)
+				uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(result.getResultCode(), result.getData()));
+//			}
+			uploadMessage = null;
+		});
+		getChooserClone = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (result.getData() != null) {
+				if (exData == null) return;
+				uri = result.getData().getData();
+				if (uri == null) return;
+//				boolean created = false;
+				try (ByteArrayInputStream is = new ByteArrayInputStream(exData);
+					 OutputStream os = getContentResolver().openOutputStream(uri)) {
+					if (os == null) throw new FileNotFoundException();
+					//						String u = uri.toString();
+//						try {
+					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
+					boolean exist = false;
+					String id = null;
+					Iterator<String> iterator = wl.keys();
+					while (iterator.hasNext()) {
+						exist = uri.toString().equals((wa = wl.getJSONObject(id = iterator.next())).optString(MainActivity.DB_KEY_URI));
+						if (exist) break;
+					}
+					if (exist)
+						Toast.makeText(this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
+					else {
+						wa = new JSONObject();
+						id = MainActivity.genId();
+						wl.put(id, wa);
+					}
+					wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
+					wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
+					wa.put(MainActivity.DB_KEY_URI, uri.toString());
+					wa.put(MainActivity.DB_KEY_BACKUP, false);
+//							db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
+					if (!MainActivity.writeJson(this, db))
+						throw new JSONException((String) null);
+
+					int len = is.available();
+					int length, lengthTotal = 0;
+					byte[] b = new byte[4096];
+					while ((length = is.read(b)) != -1) {
+						os.write(b, 0, length);
+						lengthTotal += length;
+					}
+					os.flush();
+//					System.out.println(lengthTotal);
+					if (lengthTotal != len || !MainActivity.isWiki(this, uri))
+						throw new IOException();
+//					created = true;
+//					boolean exist = false;
+//					Uri u = Uri.fromFile(file);
+//					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
+//					Iterator<String> iterator = wl.keys();
+//					while (iterator.hasNext())
+//						if ((wa = wl.getJSONObject(iterator.next())).optString(MainActivity.DB_KEY_URI).equals(u.toString())) {
+//							exist = true;
+//							break;
+//						}
+//					if (exist)
+//						Toast.makeText(TWEditorWV.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
+//					else {
+//						wa = new JSONObject();
+//						String id = MainActivity.genId();
+//						wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
+//						wa.put(MainActivity.DB_KEY_URI, u.toString());
+//						wl.put(id, wa);
+//					}
+//					wa.put(MainActivity.DB_KEY_BACKUP, false);
+//					wApp = wa;
+//					this.uri = uri;
+//								db.put(MainActivity.DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
+					if (!MainActivity.writeJson(this, db))
+						throw new IOException();
+//					if (wApp != null) {
+////						runOnUiThread(() -> {
+//						wv.reload();
+//						wv.clearHistory();
+////						});
+//					}
+					Bundle bu = new Bundle();
+					bu.putString(MainActivity.KEY_ID, id);
+					nextWiki(new Intent().putExtras(bu));
+				} catch (IOException e) {
+					e.printStackTrace();
+					Toast.makeText(TWEditorWV.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
+				} catch (JSONException e) {
+					e.printStackTrace();
+					Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+				}
+			}
+			exData = null;
+		});
 		wcc = new WebChromeClient() {
 			// 进度条
 			@Override
@@ -192,12 +321,13 @@ public class TWEditorWV extends AppCompatActivity {
 			@Override
 			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
 				uploadMessage = filePathCallback;
-				Intent intent = fileChooserParams.createIntent();
-				try {
-					startActivityForResult(intent, MainActivity.REQUEST_OPEN);
-				} catch (Exception e) {
-					e.printStackTrace();
-				}
+//				Intent intent = fileChooserParams.createIntent();
+				getChooserImport.launch(fileChooserParams.createIntent());
+//				try {
+//					startActivityForResult(intent, MainActivity.REQUEST_OPEN);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
 				return true;
 			}
 
@@ -608,11 +738,15 @@ public class TWEditorWV extends AppCompatActivity {
 			// 保存文件（指名）
 			@JavascriptInterface
 			public void saveDownload(String data, String filename) {
-				TWEditorWV.exData = data.getBytes(StandardCharsets.UTF_8);
-				startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT)
+				TWEditorWV.this.exData = data.getBytes(StandardCharsets.UTF_8);
+				getChooserDL.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT)
 						.addCategory(Intent.CATEGORY_OPENABLE)
 						.setType(MIME_ANY)
-						.putExtra(Intent.EXTRA_TITLE, filename), REQUEST_DL);
+						.putExtra(Intent.EXTRA_TITLE, filename));
+//				startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT)
+//						.addCategory(Intent.CATEGORY_OPENABLE)
+//						.setType(MIME_ANY)
+//						.putExtra(Intent.EXTRA_TITLE, filename), REQUEST_DL);
 			}
 //			@JavascriptInterface
 //			public void saveDownload(final String data, String filename) {
@@ -691,9 +825,12 @@ public class TWEditorWV extends AppCompatActivity {
 					}
 				} else {
 					exData = data.getBytes(StandardCharsets.UTF_8);
-					startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT)
+					getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT)
 							.addCategory(Intent.CATEGORY_OPENABLE)
-							.setType(MainActivity.TYPE_HTML), MainActivity.REQUEST_CLONE);
+							.setType(MainActivity.TYPE_HTML));
+//					startActivityForResult(new Intent(Intent.ACTION_CREATE_DOCUMENT)
+//							.addCategory(Intent.CATEGORY_OPENABLE)
+//							.setType(MainActivity.TYPE_HTML), MainActivity.REQUEST_CLONE);
 //					File lastDir = Environment.getExternalStorageDirectory();
 //					boolean showHidden = false;
 //					try {
@@ -820,11 +957,11 @@ public class TWEditorWV extends AppCompatActivity {
 						Toast.makeText(TWEditorWV.this, "The page is not a TiddlyWiki", Toast.LENGTH_SHORT).show();    // TODO: -> R.string
 				});
 				view.clearHistory();
-				File[] ppp = new File(getCacheDir(),id).listFiles();
-				File[] qqq = new File(new File(getCacheDir(),id), "index.html_backup").listFiles();
-				System.out.println(wv.getUrl());
-				System.out.println(Arrays.toString(ppp));
-				System.out.println(Arrays.toString(qqq));
+//				File[] ppp = new File(getCacheDir(), id).listFiles();
+//				File[] qqq = new File(new File(getCacheDir(), id), "index.html_backup").listFiles();
+//				System.out.println(wv.getUrl());
+//				System.out.println(Arrays.toString(ppp));
+//				System.out.println(Arrays.toString(qqq));
 //				if (wApp != null) view.clearHistory();
 			}
 		});
@@ -1059,137 +1196,137 @@ public class TWEditorWV extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	// 接收导入导出文件
-	@Override
-	public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
-		super.onActivityResult(requestCode, resultCode, resultData);
-		if (resultCode != RESULT_OK) return;
-		Uri uri;
-		switch (requestCode) {
-			case REQUEST_DL:
-				if (exData == null) break;
-				uri = resultData.getData();
-				if (uri != null)
-					try (OutputStream os = getContentResolver().openOutputStream(uri); InputStream is = new ByteArrayInputStream(exData)) {
-						if (os == null || exData == null) throw new FileNotFoundException();
-						int len = is.available();
-						int length;
-						int lengthTotal = 0;
-						byte[] bytes = new byte[4096];
-						while ((length = is.read(bytes)) > -1) {
-							os.write(bytes, 0, length);
-							lengthTotal += length;
-						}
-						os.flush();
-						if (lengthTotal != len) throw new IOException();
-
-
-					} catch (Exception e) {
-						e.printStackTrace();
-						try {
-							DocumentsContract.deleteDocument(getContentResolver(), uri);
-						} catch (Exception e1) {
-							e.printStackTrace();
-						}
-						Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
-					}
-				break;
-			case MainActivity.REQUEST_OPEN:
-				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && uploadMessage != null)
-					uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, resultData));
-				break;
-			case MainActivity.REQUEST_CLONE:
-				if (exData == null) break;
-				uri = resultData.getData();
-				if (uri == null) break;
-//				boolean created = false;
-				try (ByteArrayInputStream is = new ByteArrayInputStream(exData);
-					 OutputStream os = getContentResolver().openOutputStream(uri)) {
-					if (os == null) throw new FileNotFoundException();
-					//						String u = uri.toString();
-//						try {
-					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
-					boolean exist = false;
-					String id = null;
-					Iterator<String> iterator = wl.keys();
-					while (iterator.hasNext()) {
-						exist = uri.toString().equals((wa = wl.getJSONObject(id = iterator.next())).optString(MainActivity.DB_KEY_URI));
-						if (exist) break;
-					}
-					if (exist)
-						Toast.makeText(this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-					else {
-						wa = new JSONObject();
-						id = MainActivity.genId();
-						wl.put(id, wa);
-					}
-					wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
-					wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
-					wa.put(MainActivity.DB_KEY_URI, uri.toString());
-					wa.put(MainActivity.DB_KEY_BACKUP, false);
-//							db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-					if (!MainActivity.writeJson(this, db))
-						throw new JSONException((String) null);
-
-					int len = is.available();
-					int length, lengthTotal = 0;
-					byte[] b = new byte[4096];
-					while ((length = is.read(b)) != -1) {
-						os.write(b, 0, length);
-						lengthTotal += length;
-					}
-					os.flush();
-//					System.out.println(lengthTotal);
-					if (lengthTotal != len || !MainActivity.isWiki(this, uri))
-						throw new IOException();
-//					created = true;
-//					boolean exist = false;
-//					Uri u = Uri.fromFile(file);
-//					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
-//					Iterator<String> iterator = wl.keys();
-//					while (iterator.hasNext())
-//						if ((wa = wl.getJSONObject(iterator.next())).optString(MainActivity.DB_KEY_URI).equals(u.toString())) {
-//							exist = true;
-//							break;
+//	// 接收导入导出文件
+//	@Override
+//	public void onActivityResult(int requestCode, int resultCode, Intent resultData) {
+//		super.onActivityResult(requestCode, resultCode, resultData);
+//		if (resultCode != RESULT_OK) return;
+//		Uri uri;
+//		switch (requestCode) {
+//			case REQUEST_DL:
+//				if (exData == null) break;
+//				uri = resultData.getData();
+//				if (uri != null)
+//					try (OutputStream os = getContentResolver().openOutputStream(uri); InputStream is = new ByteArrayInputStream(exData)) {
+//						if (os == null || exData == null) throw new FileNotFoundException();
+//						int len = is.available();
+//						int length;
+//						int lengthTotal = 0;
+//						byte[] bytes = new byte[4096];
+//						while ((length = is.read(bytes)) > -1) {
+//							os.write(bytes, 0, length);
+//							lengthTotal += length;
 //						}
+//						os.flush();
+//						if (lengthTotal != len) throw new IOException();
+//
+//
+//					} catch (Exception e) {
+//						e.printStackTrace();
+//						try {
+//							DocumentsContract.deleteDocument(getContentResolver(), uri);
+//						} catch (Exception e1) {
+//							e.printStackTrace();
+//						}
+//						Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+//					}
+//				break;
+//			case MainActivity.REQUEST_OPEN:
+//				if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && uploadMessage != null)
+//					uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, resultData));
+//				break;
+//			case MainActivity.REQUEST_CLONE:
+//				if (exData == null) break;
+//				uri = resultData.getData();
+//				if (uri == null) break;
+////				boolean created = false;
+//				try (ByteArrayInputStream is = new ByteArrayInputStream(exData);
+//					 OutputStream os = getContentResolver().openOutputStream(uri)) {
+//					if (os == null) throw new FileNotFoundException();
+//					//						String u = uri.toString();
+////						try {
+//					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
+//					boolean exist = false;
+//					String id = null;
+//					Iterator<String> iterator = wl.keys();
+//					while (iterator.hasNext()) {
+//						exist = uri.toString().equals((wa = wl.getJSONObject(id = iterator.next())).optString(MainActivity.DB_KEY_URI));
+//						if (exist) break;
+//					}
 //					if (exist)
-//						Toast.makeText(TWEditorWV.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
+//						Toast.makeText(this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
 //					else {
 //						wa = new JSONObject();
-//						String id = MainActivity.genId();
-//						wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
-//						wa.put(MainActivity.DB_KEY_URI, u.toString());
+//						id = MainActivity.genId();
 //						wl.put(id, wa);
 //					}
+//					wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
+//					wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
+//					wa.put(MainActivity.DB_KEY_URI, uri.toString());
 //					wa.put(MainActivity.DB_KEY_BACKUP, false);
-//					wApp = wa;
-//					this.uri = uri;
-//								db.put(MainActivity.DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
-					if (!MainActivity.writeJson(this, db))
-						throw new IOException();
-//					if (wApp != null) {
-////						runOnUiThread(() -> {
-//						wv.reload();
-//						wv.clearHistory();
-////						});
+////							db.put(DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
+//					if (!MainActivity.writeJson(this, db))
+//						throw new JSONException((String) null);
+//
+//					int len = is.available();
+//					int length, lengthTotal = 0;
+//					byte[] b = new byte[4096];
+//					while ((length = is.read(b)) != -1) {
+//						os.write(b, 0, length);
+//						lengthTotal += length;
 //					}
-					Bundle bu = new Bundle();
-					bu.putString(MainActivity.KEY_ID, id);
-					nextWiki(new Intent().putExtras(bu));
-				} catch (IOException e) {
-					e.printStackTrace();
-					Toast.makeText(TWEditorWV.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
-				} catch (JSONException e) {
-					e.printStackTrace();
-					Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-				}
-				break;
-		}
-//		if (requestCode == MainActivity.REQUEST_OPEN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && uploadMessage != null)
-//			uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, resultData));
-		exData = null;
-		uploadMessage = null;
-	}
+//					os.flush();
+////					System.out.println(lengthTotal);
+//					if (lengthTotal != len || !MainActivity.isWiki(this, uri))
+//						throw new IOException();
+////					created = true;
+////					boolean exist = false;
+////					Uri u = Uri.fromFile(file);
+////					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
+////					Iterator<String> iterator = wl.keys();
+////					while (iterator.hasNext())
+////						if ((wa = wl.getJSONObject(iterator.next())).optString(MainActivity.DB_KEY_URI).equals(u.toString())) {
+////							exist = true;
+////							break;
+////						}
+////					if (exist)
+////						Toast.makeText(TWEditorWV.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
+////					else {
+////						wa = new JSONObject();
+////						String id = MainActivity.genId();
+////						wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
+////						wa.put(MainActivity.DB_KEY_URI, u.toString());
+////						wl.put(id, wa);
+////					}
+////					wa.put(MainActivity.DB_KEY_BACKUP, false);
+////					wApp = wa;
+////					this.uri = uri;
+////								db.put(MainActivity.DB_KEY_LAST_DIR, file.getParentFile().getAbsolutePath());
+//					if (!MainActivity.writeJson(this, db))
+//						throw new IOException();
+////					if (wApp != null) {
+//////						runOnUiThread(() -> {
+////						wv.reload();
+////						wv.clearHistory();
+//////						});
+////					}
+//					Bundle bu = new Bundle();
+//					bu.putString(MainActivity.KEY_ID, id);
+//					nextWiki(new Intent().putExtras(bu));
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//					Toast.makeText(TWEditorWV.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
+//				} catch (JSONException e) {
+//					e.printStackTrace();
+//					Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+//				}
+//				break;
+//		}
+////		if (requestCode == MainActivity.REQUEST_OPEN && Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP && uploadMessage != null)
+////			uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(resultCode, resultData));
+//		exData = null;
+//		uploadMessage = null;
+//	}
 
 	// 保存提醒
 	private void confirmAndExit(boolean dirty, final Intent nextWikiIntent) {
@@ -1239,7 +1376,7 @@ public class TWEditorWV extends AppCompatActivity {
 					boolean exist = false;
 					Iterator<String> iterator = wl.keys();
 					while (iterator.hasNext()) {
-						exist = u.toString().equals((wa = wl.optJSONObject(iterator.next())).optString(MainActivity.DB_KEY_URI));
+						exist = u.toString().equals((wa = wl.optJSONObject(iterator.next())) != null ? wa.optString(MainActivity.DB_KEY_URI) : null);
 						if (exist) break;
 					}
 					if (exist) {
@@ -1255,7 +1392,8 @@ public class TWEditorWV extends AppCompatActivity {
 					}
 					if (!MainActivity.writeJson(this, db))
 						throw new JSONException(MainActivity.STR_EMPTY);
-					getContentResolver().takePersistableUriPermission(u, MainActivity.TAKE_FLAGS);
+					if (MainActivity.SCH_CONTENT.equals(u.getScheme()))
+						getContentResolver().takePersistableUriPermission(u, MainActivity.TAKE_FLAGS);
 				} catch (JSONException e) {
 					e.printStackTrace();
 					Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
@@ -1433,10 +1571,11 @@ public class TWEditorWV extends AppCompatActivity {
 	@NonNull
 	private File syncTree(DocumentFile dir, String id, DocumentFile index) throws IOException, SecurityException {
 		File cacheRoot = new File(getCacheDir(), id);
-		if (hashes == null) hashes = new HashMap<>();
+		if (hashes == null) hashes = new HashMap<>();    // TODO: 预先计算hash
 		HashSet<String> files = new HashSet<>();
 		syncDir(dir, cacheRoot, files);
 		clrDir(cacheRoot, files);
+		if (index.getName() == null) throw new IOException();
 		return new File(cacheRoot, index.getName());
 	}
 
@@ -1444,8 +1583,9 @@ public class TWEditorWV extends AppCompatActivity {
 		if (src == null || !src.isDirectory()) throw new IOException();
 		if (!pos.isDirectory()) pos.delete();
 		if (!pos.exists()) pos.mkdir();
-		for (DocumentFile inner : src.listFiles()) {
+		for (DocumentFile inner : src.listFiles())
 			if (inner.isFile()) {
+				if (inner.getName() == null) break;
 				File dest = new File(pos, inner.getName());
 				byte[] ba, dg = null;
 				MessageDigest messageDigest = null;
@@ -1466,7 +1606,7 @@ public class TWEditorWV extends AppCompatActivity {
 					else while ((length = is.read(buf)) != -1) bos.write(buf, 0, length);
 					bos.flush();
 					if (dis != null && Arrays.equals(hashes.get(dest.getPath()), dg = dis.getMessageDigest().digest()))
-						return;
+						break;
 					ba = bos.toByteArray();
 				}
 				try (
@@ -1484,7 +1624,7 @@ public class TWEditorWV extends AppCompatActivity {
 						os.flush();
 					}
 					byte[] d1 = dos != null ? dos.getMessageDigest().digest() : null;
-					if (messageDigest!=null&&!Arrays.equals(dg,d1)) throw new IOException();
+					if (messageDigest != null && !Arrays.equals(dg, d1)) throw new IOException();
 					files.add(dest.getPath());
 					hashes.put(dest.getPath(), dg);
 				}
@@ -1494,16 +1634,22 @@ public class TWEditorWV extends AppCompatActivity {
 //					e.printStackTrace();
 //				}
 			} else if (inner.isDirectory()) {
+				if (inner.getName() == null) break;
 				syncDir(inner, new File(pos, inner.getName()), files);
 			}
-		}
 		files.add(pos.getPath());
 	}
 
 	private void clrDir(File root, HashSet<String> map) throws SecurityException {
-		for (File child : root.listFiles()) {
-			if (child.isDirectory()) clrDir(child, map);
-			if (!map.contains(child.getPath())) child.delete();
+		File[] fl;
+		if (root == null || !root.isDirectory() || (fl = root.listFiles()) == null) return;
+		try {
+			for (File child : fl) {
+				if (child.isDirectory()) clrDir(child, map);
+				if (!map.contains(child.getPath())) child.delete();
+			}
+		} catch (NullPointerException e) {
+			e.printStackTrace();
 		}
 	}
 
@@ -1517,7 +1663,7 @@ public class TWEditorWV extends AppCompatActivity {
 			boolean exist = false;
 			Iterator<String> iterator = wl.keys();
 			while (iterator.hasNext()) {
-				exist = u.toString().equals((wa = wl.optJSONObject(iterator.next())).optString(MainActivity.DB_KEY_URI));
+				exist = u.toString().equals((wa = wl.optJSONObject(iterator.next())) != null ? wa.optString(MainActivity.DB_KEY_URI) : null);
 				if (exist) break;
 			}
 			if (exist) {
