@@ -19,10 +19,12 @@
         android:layout_marginVertical="24dp"
         android:fontFamily="sans-serif-light"
         android:text="@string/app_name"
+        android:textColor="@color/content_sub"
         android:textSize="36sp" />
 
     <TextView
         android:id="@+id/textVersionSplash"
         android:layout_width="wrap_content"
-        android:layout_height="wrap_content" />
+        android:layout_height="wrap_content"
+        android:textColor="@color/content_sub" />
 </LinearLayout>

@@ -1,10 +1,9 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:animateLayoutChanges="true"
     tools:context="top.donmor.tiddloid.TWEditorWV">
-    <!--        android:id="@+id/action_add_file"-->
     <item
+        android:id="@+id/action_save_c"
         android:icon="@drawable/ic_save"
         android:title="Save to Tiddloid"
         android:visible="false"

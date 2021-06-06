@@ -2,14 +2,6 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     tools:context="top.donmor.tiddloid.MainActivity">
-    <!--        android:id="@+id/action_add_file"-->
-<!--    <item-->
-<!--        android:icon="@drawable/ic_note_add"-->
-<!--        android:title="Add Wiki file"-->
-<!--        app:showAsAction="ifRoom|withText" >-->
-<!--        <menu>-->
-<!--        </menu>-->
-<!--    </item>-->
     <item android:id="@+id/action_new"
         android:icon="@drawable/ic_description"
         android:title="New TiddlyWiki file"
@@ -23,18 +15,6 @@
         android:icon="@drawable/ic_folder_add"
         android:title="Add Wiki folder"
         app:showAsAction="never" />
-<!--    <item-->
-<!--        android:id="@+id/action_fork"-->
-<!--        android:icon="@drawable/ic_fork"-->
-<!--        android:orderInCategory="100"-->
-<!--        android:title="@string/action_fork"-->
-<!--        app:showAsAction="never" />-->
-<!--    <item-->
-<!--        android:id="@+id/action_settings"-->
-<!--        android:icon="@drawable/ic_settings"-->
-<!--        android:orderInCategory="100"-->
-<!--        android:title="@string/action_settings"-->
-<!--        app:showAsAction="never" />-->
     <item
         android:id="@+id/action_about"
         android:icon="@drawable/ic_info_outline"

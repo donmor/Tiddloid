@@ -86,7 +86,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
 			if (MainActivity.SCH_FILE.equals(Uri.parse(wa.optString(MainActivity.DB_KEY_URI)).getScheme()))
 				MainActivity.checkPermission(context);
-			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
+//			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			if (fib64.length() > 0) {
 				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
 				Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
@@ -97,10 +97,10 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
 				}
 			}
-			holder.btnWiki.setOnClickListener(v -> mItemClickListener.onItemClick(holder.getAdapterPosition(), id));
+			holder.btnWiki.setOnClickListener(v -> mItemClickListener.onItemClick(holder.getBindingAdapterPosition(), id));
 			holder.btnWiki.setOnLongClickListener(v -> {
 				vibrator.vibrate(new long[]{0, 1}, -1);
-				mItemClickListener.onItemLongClick(holder.getAdapterPosition(), id);
+				mItemClickListener.onItemLongClick(holder.getBindingAdapterPosition(), id);
 				return true;
 			});
 			// 条目显示
@@ -115,9 +115,8 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 				builder.setSpan(fcs, p, builder.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
 				Uri u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI));
 				boolean legacy = MainActivity.SCH_FILE.equals(u.getScheme());
-//				Uri tu = null;
 				DocumentFile df = null;
-				if (!legacy) try {
+				if (MainActivity.APIOver21 && !legacy) try {
 					DocumentFile mdf = DocumentFile.fromTreeUri(context, u), p0;
 					if (mdf == null || !mdf.isDirectory()) {
 						Toast.makeText(context, R.string.data_error, Toast.LENGTH_SHORT).show();
@@ -128,11 +127,15 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 						Toast.makeText(context, R.string.data_error, Toast.LENGTH_SHORT).show();
 						return;
 					}
-//					tu = df.getUri();
 				} catch (IllegalArgumentException ignored) {
 				}
-				DocumentFile f = legacy ? DocumentFile.fromFile(new File(u.getPath())) : df!=null?df:DocumentFile.fromSingleUri(context, u);
-				if (f != null && f.exists()) {
+				DocumentFile f;
+				if (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme())) {
+					p = builder.length();
+					builder.append(u.toString());
+					RelativeSizeSpan rss = new RelativeSizeSpan(0.8f);
+					builder.setSpan(rss, p, builder.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
+				} else if ((f = legacy ? DocumentFile.fromFile(new File(u.getPath())) : df != null ? df : DocumentFile.fromSingleUri(context, u)) != null && f.exists()) {
 					p = builder.length();
 					builder.append(SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified()))).append(formatSize(f.length()));
 					RelativeSizeSpan rss = new RelativeSizeSpan(0.8f);

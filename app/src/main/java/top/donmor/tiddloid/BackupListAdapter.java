@@ -70,8 +70,8 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 			if (efn == null) throw new IOException();
 			efp1 = efn.lastIndexOf('.', (efp2 = efn.lastIndexOf('.')) - 1);
 			holder.lblBackupFile.setText(SimpleDateFormat.getDateTimeInstance().format(parseUTCString(efn.substring(efp1 + 1, efp2)).getTime()));
-			holder.btnRollBack.setOnClickListener(v -> mBtnClickListener.onBtnClick(holder.getAdapterPosition(), ROLLBACK));
-			holder.btnDelBackup.setOnClickListener(v -> mBtnClickListener.onBtnClick(holder.getAdapterPosition(), DELETE));
+			holder.btnRollBack.setOnClickListener(v -> mBtnClickListener.onBtnClick(holder.getBindingAdapterPosition(), ROLLBACK));
+			holder.btnDelBackup.setOnClickListener(v -> mBtnClickListener.onBtnClick(holder.getBindingAdapterPosition(), DELETE));
 		} catch (IOException | ParseException e) {
 			e.printStackTrace();
 		}
@@ -115,7 +115,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 			return;
 		DocumentFile df = null, bdf = null;
 		boolean legacy = MainActivity.SCH_FILE.equals(mainFile.getScheme());
-		if (!legacy) try {
+		if (MainActivity.APIOver21 && !legacy) try {
 			DocumentFile mdf = DocumentFile.fromTreeUri(context, mainFile), p;
 			if (mdf == null || !mdf.isDirectory()) throw new IOException();
 			df = (p = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
@@ -138,45 +138,15 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 				bkd = new DocumentFile[x];
 				if (x >= 0) System.arraycopy(b0, 0, bkd, 0, x);
 			}
-		} else
-//			try
-		{
-			File mf = legacy ? new File(mainFile.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(mainFile.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, mainFile)) != null ? df.getName() : null);
+		} else {
+			File mf = legacy ? new File(mainFile.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(mainFile.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, mainFile)) != null && df.getName() != null ? df.getName() : MainActivity.KEY_FN_INDEX);
 			String mfn = mf.getName();
 			File mfd = new File(mf.getParentFile(), mfn + MainActivity.BACKUP_POSTFIX);
 			int x;
-//			if (!mfd.isDirectory()) throw new IOException();
 			bk = sortFile(mfd.listFiles(pathname -> pathname.isFile() && MainActivity.isBackupFile(mf.getName(), pathname.getName())), (x = mfn.lastIndexOf('.')) < 0 ? mfn : mfn.substring(0, x));
 		}
-//		catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//		finally {
-//			;
-//		}
 		mLoadListener.onLoad(getItemCount());
 	}
-//	void reload(Uri mainFile) {
-//		File mf;
-//		if (MainActivity.SCH_HTTP.equals(mainFile.getScheme()) || MainActivity.SCH_HTTPS.equals(mainFile.getScheme())) return;
-//		if (MainActivity.SCH_FILE.equals(mainFile.getScheme())) mf = new File(mainFile.getPath());
-//		else {
-//			DocumentFile f = DocumentFile.fromSingleUri(,mainFile);
-//			File vf = new File(context.getExternalFilesDir(null),);
-//			mf = f.getName();
-//		};
-//		try {
-//			String mfn = mf.getName();
-//			File mfd = new File(mf.getParentFile(), mfn + MainActivity.BACKUP_DIRECTORY_PATH_PREFIX);
-//			int x;
-//			if (!mfd.isDirectory()) throw new IOException();
-//			bk = sortFile(mfd.listFiles(pathname -> MainActivity.isBackupFile(mf, pathname)), (x = mfn.lastIndexOf('.')) < 0 ? mfn : mfn.substring(0, x));
-//			mLoadListener.onLoad(getItemCount());
-//		} catch (Exception e) {
-//			e.printStackTrace();
-//		}
-//
-//	}
 
 	// 排序
 	private File[] sortFile(File[] src, String mfn) {
