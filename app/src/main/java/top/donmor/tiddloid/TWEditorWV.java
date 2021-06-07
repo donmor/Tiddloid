@@ -6,6 +6,7 @@
 
 package top.donmor.tiddloid;
 
+import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
@@ -20,6 +21,7 @@ import android.graphics.drawable.BitmapDrawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Message;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
@@ -78,14 +80,8 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.Objects;
 
 public class TWEditorWV extends AppCompatActivity {
-//	//激活矢量图形
-//	static {
-//		AppCompatDelegate.setCompatVectorFromResourcesEnabled(true);
-//	}
-
 	private JSONObject db;
 	private JSONObject wApp;
 	private WebChromeClient wcc;
@@ -99,13 +95,15 @@ public class TWEditorWV extends AppCompatActivity {
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private Uri uri = null;
-	private boolean isWiki, isClassic, hideAppbar = false, ready = false;
+	private boolean isClassic, hideAppbar = false, ready = false;
 	private byte[] exData = null;
 	private Menu optMenu;
 	private String id;
 	private HashMap<String, byte[]> hashes = null;
 	private DocumentFile tree = null, treeIndex = null;
 	private ActivityResultLauncher<Intent> getChooserDL, getChooserImport, getChooserClone;
+	ActivityResultLauncher<Intent> getPermissionRequest;
+	boolean acquiringStorage = false;
 
 
 	// CONSTANT
@@ -140,10 +138,11 @@ public class TWEditorWV extends AppCompatActivity {
 		// 初始化db
 		try {
 			db = MainActivity.readJson(this);
-		} catch (Exception e) {
+		} catch (IOException | JSONException e) {
 			e.printStackTrace();
 			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
 			finish();
+			return;
 		}
 		MainActivity.trimDB140(this, db);
 		// 初始化顶栏
@@ -173,32 +172,36 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setSupportMultipleWindows(true);
 		wvs.setMediaPlaybackRequiresUserGesture(false);
 		scale = getResources().getDisplayMetrics().density;
+		// 注册SAF回调
 		getChooserDL = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (exData == null) return;
 			if (result.getData() != null) {
-				if (exData == null) return;
 				uri = result.getData().getData();
-				if (uri != null)
-					try (OutputStream os = getContentResolver().openOutputStream(uri); InputStream is = new ByteArrayInputStream(exData)) {
-						if (os == null || exData == null) throw new FileNotFoundException();
-						int len = is.available();
-						int length;
-						int lengthTotal = 0;
-						byte[] bytes = new byte[4096];
-						while ((length = is.read(bytes)) > -1) {
-							os.write(bytes, 0, length);
-							lengthTotal += length;
-						}
-						os.flush();
-						if (lengthTotal != len) throw new IOException();
-					} catch (Exception e) {
-						e.printStackTrace();
-						try {
-							DocumentsContract.deleteDocument(getContentResolver(), uri);
-						} catch (Exception e1) {
-							e.printStackTrace();
-						}
-						Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+				if (uri == null) return;
+				try (InputStream is = new ByteArrayInputStream(exData);
+						OutputStream os = getContentResolver().openOutputStream(uri)) {
+					if (os == null)
+						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
+					int len = is.available();
+					int length;
+					int lengthTotal = 0;
+					byte[] bytes = new byte[4096];
+					while ((length = is.read(bytes)) > -1) {
+						os.write(bytes, 0, length);
+						lengthTotal += length;
 					}
+					os.flush();
+					if (lengthTotal != len)
+						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
+				} catch (IOException e) {
+					e.printStackTrace();
+					try {
+						DocumentsContract.deleteDocument(getContentResolver(), uri);
+					} catch (FileNotFoundException e1) {
+						e.printStackTrace();
+					}
+					Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+				}
 			}
 			exData = null;
 		});
@@ -208,19 +211,19 @@ public class TWEditorWV extends AppCompatActivity {
 			uploadMessage = null;
 		});
 		getChooserClone = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (exData == null) return;
 			if (result.getData() != null) {
-				if (exData == null) return;
-				uri = result.getData().getData();
-				if (uri == null) return;
-				try (ByteArrayInputStream is = new ByteArrayInputStream(exData);
-						OutputStream os = getContentResolver().openOutputStream(uri)) {
-					if (os == null) throw new FileNotFoundException();
+				Uri u = result.getData().getData();
+				if (u != null) try (ByteArrayInputStream is = new ByteArrayInputStream(exData);
+						OutputStream os = getContentResolver().openOutputStream(u)) {
+					if (os == null)
+						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
 					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
 					boolean exist = false;
 					String id = null;
 					Iterator<String> iterator = wl.keys();
 					while (iterator.hasNext()) {
-						exist = uri.toString().equals((wa = wl.getJSONObject(id = iterator.next())).optString(MainActivity.DB_KEY_URI));
+						exist = u.toString().equals((wa = wl.getJSONObject(id = iterator.next())).optString(MainActivity.DB_KEY_URI));
 						if (exist) break;
 					}
 					if (exist)
@@ -232,11 +235,9 @@ public class TWEditorWV extends AppCompatActivity {
 					}
 					wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
 					wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
-					wa.put(MainActivity.DB_KEY_URI, uri.toString());
+					wa.put(MainActivity.DB_KEY_URI, u.toString());
 					wa.put(MainActivity.DB_KEY_BACKUP, false);
-					if (!MainActivity.writeJson(this, db))
-						throw new JSONException((String) null);
-
+					MainActivity.writeJson(this, db);
 					int len = is.available();
 					int length, lengthTotal = 0;
 					byte[] b = new byte[4096];
@@ -245,10 +246,8 @@ public class TWEditorWV extends AppCompatActivity {
 						lengthTotal += length;
 					}
 					os.flush();
-					if (lengthTotal != len || !MainActivity.isWiki(this, uri))
-						throw new IOException();
-					if (!MainActivity.writeJson(this, db))
-						throw new IOException();
+					if (lengthTotal != len || !MainActivity.isWiki(this, u))
+						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 					Bundle bu = new Bundle();
 					bu.putString(MainActivity.KEY_ID, id);
 					nextWiki(new Intent().putExtras(bu));
@@ -261,6 +260,11 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 			}
 			exData = null;
+		});
+		getPermissionRequest = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager())
+				Toast.makeText(this, "No file permissions", Toast.LENGTH_SHORT).show();
+			acquiringStorage = false;
 		});
 		wcc = new WebChromeClient() {
 			// 进度条
@@ -400,36 +404,39 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@JavascriptInterface
 			public void saveWiki(final String data) {
-				if (wApp != null && !MainActivity.SCH_HTTP.equals(uri.getScheme()) && !MainActivity.SCH_HTTPS.equals(uri.getScheme())) {
-					boolean legacy = MainActivity.SCH_FILE.equals(uri.getScheme());
-					if (wApp.optBoolean(MainActivity.DB_KEY_BACKUP)) try {
-						MainActivity.backup(TWEditorWV.this, Uri.parse(wApp.optString(MainActivity.DB_KEY_URI)));
-					} catch (IOException e) {
-						e.printStackTrace();
-						Toast.makeText(TWEditorWV.this, R.string.backup_failed, Toast.LENGTH_SHORT).show();
-					}
-					try (ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
-							OutputStream os = legacy ? new FileOutputStream(uri.getPath()) : getContentResolver().openOutputStream(uri)) {
-						if (os == null) throw new FileNotFoundException();
-						int len = is.available();
-						int length, lengthTotal = 0;
-						byte[] b = new byte[4096];
-						while ((length = is.read(b)) != -1) {
-							os.write(b, 0, length);
-							lengthTotal += length;
-						}
-						os.flush();
-						if (lengthTotal != len) throw new IOException();
-						runOnUiThread(() -> getInfo(wv));
-					} catch (IOException e) {
-						e.printStackTrace();
-						Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
-					}
-				} else {
+				if (wApp == null || MainActivity.SCH_HTTP.equals(uri.getScheme()) || MainActivity.SCH_HTTPS.equals(uri.getScheme())) {
 					exData = data.getBytes(StandardCharsets.UTF_8);
 					getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT)
 							.addCategory(Intent.CATEGORY_OPENABLE)
 							.setType(MainActivity.TYPE_HTML));
+					return;
+				}
+				boolean legacy = MainActivity.SCH_FILE.equals(uri.getScheme());
+				if (wApp.optBoolean(MainActivity.DB_KEY_BACKUP)) try {
+					MainActivity.backup(TWEditorWV.this, Uri.parse(wApp.optString(MainActivity.DB_KEY_URI)));
+				} catch (IOException e) {
+					e.printStackTrace();
+					Toast.makeText(TWEditorWV.this, R.string.backup_failed, Toast.LENGTH_SHORT).show();
+				}
+				try (ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+						OutputStream os = getContentResolver().openOutputStream(uri)) {
+//						OutputStream os = legacy ? new FileOutputStream(uri.getPath()) : getContentResolver().openOutputStream(uri)) {
+					if (os == null)
+						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
+					int len = is.available();
+					int length, lengthTotal = 0;
+					byte[] b = new byte[4096];
+					while ((length = is.read(b)) != -1) {
+						os.write(b, 0, length);
+						lengthTotal += length;
+					}
+					os.flush();
+					if (lengthTotal != len)
+						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
+					runOnUiThread(() -> getInfo(wv));
+				} catch (IOException e) {
+					e.printStackTrace();
+					Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
 				}
 			}
 
@@ -468,20 +475,10 @@ public class TWEditorWV extends AppCompatActivity {
 			public void onPageFinished(final WebView view, String url) {
 				view.evaluateJavascript(STR_JS_PRINT, null);
 				view.evaluateJavascript(getString(R.string.js_is_wiki), value -> {
-					isWiki = Boolean.parseBoolean(value);
-					if (isWiki)
+					if (Boolean.parseBoolean(value))
 						view.evaluateJavascript(getString(R.string.js_is_classic), value1 -> {
 							isClassic = Boolean.parseBoolean(value1);
 							getInfo(view);
-//							if (tree != null && treeIndex != null) try {
-//								syncTree(tree, id, treeIndex);
-//							} catch (IOException e) {
-//								e.printStackTrace();
-//							}
-//							if (optMenu != null) {
-//								optMenu.getItem(0).setVisible(wApp == null && uri != null);
-//								optMenu.getItem(1).setVisible(wApp != null || uri == null);
-//							}
 							view.getSettings().setBuiltInZoomControls(isClassic);
 							view.getSettings().setDisplayZoomControls(isClassic);
 							if (isClassic) {
@@ -490,8 +487,10 @@ public class TWEditorWV extends AppCompatActivity {
 									view.evaluateJavascript(STR_JS_SETTINGS_C2, null);
 							}
 						});
-					else
+					else if (!URL_BLANK.equals(url)) {
 						Toast.makeText(TWEditorWV.this, "The page is not a TiddlyWiki", Toast.LENGTH_SHORT).show();    // TODO: -> R.string
+//						finish();
+					}
 				});
 				view.clearHistory();
 			}
@@ -508,7 +507,7 @@ public class TWEditorWV extends AppCompatActivity {
 		String action = intent.getAction(), fid;
 		JSONObject wl, wa;
 		if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式添加文件
-			System.out.println("VIEW");
+//			System.out.println("VIEW");
 			Uri u;
 			if ((u = intent.getData()) == null || !MainActivity.isWiki(this, u)) {
 				Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
@@ -516,14 +515,14 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
 		} else if (Intent.ACTION_SEND.equals(action)) {    // 分享链接克隆站点
-			System.out.println("SEND");
+//			System.out.println("SEND");
 			if (!(MainActivity.TYPE_HTML.equals(intent.getType()) && !MainActivity.isWiki(this, intent.getParcelableExtra(Intent.EXTRA_STREAM))) || !(MIME_TEXT.equals(intent.getType()) && intent.getStringExtra(Intent.EXTRA_TEXT).contains(MainActivity.SCH_HTTP))) {
 				Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
 				return;
 			}
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
 		} else {    // MA/Shortcut
-			System.out.println("MAIN");
+//			System.out.println("MAIN");
 			if ((bu = intent.getExtras()) == null || (fid = bu.getString(MainActivity.KEY_ID)) == null)
 				return;
 			if ((wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null || (wa = wl.optJSONObject(fid)) == null) {
@@ -531,9 +530,7 @@ public class TWEditorWV extends AppCompatActivity {
 				return;
 			}
 			if (wa == wApp) return;
-			if (isWiki) {
-				wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
-			} else nextWiki(intent);
+			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
 		}
 	}
 
@@ -549,18 +546,30 @@ public class TWEditorWV extends AppCompatActivity {
 			switch (sch) {
 				case SCH_TEL:
 					intent = new Intent(Intent.ACTION_DIAL, u);
-					view.getContext().startActivity(intent);
+					try {
+						view.getContext().startActivity(intent);
+					} catch (RuntimeException e) {
+						e.printStackTrace();
+					}
 					break;
 				case SCH_MAILTO:
 					intent = new Intent(Intent.ACTION_SENDTO, u);
-					view.getContext().startActivity(intent);
+					try {
+						view.getContext().startActivity(intent);
+					} catch (RuntimeException e) {
+						e.printStackTrace();
+					}
 					break;
 				case SCH_ABOUT:
 				case MainActivity.SCH_FILE:
 				case MainActivity.SCH_HTTP:
 				case MainActivity.SCH_HTTPS:
 					intent = new Intent(Intent.ACTION_VIEW, u);
-					view.getContext().startActivity(intent);
+					try {
+						view.getContext().startActivity(intent);
+					} catch (RuntimeException e) {
+						e.printStackTrace();
+					}
 					break;
 				default:
 					intent = new Intent(Intent.ACTION_VIEW, u);
@@ -571,13 +580,13 @@ public class TWEditorWV extends AppCompatActivity {
 							.setPositiveButton(android.R.string.yes, (dialog, which) -> {
 								try {
 									view.getContext().startActivity(intent);
-								} catch (Exception e) {
+								} catch (RuntimeException e) {
 									e.printStackTrace();
 								}
 							}).show();
 					break;
 			}
-		} catch (Exception e) {
+		} catch (ActivityNotFoundException e) {
 			e.printStackTrace();
 		}
 		return true;
@@ -625,13 +634,18 @@ public class TWEditorWV extends AppCompatActivity {
 				if (optMenu != null) {
 					optMenu.findItem(R.id.action_save_c).setVisible(wApp == null && uri != null);
 					optMenu.findItem(R.id.action_save).setVisible(wApp != null || uri == null);
-					optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save);
-					optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description);
-					optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language);
-					optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save);
+//					if (MainActivity.APIOver24) {
+//						optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save);
+//						optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description);
+//						optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language);
+//						optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save);
+//					} else {
+//						optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save);
+//						optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description);
+//						optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language);
+//						optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save);
+//					}
 				}
-//				onCreateOptionsMenu(optMenu);
-//				invalidateOptionsMenu();
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -643,10 +657,6 @@ public class TWEditorWV extends AppCompatActivity {
 	public boolean onCreateOptionsMenu(Menu menu) {
 		getMenuInflater().inflate(R.menu.menu_twi, menu);
 		optMenu = menu;
-//		menu.getItem(0).setIcon(null);
-//		menu.getItem(0).getSubMenu().getItem(0).setIcon(null);
-//		menu.getItem(0).getSubMenu().getItem(1).setIcon(null);
-//		menu.getItem(1).setIcon(null);
 		return true;
 	}
 
@@ -697,12 +707,20 @@ public class TWEditorWV extends AppCompatActivity {
 	private void nextWiki(Intent nextWikiIntent) {
 		// 读取数据
 		final JSONObject wl;
+		try {
+			wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
+			finish();
+			return;
+		}
 		JSONObject wa;
 		Bundle bu;
 		final Uri u;
-		String data = null;
-		final String action = nextWikiIntent.getAction();
+//		String data = null;
 		String nextWikiId = null;
+		final String action = nextWikiIntent.getAction();
 		if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式，scheme -> content/file/http(s)
 			if ((u = nextWikiIntent.getData()) == null || !MainActivity.isWiki(this, u)) {
 				Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
@@ -711,7 +729,7 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 			if (MainActivity.SCH_CONTENT.equals(u.getScheme()) || MainActivity.SCH_FILE.equals(u.getScheme())) {
 				try {
-					wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
+//					wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
 					wa = null;
 					boolean exist = false;
 					Iterator<String> iterator = wl.keys();
@@ -730,10 +748,12 @@ public class TWEditorWV extends AppCompatActivity {
 						wa.put(MainActivity.DB_KEY_BACKUP, false);
 						wl.put(id, wa);
 					}
-					if (!MainActivity.writeJson(this, db))
-						throw new JSONException(MainActivity.STR_EMPTY);
-					if (MainActivity.SCH_CONTENT.equals(u.getScheme()))
+					MainActivity.writeJson(this, db);
+					if (MainActivity.SCH_CONTENT.equals(u.getScheme())) try {
 						getContentResolver().takePersistableUriPermission(u, MainActivity.TAKE_FLAGS);
+					} catch (RuntimeException e) {
+						e.printStackTrace();
+					}
 				} catch (JSONException e) {
 					e.printStackTrace();
 					Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
@@ -742,36 +762,36 @@ public class TWEditorWV extends AppCompatActivity {
 			} else wa = null;
 		} else if (Intent.ACTION_SEND.equals(action)) {
 			wa = null;
+			String data;
 			if (MainActivity.TYPE_HTML.equals(nextWikiIntent.getType())) {    // 接收html文件
-				Uri u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM);
-				if (!MainActivity.isWiki(this, u1)) {
-					Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
-					finish();
-					return;
-				}
-				try (BufferedInputStream is = new BufferedInputStream(Objects.requireNonNull(getContentResolver().openInputStream(u1)));
-						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {   //读全部数据
-					int len = is.available();
-					int length, lenTotal = 0;
-					byte[] b = new byte[MainActivity.BUF_SIZE];
-					while ((length = is.read(b)) != -1) {
-						os.write(b, 0, length);
-						lenTotal += length;
-					}
-					os.flush();
-					if (lenTotal != len) throw new IOException();
-					data = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(os.toByteArray())).toString();
-				} catch (IOException e) {
-					e.printStackTrace();
-				}
+//				Uri u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM);
+//				if (!MainActivity.isWiki(this, u1)) {
+//					Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
+//					finish();
+//					return;
+//				}
+//				try (BufferedInputStream is = new BufferedInputStream(getContentResolver().openInputStream(u1));
+//						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {   //读全部数据
+//					int len = is.available();
+//					int length, lenTotal = 0;
+//					byte[] b = new byte[MainActivity.BUF_SIZE];
+//					while ((length = is.read(b)) != -1) {
+//						os.write(b, 0, length);
+//						lenTotal += length;
+//					}
+//					os.flush();
+//					if (lenTotal != len) throw new IOException();
+//					data = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(os.toByteArray())).toString();
+//				} catch (IOException e) {
+//					e.printStackTrace();
+//				}
 				u = null;
-			} else if (MIME_TEXT.equals(nextWikiIntent.getType()) && (data = nextWikiIntent.getStringExtra(Intent.EXTRA_TEXT)).contains(MainActivity.SCH_HTTP)) {    // 接收包含url的string
+			} else if (MIME_TEXT.equals(nextWikiIntent.getType()) && (data = nextWikiIntent.getStringExtra(Intent.EXTRA_TEXT)) != null && data.contains(MainActivity.SCH_HTTP)) {    // 接收包含url的string
 				Uri u1 = null;
 				for (String s : data.split(REX_SP_CHR)) {
 					if (s.contains(MainActivity.SCH_HTTP)) {
 						u1 = Uri.parse(s.substring(s.indexOf(MainActivity.SCH_HTTP)));
 						u1 = Uri.parse(u1.getScheme() + KEY_COL + u1.getSchemeSpecificPart());
-						break;
 					}
 				}
 				u = u1;
@@ -787,7 +807,7 @@ public class TWEditorWV extends AppCompatActivity {
 			if ((bu = nextWikiIntent.getExtras()) == null
 					|| (nextWikiId = bu.getString(MainActivity.KEY_ID)) == null
 					|| nextWikiId.length() == 0
-					|| (wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null
+//					|| (wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null
 					|| (wa = wl.optJSONObject(nextWikiId)) == null) {
 				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 				finish();
@@ -806,7 +826,7 @@ public class TWEditorWV extends AppCompatActivity {
 								if (MainActivity.APIOver26)
 									if (u != null && MainActivity.SCH_CONTENT.equals(u.getScheme()))
 										revokeUriPermission(getPackageName(), u, MainActivity.TAKE_FLAGS);
-							} catch (Exception e) {
+							} catch (JSONException e) {
 								e.printStackTrace();
 							}
 						}).setOnDismissListener(dialogInterface -> TWEditorWV.this.finish()).show();
@@ -829,13 +849,24 @@ public class TWEditorWV extends AppCompatActivity {
 		uri = u;    // nonnull: normal/file/content/http(s)/url; null: html
 		id = nextWikiId;
 		Uri actualUri = u;
-		if (MainActivity.APIOver21 && u != null && !MainActivity.SCH_FILE.equals(u.getScheme()))
+		if (u != null && (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme()))) {
+			Iterator<String> iterator = wl.keys();
+			while (iterator.hasNext()) {
+				if (Uri.parse(u.getScheme() + KEY_COL + u.getSchemeSpecificPart()).toString().equals((wa = wl.optJSONObject(iterator.next())) != null ? wa.optString(MainActivity.DB_KEY_URI) : null)) {
+					wApp = wa;
+					Toast.makeText(this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
+					break;
+				}
+			}
+		} else if (MainActivity.APIOver21 && u != null && !MainActivity.SCH_FILE.equals(u.getScheme()))
 			try {
 				tree = DocumentFile.fromTreeUri(this, u);
 				DocumentFile p;
-				if (tree == null || !tree.isDirectory()) throw new IOException();
+				if (tree == null || !tree.isDirectory())
+					throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
 				treeIndex = (p = tree.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = tree.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
-				if (treeIndex == null || !treeIndex.isFile()) throw new IOException();
+				if (treeIndex == null || !treeIndex.isFile())
+					throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
 				uri = treeIndex.getUri();
 				actualUri = Uri.fromFile(syncTree(tree, id, treeIndex));
 			} catch (IllegalArgumentException ignored) {
@@ -868,32 +899,41 @@ public class TWEditorWV extends AppCompatActivity {
 			onConfigurationChanged(getResources().getConfiguration());
 		}
 		wv.getSettings().setJavaScriptEnabled(true);
-		if (u != null && MainActivity.SCH_CONTENT.equals(u.getScheme()))
+		if (u != null && MainActivity.SCH_CONTENT.equals(u.getScheme())) try {
 			getContentResolver().takePersistableUriPermission(u, MainActivity.TAKE_FLAGS);  //保持读写权限
-		if (uri != null && (MainActivity.APIOver21 || !MainActivity.SCH_CONTENT.equals(u.getScheme())) || tree != null && treeIndex != null)
-			wv.loadUrl(actualUri != null ? actualUri.toString() : MainActivity.STR_EMPTY);
-		else {
-			if (uri == null && data == null) {
-				wv.loadUrl(MainActivity.STR_EMPTY);
-				return;
-			}
-			if (uri != null)
-				try (BufferedInputStream is = new BufferedInputStream(Objects.requireNonNull(getContentResolver().openInputStream(uri)));
-						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {   //读全部数据
-					int len = is.available();
-					int length, lenTotal = 0;
-					byte[] b = new byte[MainActivity.BUF_SIZE];
-					while ((length = is.read(b)) != -1) {
-						os.write(b, 0, length);
-						lenTotal += length;
-					}
-					os.flush();
-					if (lenTotal != len) throw new IOException();
-					data = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(os.toByteArray())).toString();
-				} catch (Exception e) {
-					e.printStackTrace();
+		} catch (RuntimeException e) {
+			e.printStackTrace();
+		}
+		if (u == null || !MainActivity.APIOver21 && MainActivity.SCH_CONTENT.equals(u.getScheme()) && actualUri == uri) {
+			Uri u1 = null, ux;
+			if (u == null)
+				if (!MainActivity.isWiki(this, u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM))) {
+					Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
+					finish();
+					return;
 				}
-			wv.loadDataWithBaseURL(uri != null ? uri.toString() : null, data != null ? data : MainActivity.STR_EMPTY, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
+			ux = u != null ? u : u1;
+			try (InputStream is0 = getContentResolver().openInputStream(ux);
+					BufferedInputStream is = is0 != null ? new BufferedInputStream(is0) : null;
+					ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {   //读全部数据
+				if (is == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
+				int len = is.available();
+				int length, lenTotal = 0;
+				byte[] b = new byte[MainActivity.BUF_SIZE];
+				while ((length = is.read(b)) != -1) {
+					os.write(b, 0, length);
+					lenTotal += length;
+				}
+				os.flush();
+				if (lenTotal != len)
+					throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
+				String data = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(os.toByteArray())).toString();
+				wv.loadDataWithBaseURL(ux.toString(), data, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
+			} catch (IOException e) {
+				e.printStackTrace();
+			}
+		} else {
+			wv.loadUrl(actualUri != null ? actualUri.toString() : URL_BLANK);
 		}
 	}
 
@@ -907,7 +947,8 @@ public class TWEditorWV extends AppCompatActivity {
 		HashSet<String> files = new HashSet<>();
 		syncDir(dir, cacheRoot, files);
 		clrDir(cacheRoot, files);
-		if (index.getName() == null) throw new IOException();
+		if (index.getName() == null)
+			throw new IOException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);
 		return new File(cacheRoot, index.getName());
 	}
 
@@ -942,7 +983,8 @@ public class TWEditorWV extends AppCompatActivity {
 	}
 
 	private void syncDir(DocumentFile src, File pos, HashSet<String> files) throws IOException, SecurityException {
-		if (src == null || !src.isDirectory()) throw new IOException();
+		if (src == null || !src.isDirectory())
+			throw new IOException(MainActivity.EXCEPTION_TREE_NOT_A_DIRECTORY);
 		if (!pos.isDirectory()) pos.delete();
 		if (!pos.exists()) pos.mkdir();
 		MessageDigest messageDigest = null;
@@ -983,7 +1025,8 @@ public class TWEditorWV extends AppCompatActivity {
 						while ((length = bis.read(buf)) != -1) dos.write(buf, 0, length);
 						dos.flush();
 						byte[] d1 = dos.getMessageDigest().digest();
-						if (!Arrays.equals(dg, d1)) throw new IOException();
+						if (!Arrays.equals(dg, d1))
+							throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 					} else {
 						while ((length = bis.read(buf)) != -1) os.write(buf, 0, length);
 						os.flush();
@@ -1034,10 +1077,10 @@ public class TWEditorWV extends AppCompatActivity {
 				wa.put(MainActivity.DB_KEY_URI, u.toString());
 				wa.put(MainActivity.DB_KEY_BACKUP, false);
 				wl.put(id, wa);
+				MainActivity.writeJson(this, db);
 			}
-			if (!MainActivity.writeJson(this, db))
-				throw new JSONException(MainActivity.STR_EMPTY);
 			wApp = wa;
+			Toast.makeText(this, "Successfully added", Toast.LENGTH_SHORT).show();    // TODO: Res
 			getInfo(wv);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -1063,48 +1106,54 @@ public class TWEditorWV extends AppCompatActivity {
 	public void onBackPressed() {
 		if (mCustomView != null)
 			wcc.onHideCustomView();
-		else if (isWiki) {
+		else
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), null));
-		} else {
-			TWEditorWV.super.onBackPressed();
-		}
 	}
 
 	// 应用主题
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-//		getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 		int primColor = themeColor != null ? themeColor : getResources().getColor(R.color.design_default_color_primary);    // 优先主题色 >> 自动色
 		float[] l = new float[3];
 		if (themeColor != null) Color.colorToHSV(themeColor, l);
-//		getDelegate().setLocalNightMode(themeColor == null ? AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM : l[2] > 0.75 ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES);   // 系统栏模式 根据主题色灰度/日夜模式
 		boolean lightBar = themeColor != null ? l[2] > 0.75 : (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;    // 系统栏模式 根据主题色灰度/日夜模式
-		try {
-			int bar = 0;
-			boolean landscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
-			toolbar.setVisibility(landscape || hideAppbar && ready ? View.GONE : View.VISIBLE);
-			Window window = getWindow();
-			if (MainActivity.APIOver23) {
-				window.setStatusBarColor(primColor);
-				if (MainActivity.APIOver26)
-					window.setNavigationBarColor(primColor);
-				bar = lightBar ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | (MainActivity.APIOver26 ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : 0) : View.SYSTEM_UI_FLAG_VISIBLE;
-			}
-			window.getDecorView().setSystemUiVisibility(bar | (landscape ? View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY : View.SYSTEM_UI_FLAG_VISIBLE));
-			findViewById(R.id.wv_appbar).setBackgroundColor(primColor);
-			toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);
-			toolbar.setSubtitleTextAppearance(this, R.style.TextAppearance_AppCompat_Small);
-//			if (themeColor != null) {    // 有主题色则根据灰度切换字色
-//				toolbar.setTitleTextColor(getResources().getColor(lightBar ? R.color.content_tint_l : R.color.content_tint_d));
-//				toolbar.setSubtitleTextColor(getResources().getColor(lightBar ? R.color.content_sub_l : R.color.content_sub_d));
+		int bar = 0;
+		boolean landscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
+		toolbar.setVisibility(wApp != null && (landscape || hideAppbar && ready) ? View.GONE : View.VISIBLE);
+		Window window = getWindow();
+		if (MainActivity.APIOver23) {
+			window.setStatusBarColor(primColor);
+			if (MainActivity.APIOver26)
+				window.setNavigationBarColor(primColor);
+			bar = lightBar ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | (MainActivity.APIOver26 ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : 0) : View.SYSTEM_UI_FLAG_VISIBLE;
+		}
+		window.getDecorView().setSystemUiVisibility(bar | (landscape ? View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY : View.SYSTEM_UI_FLAG_VISIBLE));
+		findViewById(R.id.wv_appbar).setBackgroundColor(primColor);
+		toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);// 刷新字色
+		toolbar.setSubtitleTextAppearance(this, R.style.TextAppearance_AppCompat_Small);
+		toolbar.setNavigationIcon(MainActivity.APIOver24 || lightBar ? R.drawable.ic_arrow_back : R.drawable.ic_arrow_back_d);
+		if (optMenu != null) {
+			optMenu.findItem(R.id.action_save_c).setIcon(MainActivity.APIOver24 ? R.drawable.ic_save : lightBar ? R.drawable.ic_save_l : R.drawable.ic_save_d);
+			optMenu.findItem(R.id.action_save_file).setIcon(MainActivity.APIOver24 ? R.drawable.ic_description : lightBar ? R.drawable.ic_description_l : R.drawable.ic_description_d);
+			optMenu.findItem(R.id.action_save_link).setIcon(MainActivity.APIOver24 ? R.drawable.ic_language : lightBar ? R.drawable.ic_language_l : R.drawable.ic_language_d);
+			optMenu.findItem(R.id.action_save).setIcon(optMenu.findItem(R.id.action_save_c).getIcon());
+//			if (MainActivity.APIOver24) {
+//				optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save);
+//				optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description);
+//				optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language);
+//				optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save);
+//			} else if (lightBar) {
+//				optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save_l);
+//				optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description_l);
+//				optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language_l);
+//				optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save_l);
+//			} else {
+//				optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save_d);
+//				optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description_d);
+//				optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language_d);
+//				optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save_d);
 //			}
-//			toolbar.setNavigationIcon(themeColor != null ? (lightBar ? R.drawable.ic_arrow_back_l : R.drawable.ic_arrow_back_d) : R.drawable.ic_arrow_back);
-			toolbar.setNavigationIcon(R.drawable.ic_arrow_back);
-//			invalidateOptionsMenu();
-//			optMenu.getItem(0).setIcon(null);
-		} catch (Exception e) {
-			e.printStackTrace();
 		}
 	}
 

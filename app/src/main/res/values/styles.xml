@@ -5,21 +5,15 @@
   -->
 
 <resources>
-<!--<style name="TextAppearanceMaterial" parent="android:style/TextAppearance.Material"><item name="android:textColor">?android:attr/textColorPrimary</item></style>-->
+
     <style name="AppTheme" parent="Theme.AppCompat.DayNight">
         <item name="colorPrimary">@color/design_default_color_primary</item>
         <item name="colorPrimaryDark">@color/design_default_color_primary_dark</item>
         <item name="colorAccent">@color/design_default_color_accent</item>
-<!--        <item name="android:textColor">@color/content</item>-->
-<!--        <item name="android:fillColor">@color/content</item>-->
-<!--        <item name="android:tint">@color/content_tint</item>-->
-        <item name="android:actionMenuTextColor">@color/content_tint</item>
         <item name="android:itemTextAppearance">@style/MenuTextAppearance</item>
         <item name="android:itemBackground">@color/design_default_color_primary</item>
     </style>
-<!--    <style name="TextAppearance.Material.ListItem" parent="android:style/TextAppearance.Material.Subhead">-->
-<!--        <item name="android:textColor">@color/content</item>-->
-<!--    </style>-->
+
     <style name="MenuTextAppearance" parent="@android:style/TextAppearance.Widget.IconMenu.Item">
         <item name="android:textColor">@color/content_tint</item>
     </style>

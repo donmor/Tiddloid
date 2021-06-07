@@ -19,6 +19,7 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -67,7 +68,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 		try {
 			String efn = tree ? bkd[position].getName() : bk[position].getName();
 			int efp1, efp2;
-			if (efn == null) throw new IOException();
+			if (efn == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
 			efp1 = efn.lastIndexOf('.', (efp2 = efn.lastIndexOf('.')) - 1);
 			holder.lblBackupFile.setText(SimpleDateFormat.getDateTimeInstance().format(parseUTCString(efn.substring(efp1 + 1, efp2)).getTime()));
 			holder.btnRollBack.setOnClickListener(v -> mBtnClickListener.onBtnClick(holder.getBindingAdapterPosition(), ROLLBACK));
@@ -79,7 +80,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	@Override
 	public int getItemCount() {
-		return tree && bkd != null ? bkd.length : bk != null ? bk.length : 0;
+		return tree ? bkd.length : bk.length;
 	}
 
 
@@ -107,7 +108,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	}
 
 	DocumentFile getBackupDF(int position) {
-		return !tree ? DocumentFile.fromFile(bk[position]) : position < getItemCount() ? bkd[position] : null;
+		return position < getItemCount() ? !tree ? DocumentFile.fromFile(bk[position]) : bkd[position] : null;
 	}
 
 	void reload(Uri mainFile) throws IOException {
@@ -116,29 +117,28 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 		DocumentFile df = null, bdf = null;
 		boolean legacy = MainActivity.SCH_FILE.equals(mainFile.getScheme());
 		if (MainActivity.APIOver21 && !legacy) try {
-			DocumentFile mdf = DocumentFile.fromTreeUri(context, mainFile), p;
-			if (mdf == null || !mdf.isDirectory()) throw new IOException();
+			DocumentFile mdf = DocumentFile.fromTreeUri(context, mainFile), p;	// 非TreeUri时抛IllegalArgumentException
+			if (mdf == null || !mdf.isDirectory()) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);	// Fatal 根目录不可访问
 			df = (p = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
-			if (df == null || !df.isFile()) throw new IOException();
-			System.out.println(df.getName() + MainActivity.BACKUP_POSTFIX);
-			bdf = mdf.findFile(df.getName() + MainActivity.BACKUP_POSTFIX);
+			if (df == null || !df.isFile()) throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);	// Fatal index不存在
+			bdf = mdf.findFile(df.getName() + MainActivity.BACKUP_POSTFIX);	// 不一定存在，需要判断
 			tree = true;
 		} catch (IllegalArgumentException ignored) {
 		}
 		if (tree) {
-			if (bdf != null && bdf.isDirectory()) {
+			if (bdf != null && bdf.isDirectory()) {	// 目录模式，backup子目录是否存在
 				int x = 0;
-
 				DocumentFile[] fl = bdf.listFiles(), b0 = new DocumentFile[fl.length];
 				for (DocumentFile inner : fl)
-					if (inner != null && inner.isFile() && MainActivity.isBackupFile(df.getName(), inner.getName())) {
+					if (inner != null && inner.isFile() &&
+							MainActivity.isBackupFile(df.getName(), inner.getName())) {
 						b0[x] = inner;
 						x++;
 					}
 				bkd = new DocumentFile[x];
-				if (x >= 0) System.arraycopy(b0, 0, bkd, 0, x);
-			}
-		} else {
+				if (x > 0) System.arraycopy(b0, 0, bkd, 0, x);
+			}else bkd = new DocumentFile[0];
+		} else {	// 文件模式位置：External files/encoded uri/<filename>_backup/ legacy模式原地
 			File mf = legacy ? new File(mainFile.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(mainFile.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, mainFile)) != null && df.getName() != null ? df.getName() : MainActivity.KEY_FN_INDEX);
 			String mfn = mf.getName();
 			File mfd = new File(mf.getParentFile(), mfn + MainActivity.BACKUP_POSTFIX);
@@ -150,7 +150,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	// 排序
 	private File[] sortFile(File[] src, String mfn) {
-		if (src == null || src.length == 0) return src;
+		if (src == null || src.length == 0) return new File[0];	// 使 bk != null
 		int p = mfn.length() + 1;
 		for (int i = 0; i < src.length; i++) {
 			for (int j = 0; j < src.length - i - 1; j++) {

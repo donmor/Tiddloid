@@ -7,6 +7,7 @@
 package top.donmor.tiddloid;
 
 import android.content.Context;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
@@ -23,7 +24,6 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.Button;
-import android.widget.Toast;
 
 import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
@@ -33,6 +33,8 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.IOException;
 import java.text.DecimalFormat;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -52,7 +54,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 
 	// 常量
 	private static final String c160 = "\u00A0", zeroB = "0\u00A0B", PAT_SIZE = "\u00A0\u00A0\u00A0\u00A0#,##0.##";
-	private static final String[] units = new String[]{"B", "KB", "MB", "GB", "TB"};
+	private static final String[] units = new String[]{"B", "KB", "MB"};
 
 	WikiListAdapter(Context context, JSONObject db) throws JSONException {
 		this.context = context;
@@ -85,8 +87,8 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			JSONObject wa = wl.getJSONObject(id);
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
 			if (MainActivity.SCH_FILE.equals(Uri.parse(wa.optString(MainActivity.DB_KEY_URI)).getScheme()))
-				MainActivity.checkPermission(context);
-//			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
+//				MainActivity.checkPermission(context);	// 任何可能首次使用 file:// 均检查权限
+			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			if (fib64.length() > 0) {
 				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
 				Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
@@ -104,49 +106,40 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 				return true;
 			});
 			// 条目显示
+			SpannableStringBuilder builder = new SpannableStringBuilder(n);
+			builder.setSpan(new LeadingMarginSpan.Standard(Math.round(scale * 8f)), 0, builder.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
 			try {
-				SpannableStringBuilder builder = new SpannableStringBuilder(n);
-				int p = builder.length();
-				LeadingMarginSpan.Standard lms = new LeadingMarginSpan.Standard(Math.round(scale * 8f));
-				builder.setSpan(lms, 0, p, Spanned.SPAN_INCLUSIVE_INCLUSIVE);
-				builder.append(s.length() > 0 ? MainActivity.KEY_LBL + s : s);
-				builder.append('\n');
-				ForegroundColorSpan fcs = new ForegroundColorSpan(context.getResources().getColor(R.color.content_sub));
-				builder.setSpan(fcs, p, builder.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
-				Uri u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI));
-				boolean legacy = MainActivity.SCH_FILE.equals(u.getScheme());
-				DocumentFile df = null;
+				builder.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.content_sub)), builder.length(), builder.length(), Spanned.SPAN_MARK_POINT);
+			} catch (Resources.NotFoundException e) {
+				e.printStackTrace();
+			}
+			builder.append(s.length() > 0 ? MainActivity.KEY_LBL + s : s);
+			builder.setSpan(new RelativeSizeSpan(0.8f), builder.length(), builder.length(), Spanned.SPAN_MARK_POINT);
+			Uri u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI));
+			boolean legacy = MainActivity.SCH_FILE.equals(u.getScheme());
+			DocumentFile df = null;
+			try {
 				if (MainActivity.APIOver21 && !legacy) try {
 					DocumentFile mdf = DocumentFile.fromTreeUri(context, u), p0;
-					if (mdf == null || !mdf.isDirectory()) {
-						Toast.makeText(context, R.string.data_error, Toast.LENGTH_SHORT).show();
-						return;
-					}
+					if (mdf == null || !mdf.isDirectory()) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);	// Fatal 根目录不可访问
 					df = (p0 = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p0.isFile() ? p0 : (p0 = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p0.isFile() ? p0 : null;
-					if (df == null || !df.isFile()) {
-						Toast.makeText(context, R.string.data_error, Toast.LENGTH_SHORT).show();
-						return;
-					}
+					if (df == null || !df.isFile()) throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);	// Fatal index不存在
 				} catch (IllegalArgumentException ignored) {
 				}
 				DocumentFile f;
 				if (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme())) {
-					p = builder.length();
+					builder.append('\n');
 					builder.append(u.toString());
-					RelativeSizeSpan rss = new RelativeSizeSpan(0.8f);
-					builder.setSpan(rss, p, builder.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
 				} else if ((f = legacy ? DocumentFile.fromFile(new File(u.getPath())) : df != null ? df : DocumentFile.fromSingleUri(context, u)) != null && f.exists()) {
-					p = builder.length();
+					builder.append('\n');
 					builder.append(SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified()))).append(formatSize(f.length()));
-					RelativeSizeSpan rss = new RelativeSizeSpan(0.8f);
-					builder.setSpan(rss, p, builder.length(), Spanned.SPAN_EXCLUSIVE_INCLUSIVE);
 				}
-				holder.btnWiki.setText(builder);
-			} catch (Exception e) {
+			} catch (IOException e) {
 				e.printStackTrace();
 			}
+			holder.btnWiki.setText(builder);
 			holder.btnWiki.setVisibility(View.VISIBLE);
-		} catch (Exception e) {
+		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
