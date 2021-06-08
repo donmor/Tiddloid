@@ -7,4 +7,6 @@
         android:drawableStart="@drawable/ic_description"
         android:gravity="start|center_vertical"
         android:text="@string/tiddlywiki"
-        android:textAppearance="@style/TextAppearance.AppCompat.Menu" />
+        android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+        android:layoutDirection="inherit"
+    />

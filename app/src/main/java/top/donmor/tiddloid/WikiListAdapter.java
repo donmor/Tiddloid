@@ -87,8 +87,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			JSONObject wa = wl.getJSONObject(id);
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
 			if (MainActivity.SCH_FILE.equals(Uri.parse(wa.optString(MainActivity.DB_KEY_URI)).getScheme()))
-//				MainActivity.checkPermission(context);	// 任何可能首次使用 file:// 均检查权限
-			holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
+				holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			if (fib64.length() > 0) {
 				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
 				Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
@@ -96,7 +95,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					int width = favicon.getWidth(), height = favicon.getHeight();
 					Matrix matrix = new Matrix();
 					matrix.postScale(scale * 24f / width, scale * 24f / height);
-					holder.btnWiki.setCompoundDrawablesWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
+					holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
 				}
 			}
 			holder.btnWiki.setOnClickListener(v -> mItemClickListener.onItemClick(holder.getBindingAdapterPosition(), id));
@@ -121,9 +120,11 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			try {
 				if (MainActivity.APIOver21 && !legacy) try {
 					DocumentFile mdf = DocumentFile.fromTreeUri(context, u), p0;
-					if (mdf == null || !mdf.isDirectory()) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);	// Fatal 根目录不可访问
+					if (mdf == null || !mdf.isDirectory())
+						throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
 					df = (p0 = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p0.isFile() ? p0 : (p0 = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p0.isFile() ? p0 : null;
-					if (df == null || !df.isFile()) throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);	// Fatal index不存在
+					if (df == null || !df.isFile())
+						throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
 				} catch (IllegalArgumentException ignored) {
 				}
 				DocumentFile f;
@@ -137,6 +138,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+
 			holder.btnWiki.setText(builder);
 			holder.btnWiki.setVisibility(View.VISIBLE);
 		} catch (JSONException e) {

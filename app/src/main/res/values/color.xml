@@ -9,10 +9,6 @@
     <color name="content">@android:color/black</color>
     <color name="content_tint">@color/cardview_dark_background</color>
     <color name="content_sub">#8A000000</color>
-    <color name="content_tint_l">#FF424242</color>
-    <color name="content_sub_l">#8A000000</color>
-    <color name="content_tint_d">#FFFCFCFC</color>
-    <color name="content_sub_d">#8AFFFFFF</color>
     <color name="design_default_color_primary">@android:color/background_light</color>
     <color name="design_default_color_primary_dark">@android:color/darker_gray</color>
     <color name="design_default_color_accent">#0099CC</color>

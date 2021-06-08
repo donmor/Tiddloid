@@ -5,7 +5,9 @@
     android:layout_height="match_parent"
     android:gravity="center"
     android:orientation="horizontal"
-    android:baselineAligned="false">
+    android:baselineAligned="false"
+    android:layoutDirection="locale"
+    android:textDirection="locale">
 
     <androidx.appcompat.widget.AppCompatImageView
         android:layout_width="216dp"

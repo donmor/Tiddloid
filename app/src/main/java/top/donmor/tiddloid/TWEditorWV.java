@@ -27,6 +27,7 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.provider.DocumentsContract;
+import android.text.TextUtils;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -80,6 +81,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
+import java.util.Locale;
 
 public class TWEditorWV extends AppCompatActivity {
 	private JSONObject db;
@@ -138,7 +140,7 @@ public class TWEditorWV extends AppCompatActivity {
 		// 初始化db
 		try {
 			db = MainActivity.readJson(this);
-		} catch (IOException | JSONException e) {
+		} catch (JSONException e) {
 			e.printStackTrace();
 			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
 			finish();
@@ -263,7 +265,7 @@ public class TWEditorWV extends AppCompatActivity {
 		});
 		getPermissionRequest = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager())
-				Toast.makeText(this, "No file permissions", Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, R.string.no_permission, Toast.LENGTH_SHORT).show();
 			acquiringStorage = false;
 		});
 		wcc = new WebChromeClient() {
@@ -330,6 +332,8 @@ public class TWEditorWV extends AppCompatActivity {
 							nwv.destroy();
 						})
 						.create();
+				if (themeColor != null && dialog.getWindow() != null)
+					dialog.getWindow().getDecorView().setBackgroundColor(themeColor);
 				nwv.setWebViewClient(new WebViewClient() {
 					@Override
 					public void onPageFinished(WebView view, String url) {
@@ -411,7 +415,6 @@ public class TWEditorWV extends AppCompatActivity {
 							.setType(MainActivity.TYPE_HTML));
 					return;
 				}
-				boolean legacy = MainActivity.SCH_FILE.equals(uri.getScheme());
 				if (wApp.optBoolean(MainActivity.DB_KEY_BACKUP)) try {
 					MainActivity.backup(TWEditorWV.this, Uri.parse(wApp.optString(MainActivity.DB_KEY_URI)));
 				} catch (IOException e) {
@@ -420,7 +423,6 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				try (ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
 						OutputStream os = getContentResolver().openOutputStream(uri)) {
-//						OutputStream os = legacy ? new FileOutputStream(uri.getPath()) : getContentResolver().openOutputStream(uri)) {
 					if (os == null)
 						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
 					int len = is.available();
@@ -488,8 +490,7 @@ public class TWEditorWV extends AppCompatActivity {
 							}
 						});
 					else if (!URL_BLANK.equals(url)) {
-						Toast.makeText(TWEditorWV.this, "The page is not a TiddlyWiki", Toast.LENGTH_SHORT).show();    // TODO: -> R.string
-//						finish();
+						Toast.makeText(TWEditorWV.this, R.string.not_a_wiki_page, Toast.LENGTH_SHORT).show();
 					}
 				});
 				view.clearHistory();
@@ -507,7 +508,6 @@ public class TWEditorWV extends AppCompatActivity {
 		String action = intent.getAction(), fid;
 		JSONObject wl, wa;
 		if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式添加文件
-//			System.out.println("VIEW");
 			Uri u;
 			if ((u = intent.getData()) == null || !MainActivity.isWiki(this, u)) {
 				Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
@@ -515,14 +515,12 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
 		} else if (Intent.ACTION_SEND.equals(action)) {    // 分享链接克隆站点
-//			System.out.println("SEND");
 			if (!(MainActivity.TYPE_HTML.equals(intent.getType()) && !MainActivity.isWiki(this, intent.getParcelableExtra(Intent.EXTRA_STREAM))) || !(MIME_TEXT.equals(intent.getType()) && intent.getStringExtra(Intent.EXTRA_TEXT).contains(MainActivity.SCH_HTTP))) {
 				Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
 				return;
 			}
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
 		} else {    // MA/Shortcut
-//			System.out.println("MAIN");
 			if ((bu = intent.getExtras()) == null || (fid = bu.getString(MainActivity.KEY_ID)) == null)
 				return;
 			if ((wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null || (wa = wl.optJSONObject(fid)) == null) {
@@ -573,7 +571,7 @@ public class TWEditorWV extends AppCompatActivity {
 					break;
 				default:
 					intent = new Intent(Intent.ACTION_VIEW, u);
-					new AlertDialog.Builder(TWEditorWV.this)
+					AlertDialog confirmInvoke = new AlertDialog.Builder(this)
 							.setTitle(android.R.string.dialog_alert_title)
 							.setMessage(R.string.third_part_rising)
 							.setNegativeButton(android.R.string.no, null)
@@ -583,7 +581,9 @@ public class TWEditorWV extends AppCompatActivity {
 								} catch (RuntimeException e) {
 									e.printStackTrace();
 								}
-							}).show();
+							}).create();
+					confirmInvoke.setOnShowListener(dialog1 -> confirmInvoke.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+					confirmInvoke.show();
 					break;
 			}
 		} catch (ActivityNotFoundException e) {
@@ -634,17 +634,6 @@ public class TWEditorWV extends AppCompatActivity {
 				if (optMenu != null) {
 					optMenu.findItem(R.id.action_save_c).setVisible(wApp == null && uri != null);
 					optMenu.findItem(R.id.action_save).setVisible(wApp != null || uri == null);
-//					if (MainActivity.APIOver24) {
-//						optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save);
-//						optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description);
-//						optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language);
-//						optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save);
-//					} else {
-//						optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save);
-//						optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description);
-//						optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language);
-//						optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save);
-//					}
 				}
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -681,7 +670,7 @@ public class TWEditorWV extends AppCompatActivity {
 	// 保存提醒
 	private void confirmAndExit(boolean dirty, final Intent nextWikiIntent) {
 		if (dirty) {
-			AlertDialog confirmExit = new AlertDialog.Builder(TWEditorWV.this)
+			AlertDialog confirmExit = new AlertDialog.Builder(this)
 					.setTitle(android.R.string.dialog_alert_title)
 					.setMessage(R.string.confirm_to_exit_wiki)
 					.setPositiveButton(android.R.string.yes, (dialog, which) -> {
@@ -693,11 +682,13 @@ public class TWEditorWV extends AppCompatActivity {
 							}
 					)
 					.setNegativeButton(android.R.string.no, null)
-					.show();
+					.create();
+			confirmExit.setOnShowListener(dialog1 -> confirmExit.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+			confirmExit.show();
 			confirmExit.setCanceledOnTouchOutside(false);
 		} else {
 			if (nextWikiIntent == null)
-				TWEditorWV.super.onBackPressed();
+				super.onBackPressed();
 			else
 				nextWiki(nextWikiIntent);
 		}
@@ -764,27 +755,6 @@ public class TWEditorWV extends AppCompatActivity {
 			wa = null;
 			String data;
 			if (MainActivity.TYPE_HTML.equals(nextWikiIntent.getType())) {    // 接收html文件
-//				Uri u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM);
-//				if (!MainActivity.isWiki(this, u1)) {
-//					Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
-//					finish();
-//					return;
-//				}
-//				try (BufferedInputStream is = new BufferedInputStream(getContentResolver().openInputStream(u1));
-//						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {   //读全部数据
-//					int len = is.available();
-//					int length, lenTotal = 0;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) {
-//						os.write(b, 0, length);
-//						lenTotal += length;
-//					}
-//					os.flush();
-//					if (lenTotal != len) throw new IOException();
-//					data = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(os.toByteArray())).toString();
-//				} catch (IOException e) {
-//					e.printStackTrace();
-//				}
 				u = null;
 			} else if (MIME_TEXT.equals(nextWikiIntent.getType()) && (data = nextWikiIntent.getStringExtra(Intent.EXTRA_TEXT)) != null && data.contains(MainActivity.SCH_HTTP)) {    // 接收包含url的string
 				Uri u1 = null;
@@ -807,15 +777,38 @@ public class TWEditorWV extends AppCompatActivity {
 			if ((bu = nextWikiIntent.getExtras()) == null
 					|| (nextWikiId = bu.getString(MainActivity.KEY_ID)) == null
 					|| nextWikiId.length() == 0
-//					|| (wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null
 					|| (wa = wl.optJSONObject(nextWikiId)) == null) {
 				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 				finish();
 				return;
 			}
-			if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null || bu.getBoolean(MainActivity.KEY_SHORTCUT) && !MainActivity.isWiki(this, u)) {
+			class availableSC {
+				private boolean value = false;
+
+				availableSC(Context context, Uri u0) {
+				try {
+						DocumentFile mdf, p, df;
+						mdf = DocumentFile.fromTreeUri(context, u0);
+						if (mdf == null || !mdf.isDirectory())
+							throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
+						df = (p = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
+						if (df == null || !df.isFile())
+							throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
+						value = MainActivity.isWiki(context, df.getUri());
+					} catch (IllegalArgumentException ignored) {
+						value = MainActivity.isWiki(context, u0);
+					} catch (IOException | SecurityException e) {
+						e.printStackTrace();
+					}
+				}
+
+				boolean get() {
+					return value;
+				}
+			}
+			if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null || bu.getBoolean(MainActivity.KEY_SHORTCUT) && !new availableSC(this, u).get()) {
 				String finalNextWikiId = nextWikiId;
-				new AlertDialog.Builder(this)
+				AlertDialog confirmAutoRemove = new AlertDialog.Builder(this)
 						.setTitle(android.R.string.dialog_alert_title)
 						.setMessage(R.string.confirm_to_auto_remove_wiki)
 						.setNegativeButton(android.R.string.no, null)
@@ -829,7 +822,10 @@ public class TWEditorWV extends AppCompatActivity {
 							} catch (JSONException e) {
 								e.printStackTrace();
 							}
-						}).setOnDismissListener(dialogInterface -> TWEditorWV.this.finish()).show();
+						}).setOnDismissListener(dialogInterface -> TWEditorWV.this.finish())
+						.create();
+				confirmAutoRemove.setOnShowListener(dialog1 -> confirmAutoRemove.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+				confirmAutoRemove.show();
 				return;
 			}
 		}
@@ -860,8 +856,8 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 		} else if (MainActivity.APIOver21 && u != null && !MainActivity.SCH_FILE.equals(u.getScheme()))
 			try {
-				tree = DocumentFile.fromTreeUri(this, u);
 				DocumentFile p;
+				tree = DocumentFile.fromTreeUri(this, u);
 				if (tree == null || !tree.isDirectory())
 					throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
 				treeIndex = (p = tree.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = tree.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
@@ -1080,7 +1076,7 @@ public class TWEditorWV extends AppCompatActivity {
 				MainActivity.writeJson(this, db);
 			}
 			wApp = wa;
-			Toast.makeText(this, "Successfully added", Toast.LENGTH_SHORT).show();    // TODO: Res
+			Toast.makeText(this, R.string.wiki_link_added, Toast.LENGTH_SHORT).show();
 			getInfo(wv);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -1138,22 +1134,6 @@ public class TWEditorWV extends AppCompatActivity {
 			optMenu.findItem(R.id.action_save_file).setIcon(MainActivity.APIOver24 ? R.drawable.ic_description : lightBar ? R.drawable.ic_description_l : R.drawable.ic_description_d);
 			optMenu.findItem(R.id.action_save_link).setIcon(MainActivity.APIOver24 ? R.drawable.ic_language : lightBar ? R.drawable.ic_language_l : R.drawable.ic_language_d);
 			optMenu.findItem(R.id.action_save).setIcon(optMenu.findItem(R.id.action_save_c).getIcon());
-//			if (MainActivity.APIOver24) {
-//				optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save);
-//				optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description);
-//				optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language);
-//				optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save);
-//			} else if (lightBar) {
-//				optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save_l);
-//				optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description_l);
-//				optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language_l);
-//				optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save_l);
-//			} else {
-//				optMenu.findItem(R.id.action_save_c).setIcon(R.drawable.ic_save_d);
-//				optMenu.findItem(R.id.action_save_file).setIcon(R.drawable.ic_description_d);
-//				optMenu.findItem(R.id.action_save_link).setIcon(R.drawable.ic_language_d);
-//				optMenu.findItem(R.id.action_save).setIcon(R.drawable.ic_save_d);
-//			}
 		}
 	}
 

@@ -8,6 +8,8 @@
     android:background="@color/design_default_color_primary"
     android:configChanges="keyboardHidden|orientation|screenSize"
     android:orientation="vertical"
+    android:layoutDirection="locale"
+    android:textDirection="locale"
     tools:context=".TWEditorWV">
 
     <com.google.android.material.appbar.AppBarLayout

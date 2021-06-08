@@ -2,17 +2,27 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     android:orientation="vertical" android:layout_width="match_parent"
     android:layout_height="wrap_content"
-    android:padding="18dp">
+    android:padding="18dp"
+    android:layoutDirection="inherit"
+    android:textDirection="inherit">
+
+<!--    <TextView-->
+<!--        android:id="@+id/textDelConfirm"-->
+<!--        android:layout_width="wrap_content"-->
+<!--        android:layout_height="wrap_content"-->
+<!--        android:layout_margin="6dp"-->
+<!--        android:text="@string/confirm_to_remove_wiki"-->
+<!--        android:textAppearance="@style/TextAppearance.AppCompat.Subhead" />-->
 
     <CheckBox
         android:id="@+id/cbDelFile"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/delete_the_html_file" />
 
     <CheckBox
         android:id="@+id/cbDelBackups"
-        android:layout_width="match_parent"
+        android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/delete_backups_as_well" />
 </LinearLayout>

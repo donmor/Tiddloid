@@ -32,6 +32,7 @@ import android.os.Handler;
 import android.provider.DocumentsContract;
 import android.provider.Settings;
 import android.text.SpannableString;
+import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.Base64;
@@ -76,10 +77,10 @@ import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
@@ -101,7 +102,7 @@ public class MainActivity extends AppCompatActivity {
 	private WikiListAdapter wikiListAdapter;
 	private JSONObject db;
 	private ActivityResultLauncher<Intent> getChooserClone, getChooserCreate, getChooserImport, getChooserTree, getPermissionRequest;
-	boolean acquiringStorage = false;
+	private boolean acquiringStorage = false;
 
 	// CONSTANT
 	static final int TAKE_FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION, BUF_SIZE = 4096;
@@ -126,7 +127,6 @@ public class MainActivity extends AppCompatActivity {
 			SCH_FILE = "file",
 			SCH_HTTP = "http",
 			SCH_HTTPS = "https",
-			SCH_PACKAGES = "package",
 			STR_EMPTY = "",
 			TYPE_HTML = "text/html";
 	private static final String
@@ -134,8 +134,11 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_PATH = "path",
 			KEY_APPLICATION_NAME = "application-name",
 			KEY_VERSION_AREA = "versionArea",
+			KEY_EX_HTML = ".html",
+			KEY_EX_HTM = ".htm",
 			KEY_CONTENT = "content",
 			KEY_URI_RATE = "market://details?id=",
+			SCH_PACKAGES = "package",
 			TEMPLATE_FILE_NAME = "template.html",
 			CLONING_FILE_NAME = "cloning.html",
 			CLASS_MENU_BUILDER = "MenuBuilder",
@@ -143,29 +146,20 @@ public class MainActivity extends AppCompatActivity {
 	static final boolean APIOver21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP,
 			APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
-			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
-			APIOver30 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R;
-	static final String EXCEPTION_DOCUMENT_IO_ERROR = "Document IO Error",
+			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+	static final String
+			EXCEPTION_DOCUMENT_IO_ERROR = "Document IO Error",
 			EXCEPTION_TREE_INDEX_NOT_FOUND = "File index.htm(l) not present",
 			EXCEPTION_TREE_NOT_A_DIRECTORY = "File passed in is not a directory",
-			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
 			EXCEPTION_SAF_FILE_NOT_EXISTS = "Chosen file no longer exists",
-			EXCEPTION_TRANSFER_CORRUPTED = "Transfer dest file corrupted: hash or size not match",
+			EXCEPTION_TRANSFER_CORRUPTED = "Transfer dest file corrupted: hash or size not match";
+	private static final String
+			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
+			EXCEPTION_JSON_ID_NOT_FOUND = "Cannot find this id in the JSON data file",
 			EXCEPTION_SHORTCUT_NOT_SUPPORTED = "Invoking a function that is not supported by the current system",
-			EXCEPTION_JSON_ID_NOT_FOUND = "Cannot find this id in the JSON data file";
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
-//			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted";
+			EXCEPTION_WIKI_NOT_AVAILABLE = "The wiki is no longer available",
+			EXCEPTION_NO_INTERNET = "No Internet connection",
+			EXCEPTION_INTERRUPTED = "Interrupted by user";
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -177,7 +171,7 @@ public class MainActivity extends AppCompatActivity {
 		try {    // 加载JSON数据
 			db = readJson(this);
 			if (!db.has(DB_KEY_WIKI)) throw new JSONException(EXCEPTION_JSON_DATA_ERROR);
-		} catch (IOException | JSONException e) {
+		} catch (JSONException e) {
 			e.printStackTrace();
 			try {
 				db = initJson(this);    // 初始化JSON数据，如果加载失败
@@ -201,7 +195,7 @@ public class MainActivity extends AppCompatActivity {
 			MainActivity.this.onResume();
 		});
 		RecyclerView rvWikiList = findViewById(R.id.rvWikiList);
-		rvWikiList.setLayoutManager(new LinearLayoutManager(MainActivity.this));
+		rvWikiList.setLayoutManager(new LinearLayoutManager(this));
 		rvWikiList.setItemAnimator(new DefaultItemAnimator());
 		// 注册SAF回调
 		getChooserClone = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -226,7 +220,7 @@ public class MainActivity extends AppCompatActivity {
 		});
 		getPermissionRequest = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager())
-				Toast.makeText(this, "No file permissions", Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, R.string.no_permission, Toast.LENGTH_SHORT).show();
 			acquiringStorage = false;
 		});
 		try {
@@ -243,6 +237,7 @@ public class MainActivity extends AppCompatActivity {
 			@Override
 			public void onItemClick(final int pos, final String id) {
 				if (pos == -1) return;
+				boolean invalidDir = false;
 				try {
 					JSONObject wa = db.getJSONObject(DB_KEY_WIKI).getJSONObject(id);
 					Uri uri = Uri.parse(wa.optString(DB_KEY_URI)), u1;
@@ -257,6 +252,10 @@ public class MainActivity extends AppCompatActivity {
 						u1 = df.getUri();
 					} catch (IllegalArgumentException ignored) {
 						u1 = uri;
+					} catch (IOException e) {
+						e.printStackTrace();
+						u1 = null;
+						invalidDir = true;
 					}
 					else u1 = uri;
 					if (SCH_CONTENT.equals(uri.getScheme())) try {
@@ -264,11 +263,8 @@ public class MainActivity extends AppCompatActivity {
 					} catch (RuntimeException e) {
 						e.printStackTrace();
 					}
-					if (isWiki(MainActivity.this, u1)) {
-						if (!loadPage(id))
-							Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-					} else {
-						new AlertDialog.Builder(MainActivity.this)
+					if (invalidDir || !isWiki(MainActivity.this, u1)) {
+						AlertDialog autoRemoveConfirm = new AlertDialog.Builder(MainActivity.this)
 								.setTitle(android.R.string.dialog_alert_title)
 								.setMessage(R.string.confirm_to_auto_remove_wiki)
 								.setNegativeButton(android.R.string.no, null)
@@ -277,11 +273,11 @@ public class MainActivity extends AppCompatActivity {
 									if (!APIOver21)
 										wikiListAdapter.notifyDataSetChanged();
 									else wikiListAdapter.notifyItemRemoved(pos);
-								}).show();
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-					Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
+								}).create();
+						autoRemoveConfirm.setOnShowListener(dialog -> autoRemoveConfirm.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+						autoRemoveConfirm.show();
+					} else if (!loadPage(id))
+						Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 				} catch (JSONException e) {
 					e.printStackTrace();
 					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
@@ -314,7 +310,6 @@ public class MainActivity extends AppCompatActivity {
 					provider = getString(R.string.internet);
 					path = u.toString();
 				} else if (legacy) {
-//					checkPermission(MainActivity.this);
 					provider = getString(R.string.local_legacy);
 					path = u.getPath();
 				} else {
@@ -362,14 +357,27 @@ public class MainActivity extends AppCompatActivity {
 				if (APIOver21 && !legacy) try {
 					mdf = DocumentFile.fromTreeUri(MainActivity.this, u);
 					DocumentFile p;
-					if (mdf == null || !mdf.isDirectory()) throw new IOException();
+					if (mdf == null || !mdf.isDirectory()) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
 					df = (p = mdf.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
-					if (df == null || !df.isFile()) throw new IOException();
+					if (df == null || !df.isFile()) throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
 					tu1 = df.getUri();
 				} catch (IllegalArgumentException ignored) {
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					tu1 = Uri.parse(STR_EMPTY);
+					mdf = DocumentFile.fromTreeUri(MainActivity.this, u);
+					if (mdf != null && mdf.isDirectory()) {
+						DocumentFile[] ep = mdf.listFiles();
+						for (DocumentFile ef : ep)
+							if (ef.isDirectory() && (ef.getName() != null && ef.getName().endsWith(KEY_EX_HTML + BACKUP_POSTFIX) || ef.getName() != null && ef.getName().endsWith(KEY_EX_HTM + BACKUP_POSTFIX))) {
+								DocumentFile vf = mdf.createFile(TYPE_HTML, ef.getName().substring(0, ef.getName().length() - 7));
+								tu1 = vf != null ? vf.getUri() : Uri.parse(STR_EMPTY);
+								break;
+							}
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
-					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+					tu1 = Uri.parse(STR_EMPTY);
 				}
 				tu = tu1;
 				// 构建dialog
@@ -392,25 +400,23 @@ public class MainActivity extends AppCompatActivity {
 									.setNegativeButton(android.R.string.cancel, null)
 									.setPositiveButton(android.R.string.ok, (dialog1, which1) -> {
 										removeWiki(id, cbDelFile.isChecked(), cbDelBackups.isChecked());
-										if (!APIOver21)
-											wikiListAdapter.notifyDataSetChanged();
-										else
-											wikiListAdapter.notifyItemRemoved(pos);
+										if (!APIOver21) wikiListAdapter.notifyDataSetChanged();
+										else wikiListAdapter.notifyItemRemoved(pos);
 									})
 									.create();
+							removeWikiConfirmationDialog.setOnShowListener(dialog1 -> removeWikiConfirmationDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
 							removeWikiConfirmationDialog.show();
 						})
-						.setNegativeButton("Clone", (dialog, which) -> {
+						.setNegativeButton(R.string.clone_wiki, (dialog, which) -> {
 							dialog.dismiss();
 							try {
 								Uri u1 = tu != null ? tu : u;
-								if (!isWiki(MainActivity.this, u1)) throw new IOException();
+								if (!isWiki(MainActivity.this, u1)) throw new IOException(EXCEPTION_WIKI_NOT_AVAILABLE);
 								File dest = new File(getCacheDir(), CLONING_FILE_NAME);
 								dest.createNewFile();
 								try (InputStream is = getContentResolver().openInputStream(u1);
-//								try (InputStream is = legacy ? new FileInputStream(u1.getPath()) : getContentResolver().openInputStream(u1);
 										OutputStream os = new FileOutputStream(dest)) {
-									if (is == null) throw new FileNotFoundException();
+									if (is == null) throw new FileNotFoundException(EXCEPTION_DOCUMENT_IO_ERROR);
 									int len = is.available(), length, lenTotal = 0;
 									byte[] bytes = new byte[BUF_SIZE];
 									while ((length = is.read(bytes)) > -1) {
@@ -418,10 +424,10 @@ public class MainActivity extends AppCompatActivity {
 										lenTotal += length;
 									}
 									os.flush();
-									if (lenTotal != len) throw new IOException();
+									if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
 									getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
 								}
-							} catch (IOException e) {
+							} catch (IOException | IllegalArgumentException e) {
 								e.printStackTrace();
 								Toast.makeText(MainActivity.this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 							}
@@ -443,8 +449,7 @@ public class MainActivity extends AppCompatActivity {
 											.build();
 									if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
 										Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
-									else
-										throw new IllegalArgumentException(EXCEPTION_SHORTCUT_NOT_SUPPORTED);
+									else throw new IllegalArgumentException(EXCEPTION_SHORTCUT_NOT_SUPPORTED);
 								}
 							} catch (IllegalArgumentException e) {
 								e.printStackTrace();
@@ -452,7 +457,8 @@ public class MainActivity extends AppCompatActivity {
 							}
 						}))
 						.create();
-				// 备份系统	TODO: Refactor
+				wikiConfigDialog.setOnShowListener(dialog -> wikiConfigDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+				// 备份系统
 				final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
 				backupListAdapter.setOnBtnClickListener((pos1, which) -> {
 					final File bf = tu == null ? backupListAdapter.getBackupFile(pos1) : null;
@@ -460,42 +466,43 @@ public class MainActivity extends AppCompatActivity {
 					if (bf != null && bf.isFile() || bdf != null && bdf.isFile())
 						switch (which) {
 							case 1:        // 回滚
-								new AlertDialog.Builder(wikiConfigDialog.getContext())
+								AlertDialog confirmRollback = new AlertDialog.Builder(wikiConfigDialog.getContext())
 										.setTitle(android.R.string.dialog_alert_title)
 										.setMessage(R.string.confirm_to_rollback)
 										.setNegativeButton(android.R.string.no, null)
 										.setPositiveButton(android.R.string.yes, (dialog, which12) -> {
 											try {
 												backup(MainActivity.this, u);
-												try (InputStream is = getContentResolver().openInputStream(tu != null ? bdf.getUri() : Uri.fromFile(bf));
-//												try (InputStream is = tu != null ? getContentResolver().openInputStream(bdf.getUri()) : new FileInputStream(bf);
-														OutputStream os = getContentResolver().openOutputStream(tu != null ? tu : u)) {
-//														OutputStream os = legacy ? new FileOutputStream(u.getPath()) : getContentResolver().openOutputStream(tu != null ? tu : u)) {
-													if (is == null || os == null)
-														throw new IOException();
-													int len = is.available(), length, lenTotal = 0;
-													byte[] bytes = new byte[BUF_SIZE];
-													while ((length = is.read(bytes)) > -1) {
-														os.write(bytes, 0, length);
-														lenTotal += length;
-													}
-													os.flush();
-													if (lenTotal != len) throw new IOException();
-													wikiConfigDialog.dismiss();
-													Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
-													loadPage(id);
-												} catch (IOException e) {
-													e.printStackTrace();
-													Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
-												}
 											} catch (IOException e) {
 												e.printStackTrace();
 											}
+											try (InputStream is = getContentResolver().openInputStream(tu != null ? bdf.getUri() : Uri.fromFile(bf));
+													OutputStream os = getContentResolver().openOutputStream(tu != null ? tu : u)) {    // 由于SAF限制，文件模式无法还原丢失的文件，除非在原位创建一个文件，即使该文件是空的
+												if (is == null || os == null)
+													throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
+												int len = is.available(), length, lenTotal = 0;
+												byte[] bytes = new byte[BUF_SIZE];
+												while ((length = is.read(bytes)) > -1) {
+													os.write(bytes, 0, length);
+													lenTotal += length;
+												}
+												os.flush();
+												if (lenTotal != len)
+													throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
+												wikiConfigDialog.dismiss();
+												Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
+												loadPage(id);
+											} catch (IOException e) {
+												e.printStackTrace();
+												Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
+											}
 										})
-										.show();
+										.create();
+								confirmRollback.setOnShowListener(dialog1 -> confirmRollback.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+								confirmRollback.show();
 								break;
 							case 2:        // 移除备份
-								new AlertDialog.Builder(wikiConfigDialog.getContext())
+								AlertDialog confirmDelBackup = new AlertDialog.Builder(wikiConfigDialog.getContext())
 										.setTitle(android.R.string.dialog_alert_title)
 										.setMessage(R.string.confirm_to_del_backup)
 										.setNegativeButton(android.R.string.no, null)
@@ -503,17 +510,19 @@ public class MainActivity extends AppCompatActivity {
 											try {
 												if (bf != null && bf.delete() || bdf != null && DocumentsContract.deleteDocument(getContentResolver(), bdf.getUri()))
 													Toast.makeText(wikiConfigDialog.getContext(), R.string.backup_deleted, Toast.LENGTH_SHORT).show();
-												else throw new IOException();
+												else
+													throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 												backupListAdapter.reload(u);
 												if (!APIOver21)
 													backupListAdapter.notifyDataSetChanged();
-												backupListAdapter.notifyItemRemoved(pos1);
+												else backupListAdapter.notifyItemRemoved(pos1);
 											} catch (IOException e) {
 												e.printStackTrace();
 												Toast.makeText(wikiConfigDialog.getContext(), R.string.failed_deleting_file, Toast.LENGTH_SHORT).show();
 											}
-										})
-										.show();
+										}).create();
+								confirmDelBackup.setOnShowListener(dialog1 -> confirmDelBackup.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+								confirmDelBackup.show();
 								break;
 						}
 				});
@@ -551,6 +560,88 @@ public class MainActivity extends AppCompatActivity {
 		noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
 	}
 
+	private interface OnGetSrc {
+		void run(File file);
+	}
+
+	private void getSrcFromUri(OnGetSrc cb) {
+		// 对话框等待
+		final ProgressDialog progressDialog = new ProgressDialog(this);
+		progressDialog.setMessage(getString(R.string.please_wait));
+		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		progressDialog.setCanceledOnTouchOutside(false);
+		final Thread thread = new Thread(() -> {
+			boolean interrupted = false;
+			class AdaptiveUriInputStream {
+				private final InputStream is;
+
+				private AdaptiveUriInputStream(Uri uri) throws NetworkErrorException, InterruptedIOException {
+					try {
+						HttpsURLConnection httpURLConnection;
+						URL url = new URL(uri.normalizeScheme().toString());
+						httpURLConnection = (HttpsURLConnection) url.openConnection();
+						if (!APIOver21)
+							httpURLConnection.setSSLSocketFactory(new TLSSocketFactory());
+						httpURLConnection.connect();
+						is = httpURLConnection.getInputStream();
+					} catch (InterruptedIOException e) {
+						throw e;
+					} catch (NoSuchAlgorithmException | KeyManagementException | IOException e) {
+						e.printStackTrace();
+						throw new NetworkErrorException(EXCEPTION_NO_INTERNET);
+					}
+				}
+
+				private InputStream get() {
+					return is;
+				}
+			}
+			File cache = new File(getCacheDir(), genId()), dest = new File(getCacheDir(), TEMPLATE_FILE_NAME);
+			try (InputStream isw = new AdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo))).get();
+					FileOutputStream osw = new FileOutputStream(cache);
+					FileInputStream is = new FileInputStream(cache);
+					FileOutputStream os = new FileOutputStream(dest);
+					FileChannel ic = is.getChannel();
+					FileChannel oc = os.getChannel()) {
+				// 下载到缓存
+				int length;
+				byte[] bytes = new byte[BUF_SIZE];
+				while ((length = isw.read(bytes)) > -1) {
+					osw.write(bytes, 0, length);
+					if (Thread.currentThread().isInterrupted()) {
+						interrupted = true;
+						break;
+					}
+				}
+				osw.flush();
+				if (interrupted) throw new InterruptedException(EXCEPTION_INTERRUPTED);
+				if (!isWiki(cache)) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
+				ic.transferTo(0, ic.size(), oc);
+				ic.force(true);
+				progressDialog.dismiss();
+			} catch (InterruptedException | InterruptedIOException ignored) {
+				interrupted = true;
+				runOnUiThread(() -> Toast.makeText(this, R.string.cancelled, Toast.LENGTH_SHORT).show());
+			} catch (NetworkErrorException e) {
+				e.printStackTrace();
+				runOnUiThread(() -> Toast.makeText(this, R.string.no_internet, Toast.LENGTH_SHORT).show());
+				progressDialog.dismiss();
+			} catch (IOException e) {
+				e.printStackTrace();
+				runOnUiThread(() -> Toast.makeText(this, R.string.download_failed, Toast.LENGTH_SHORT).show());
+				progressDialog.dismiss();
+			} finally {
+				cache.delete();
+				if (!interrupted) runOnUiThread(() -> cb.run(dest));
+			}
+		});
+
+		progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getText(android.R.string.cancel), (dialogInterface, i) -> progressDialog.cancel());
+		progressDialog.setOnShowListener(dialog -> thread.start());
+		progressDialog.setOnCancelListener(dialogInterface -> thread.interrupt());
+		progressDialog.show();
+	}
+
 	private Boolean loadPage(String id) {
 		Intent in = new Intent();
 		try {
@@ -558,7 +649,7 @@ public class MainActivity extends AppCompatActivity {
 				throw new JSONException(EXCEPTION_JSON_ID_NOT_FOUND);
 			Bundle bu = new Bundle();
 			bu.putString(KEY_ID, id);
-			in.putExtras(bu).setClass(MainActivity.this, TWEditorWV.class);
+			in.putExtras(bu).setClass(this, TWEditorWV.class);
 			startActivity(in);
 			return true;
 		} catch (JSONException e) {
@@ -571,7 +662,7 @@ public class MainActivity extends AppCompatActivity {
 		try {
 			JSONObject wl = db.getJSONObject(DB_KEY_WIKI);
 			JSONObject xw = (JSONObject) wl.remove(id);
-			writeJson(MainActivity.this, db);
+			writeJson(this, db);
 			if (del && xw != null) {
 				Uri u = Uri.parse(xw.optString(DB_KEY_URI));
 				boolean legacy = SCH_FILE.equals(u.getScheme()), tree = false;
@@ -583,11 +674,13 @@ public class MainActivity extends AppCompatActivity {
 				}
 				final File f;
 				if (tree) {
-					if (mdf == null || !mdf.isDirectory()) throw new IOException();
 					f = null;
 					DocumentFile p;
+					if (mdf == null || !mdf.isDirectory())
+						throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
 					df = (p = mdf.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
-					if (df == null || !df.isFile()) throw new IOException();
+					if (df == null || !df.isFile())
+						throw new FileNotFoundException(EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
 					String mdn = df.getName();
 					if (mdn == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 					u = df.getUri();
@@ -623,7 +716,7 @@ public class MainActivity extends AppCompatActivity {
 				}
 				if (legacy) f.delete();
 				else DocumentsContract.deleteDocument(getContentResolver(), u);
-				Toast.makeText(MainActivity.this, R.string.file_deleted, Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, R.string.file_deleted, Toast.LENGTH_SHORT).show();
 			}
 			wikiListAdapter.reload(db);
 		} catch (IOException | JSONException e) {
@@ -639,20 +732,16 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public boolean onPrepareOptionsMenu(Menu menu) {
-		if (menu == null) return super.onPrepareOptionsMenu(null);
-		if (CLASS_MENU_BUILDER.equals(menu.getClass().getSimpleName())) {
-			try {
+		if (menu != null) {
+			if (CLASS_MENU_BUILDER.equals(menu.getClass().getSimpleName())) try {
 				Method method = menu.getClass().getDeclaredMethod(METHOD_SET_OPTIONAL_ICONS_VISIBLE, Boolean.TYPE);
 				method.setAccessible(true);
 				method.invoke(menu, true);
 			} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
 				e.printStackTrace();
 			}
+			if (!APIOver21) menu.getItem(2).setEnabled(false);
 		}
-		if (!APIOver21) {
-			menu.getItem(2).setEnabled(false);
-		}
-
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -687,101 +776,15 @@ public class MainActivity extends AppCompatActivity {
 							} catch (ActivityNotFoundException e) {
 								e.printStackTrace();
 							}
-						})
-						.show();
+						}).create();
+				aboutDialog.setOnShowListener(dialog1 -> aboutDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+				aboutDialog.show();
 				((TextView) aboutDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
 				if (APIOver23)
 					((TextView) aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
 				break;
 		}
 		return super.onOptionsItemSelected(item);
-	}
-
-	private interface OnGetSrc {
-		void run(File file);
-	}
-
-	private void getSrcFromUri(OnGetSrc cb) {
-		// 对话框等待
-		final ProgressDialog progressDialog = new ProgressDialog(this);
-		progressDialog.setMessage(getString(R.string.please_wait));
-		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
-		progressDialog.setCanceledOnTouchOutside(false);
-		final Thread thread = new Thread(() -> {
-			boolean interrupted = false;
-			class AdaptiveUriInputStream {
-				private final InputStream is;
-
-				private AdaptiveUriInputStream(Uri uri1) throws NetworkErrorException, IOException {
-					String scheme = uri1.getScheme();
-					if (scheme == null || !SCH_HTTP.equals(scheme) && !SCH_HTTPS.equals(scheme))
-						throw new IOException();
-					try {
-						HttpURLConnection httpURLConnection;
-						URL url = new URL(uri1.normalizeScheme().toString());
-						if (SCH_HTTPS.equals(scheme)) {
-							httpURLConnection = (HttpsURLConnection) url.openConnection();
-							if (!APIOver21)
-								((HttpsURLConnection) httpURLConnection).setSSLSocketFactory(new TLSSocketFactory());
-						} else httpURLConnection = (HttpURLConnection) url.openConnection();
-						httpURLConnection.connect();
-						is = httpURLConnection.getInputStream();
-					} catch (NoSuchAlgorithmException | KeyManagementException | IOException e) {
-						e.printStackTrace();
-						throw new NetworkErrorException();
-					}
-				}
-
-				private InputStream get() {
-					return is;
-				}
-			}
-			File cache = new File(getCacheDir(), genId()), dest = new File(getCacheDir(), TEMPLATE_FILE_NAME);
-			try (InputStream isw = new AdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo))).get();
-					FileOutputStream osw = new FileOutputStream(cache);
-					FileInputStream is = new FileInputStream(cache);
-					FileOutputStream os = new FileOutputStream(dest);
-					FileChannel ic = is.getChannel();
-					FileChannel oc = os.getChannel()) {
-				// 下载到缓存
-				int length;
-				byte[] bytes = new byte[BUF_SIZE];
-				while ((length = isw.read(bytes)) > -1) {
-					osw.write(bytes, 0, length);
-					if (Thread.currentThread().isInterrupted()) {
-						interrupted = true;
-						break;
-					}
-				}
-				osw.flush();
-				if (interrupted) throw new InterruptedException();
-				if (!isWiki(cache)) throw new IOException();
-				progressDialog.dismiss();
-				ic.transferTo(0, ic.size(), oc);
-				ic.force(true);
-			} catch (IOException e) {
-				e.printStackTrace();
-				Toast.makeText(this, R.string.download_failed, Toast.LENGTH_SHORT).show();
-				cache.delete();
-				progressDialog.dismiss();
-			} catch (NetworkErrorException e) {
-				e.printStackTrace();
-				Toast.makeText(this, R.string.download_failed, Toast.LENGTH_SHORT).show();
-				cache.delete();
-				progressDialog.dismiss();
-			} catch (InterruptedException e1) {
-				e1.printStackTrace();
-				cache.delete();
-				runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.cancelled, Toast.LENGTH_SHORT).show());
-			} finally {
-				cb.run(dest);
-			}
-		});
-
-		progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getText(android.R.string.cancel), (dialogInterface, i) -> progressDialog.cancel());
-		progressDialog.setOnShowListener(dialog -> thread.start());
-		progressDialog.setOnCancelListener(dialogInterface -> thread.interrupt());
-		progressDialog.show();
 	}
 
 	private void cloneWiki(Uri uri) {
@@ -797,7 +800,7 @@ public class MainActivity extends AppCompatActivity {
 			if (file.exists() && isWiki(file)) {
 				try (FileInputStream is = new FileInputStream(file);
 						OutputStream os = getContentResolver().openOutputStream(uri)) {
-					if (os == null) throw new FileNotFoundException();
+					if (os == null) throw new FileNotFoundException(EXCEPTION_DOCUMENT_IO_ERROR);
 					// 查重
 					String id = null;
 					JSONObject wl = db.getJSONObject(DB_KEY_WIKI), wa = null;
@@ -826,7 +829,7 @@ public class MainActivity extends AppCompatActivity {
 						lenTotal += length;
 					}
 					os.flush();
-					if (lenTotal != len) throw new IOException();
+					if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
 					try {
 						getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
 					} catch (RuntimeException e) {
@@ -851,7 +854,7 @@ public class MainActivity extends AppCompatActivity {
 	private void importWiki(Uri uri) {
 		String id = null;
 		if (!isWiki(this, uri)) {
-			Toast.makeText(MainActivity.this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
 			return;
 		}
 		try {
@@ -863,7 +866,7 @@ public class MainActivity extends AppCompatActivity {
 				if (exist) break;
 			}
 			if (exist) {
-				Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 			} else {
 				JSONObject wa = new JSONObject();
 				id = genId();
@@ -873,7 +876,7 @@ public class MainActivity extends AppCompatActivity {
 				wa.put(DB_KEY_BACKUP, false);
 				wl.put(id, wa);
 			}
-			MainActivity.writeJson(MainActivity.this, db);
+			writeJson(this, db);
 			try {
 				getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
 			} catch (RuntimeException e) {
@@ -881,10 +884,10 @@ public class MainActivity extends AppCompatActivity {
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
-			Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
 		}
 		if (!loadPage(id))
-			Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 	}
 
 	private void addDir(Uri uri) {
@@ -903,7 +906,7 @@ public class MainActivity extends AppCompatActivity {
 			getSrcFromUri(file -> {
 				try (FileInputStream is = new FileInputStream(file);
 						OutputStream os = getContentResolver().openOutputStream(nf.getUri())) {
-					if (os == null) throw new IOException();
+					if (os == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 					int len = is.available(), length, lenTotal = 0;
 					byte[] bytes = new byte[BUF_SIZE];
 					while ((length = is.read(bytes)) > -1) {
@@ -911,7 +914,7 @@ public class MainActivity extends AppCompatActivity {
 						lenTotal += length;
 					}
 					os.flush();
-					if (lenTotal != len) throw new IOException();
+					if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
 					addDir(uri);
 				} catch (IOException e) {
 					e.printStackTrace();
@@ -933,7 +936,7 @@ public class MainActivity extends AppCompatActivity {
 				if (exist) break;
 			}
 			if (exist) {
-				Toast.makeText(MainActivity.this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
+				Toast.makeText(this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 			} else {
 				JSONObject wa = new JSONObject();
 				id = genId();
@@ -943,7 +946,7 @@ public class MainActivity extends AppCompatActivity {
 				wa.put(DB_KEY_BACKUP, false);
 				wl.put(id, wa);
 			}
-			MainActivity.writeJson(MainActivity.this, db);
+			writeJson(this, db);
 			try {
 				getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
 			} catch (RuntimeException e) {
@@ -951,11 +954,10 @@ public class MainActivity extends AppCompatActivity {
 			}
 		} catch (JSONException e) {
 			e.printStackTrace();
-			Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
 		}
 		if (!loadPage(id))
-			Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-
+			Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 	}
 
 	@Override
@@ -971,7 +973,7 @@ public class MainActivity extends AppCompatActivity {
 			wikiListAdapter.reload(db);
 			wikiListAdapter.notifyDataSetChanged();
 			noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
-		} catch (IOException | JSONException e) {
+		} catch (JSONException e) {
 			e.printStackTrace();
 		}
 	}
@@ -994,7 +996,7 @@ public class MainActivity extends AppCompatActivity {
 		if (ext != null && file.isFile())
 			try (InputStream is = new FileInputStream(file)) {
 				byte[] b = new byte[is.available()];
-				if (is.read(b) < 0) throw new IOException();
+				if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
 				JSONObject jsonObject = new JSONObject(new String(b));
 				if (!jsonObject.has(DB_KEY_WIKI)) jsonObject.put(DB_KEY_WIKI, new JSONObject());
 				return jsonObject;
@@ -1009,11 +1011,13 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 
-	static JSONObject readJson(Context context) throws IOException, JSONException {
+	static JSONObject readJson(Context context) throws JSONException {
 		try (InputStream is = context.openFileInput(DB_FILE_NAME)) {
 			byte[] b = new byte[is.available()];
 			if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
 			return new JSONObject(new String(b));
+		} catch (IOException e) {
+			throw new JSONException(e.getMessage());
 		}
 	}
 
@@ -1023,7 +1027,6 @@ public class MainActivity extends AppCompatActivity {
 			os.write(b);
 			os.flush();
 		} catch (IOException e) {
-			e.printStackTrace();
 			throw new JSONException(e.getMessage());
 		}
 	}
@@ -1041,29 +1044,29 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@TargetApi(23)
-	static void checkPermission(Context context) {
-		if (APIOver30) {
+	private static void checkPermission(Context context) {
+		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
+			if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+				ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+		} else {
 			if (!Environment.isExternalStorageManager()) {
 				Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
 						.setData(Uri.parse(SCH_PACKAGES + ':' + context.getPackageName()));
-//				if (!acquiringStorage) {
-//					acquiringStorage = true;
-					if (context instanceof MainActivity) {
-						MainActivity activity = (MainActivity) context;
-						if (!activity.acquiringStorage) {
-							activity.acquiringStorage = true;
-							activity.getPermissionRequest.launch(intent);
-						}
-					} else if (context instanceof TWEditorWV) {
-						TWEditorWV activity = (TWEditorWV) context;
-						if (!activity.acquiringStorage) {
-							activity.acquiringStorage = true;
-						activity.getPermissionRequest.launch(intent);}
+				if (context instanceof MainActivity) {
+					MainActivity activity = (MainActivity) context;
+					if (!activity.acquiringStorage) {
+						activity.acquiringStorage = true;
+						activity.getPermissionRequest.launch(intent);
 					}
-//				}
+				} else if (context instanceof TWEditorWV) {
+					TWEditorWV activity = (TWEditorWV) context;
+					if (!activity.acquiringStorage) {
+						activity.acquiringStorage = true;
+						activity.getPermissionRequest.launch(intent);
+					}
+				}
 			}
-		} else if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-			ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+		}
 	}
 
 	static String genId() {
@@ -1072,16 +1075,15 @@ public class MainActivity extends AppCompatActivity {
 
 	static boolean isWiki(Context context, Uri uri) {
 		try {
-			if (MainActivity.SCH_FILE.equals(uri.getScheme())) checkPermission(context);
+			if (SCH_FILE.equals(uri.getScheme())) checkPermission(context);
 			return SCH_HTTP.equals(uri.getScheme()) || SCH_HTTPS.equals(uri.getScheme()) || isWiki(context.getContentResolver().openInputStream(uri), uri);
-//			return SCH_HTTP.equals(uri.getScheme()) || SCH_HTTPS.equals(uri.getScheme()) || isWiki(SCH_FILE.equals(uri.getScheme()) ? new FileInputStream(uri.getPath()) : context.getContentResolver().openInputStream(uri), uri);
 		} catch (IOException | SecurityException e) {
 			e.printStackTrace();
 		}
 		return false;
 	}
 
-	static boolean isWiki(File file) {
+	private static boolean isWiki(File file) {
 		try {
 			return isWiki(new FileInputStream(file), Uri.fromFile(file));
 		} catch (IOException e) {
@@ -1124,24 +1126,24 @@ public class MainActivity extends AppCompatActivity {
 		boolean legacy = SCH_FILE.equals(u.getScheme()), tree = false;
 		DocumentFile df = null, mdf = null;
 		if (APIOver21 && !legacy) try {    // tree模式
-			mdf = DocumentFile.fromTreeUri(context, u);    // 根目录
-			if (mdf == null) throw new IOException();
 			DocumentFile p;
-			df = (p = mdf.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;    // index.htm(l)
 			String fn;
+			mdf = DocumentFile.fromTreeUri(context, u);    // 根目录
+			if (mdf == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
+			df = (p = mdf.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;    // index.htm(l)
 			if ((df == null) || !df.isFile() || (fn = df.getName()) == null)
-				throw new IOException();
+				throw new FileNotFoundException(EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
 			if ((p = mdf.findFile(fn = fn + BACKUP_POSTFIX)) == null) {
 				mdf = mdf.createDirectory(fn);
 			} else mdf = p;
-			if (mdf == null) throw new IOException();
+			if (mdf == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 			tree = true;
 		} catch (IllegalArgumentException ignored) {
 		}
 		DocumentFile bdf = null;
 		String mfn;
 		String bfn;
-		File file = null, mfd = null;
+		File file, mfd = null;
 		if (!tree) {
 			file = legacy ? new File(u.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(u.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, u)) != null && df.getName() != null ? df.getName() : KEY_FN_INDEX);    // real file in the dest dir for file:// or virtual file in ext files dir for content://
 			df = legacy ? DocumentFile.fromFile(file) : df;
@@ -1149,19 +1151,16 @@ public class MainActivity extends AppCompatActivity {
 			bfn = new StringBuilder(mfn).insert(mfn.lastIndexOf('.'), formatBackup(df != null ? df.lastModified() : 0)).toString();
 			mfd = new File(file.getParentFile(), mfn + BACKUP_POSTFIX);
 			if (!mfd.exists()) mfd.mkdirs();
-			if (!mfd.isDirectory()) throw new IOException();
+			if (!mfd.isDirectory()) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 		} else {
 			mfn = df.getName();
 			bfn = new StringBuilder(mfn).insert(mfn.lastIndexOf('.'), formatBackup(df.lastModified())).toString();
 			if ((bdf = mdf.createFile(TYPE_HTML, bfn)) == null)
-//			if ((bdf = mdf.createFile(TYPE_HTML, bfn.substring(0, bfn.lastIndexOf('.')))) == null)
-				throw new IOException();
+				throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 		}
 		try (InputStream is = context.getContentResolver().openInputStream(tree ? df.getUri() : u);
-//		try (InputStream is = legacy ? new FileInputStream(file) : context.getContentResolver().openInputStream(tree ? df.getUri() : u);
 				OutputStream os = context.getContentResolver().openOutputStream(tree ? bdf.getUri() : Uri.fromFile(new File(mfd, bfn)))) {
-//				OutputStream os = tree ? context.getContentResolver().openOutputStream(bdf.getUri()) : new FileOutputStream(new File(mfd, bfn))) {
-			if (is == null || os == null) throw new IOException();
+			if (is == null || os == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 			int len = is.available(), length, lenTotal = 0;
 			byte[] bytes = new byte[BUF_SIZE];
 			while ((length = is.read(bytes)) > -1) {
@@ -1169,7 +1168,7 @@ public class MainActivity extends AppCompatActivity {
 				lenTotal += length;
 			}
 			os.flush();
-			if (lenTotal != len) throw new IOException();
+			if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
 		}
 	}
 

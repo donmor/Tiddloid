@@ -19,7 +19,6 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -114,32 +113,39 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	void reload(Uri mainFile) throws IOException {
 		if (MainActivity.SCH_HTTP.equals(mainFile.getScheme()) || MainActivity.SCH_HTTPS.equals(mainFile.getScheme()))
 			return;
-		DocumentFile df = null, bdf = null;
+		DocumentFile df, bdf = null;
+		String vfn = null;
 		boolean legacy = MainActivity.SCH_FILE.equals(mainFile.getScheme());
 		if (MainActivity.APIOver21 && !legacy) try {
-			DocumentFile mdf = DocumentFile.fromTreeUri(context, mainFile), p;	// 非TreeUri时抛IllegalArgumentException
-			if (mdf == null || !mdf.isDirectory()) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);	// Fatal 根目录不可访问
+			DocumentFile mdf = DocumentFile.fromTreeUri(context, mainFile), p;    // 非TreeUri时抛IllegalArgumentException
+			if (mdf == null || !mdf.isDirectory())
+				throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
 			df = (p = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
-			if (df == null || !df.isFile()) throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);	// Fatal index不存在
-			bdf = mdf.findFile(df.getName() + MainActivity.BACKUP_POSTFIX);	// 不一定存在，需要判断
+			vfn = df != null && df.getName() != null ? df.getName() : MainActivity.KEY_FN_INDEX;
+			String vfn2 = df != null && df.getName() != null ? df.getName() : MainActivity.KEY_FN_INDEX2;
+			bdf = mdf.findFile(vfn + MainActivity.BACKUP_POSTFIX);    // 不一定存在，需要判断
+			if (bdf == null) {
+				bdf = mdf.findFile(vfn2 + MainActivity.BACKUP_POSTFIX);    // 不一定存在，需要判断
+				vfn = vfn2;
+			}
 			tree = true;
 		} catch (IllegalArgumentException ignored) {
 		}
 		if (tree) {
-			if (bdf != null && bdf.isDirectory()) {	// 目录模式，backup子目录是否存在
+			if (bdf != null && bdf.isDirectory()) {    // 目录模式，backup子目录是否存在
 				int x = 0;
 				DocumentFile[] fl = bdf.listFiles(), b0 = new DocumentFile[fl.length];
 				for (DocumentFile inner : fl)
 					if (inner != null && inner.isFile() &&
-							MainActivity.isBackupFile(df.getName(), inner.getName())) {
+							MainActivity.isBackupFile(vfn, inner.getName())) {
 						b0[x] = inner;
 						x++;
 					}
 				bkd = new DocumentFile[x];
 				if (x > 0) System.arraycopy(b0, 0, bkd, 0, x);
-			}else bkd = new DocumentFile[0];
-		} else {	// 文件模式位置：External files/encoded uri/<filename>_backup/ legacy模式原地
-			File mf = legacy ? new File(mainFile.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(mainFile.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, mainFile)) != null && df.getName() != null ? df.getName() : MainActivity.KEY_FN_INDEX);
+			} else bkd = new DocumentFile[0];
+		} else {    // 文件模式位置：External files/encoded uri/<filename>_backup/ legacy模式原地
+			File mf = legacy ? new File(mainFile.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(mainFile.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, mainFile)) != null && df.getName() != null ? df.getName() : Uri.parse(Uri.decode(mainFile.toString())).getLastPathSegment());
 			String mfn = mf.getName();
 			File mfd = new File(mf.getParentFile(), mfn + MainActivity.BACKUP_POSTFIX);
 			int x;
@@ -150,7 +156,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	// 排序
 	private File[] sortFile(File[] src, String mfn) {
-		if (src == null || src.length == 0) return new File[0];	// 使 bk != null
+		if (src == null || src.length == 0) return new File[0];    // 使 bk != null
 		int p = mfn.length() + 1;
 		for (int i = 0; i < src.length; i++) {
 			for (int j = 0; j < src.length - i - 1; j++) {
