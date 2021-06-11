@@ -4,10 +4,17 @@
 	<string name="default_se">Google</string>
 	<string name="template_repo">https://tiddlywiki.com/languages/de-DE/empty.html</string>
 	<!--UI-->
-	<string name="action_new">Erstelle ein neues Wiki</string>
-	<string name="action_import">Importieren Sie eine Datei</string>
+	<string name="action_new">Erstellen Sie eine neue TiddlyWiki-Datei</string>
+	<string name="action_import">Importieren Sie eine TiddlyWiki-Datei</string>
+	<string name="action_dir">Einen TiddlyWiki-Ordner hinzufügen</string>
 	<string name="action_fork">Fork eine Website</string>
 	<string name="action_settings">Einstellungen</string>
+	<string name="action_about">Über Tiddloid</string>
+	<string name="action_save_to">Im Tiddloid speichern</string>
+	<string name="action_save_to_file">Speicher als neue Datei</string>
+	<string name="action_save_to_link">Als Lesezeichen speichern</string>
+	<string name="action_save">Änderungen speichern</string>
+	<string name="no_permission">Dateisystemberechtigungen können nicht abgerufen werden</string>
 	<string name="no_wiki">Hier ist nichts</string>
 	<string name="url">URL oder Keyword</string>
 	<string name="search">Suche</string>
@@ -17,14 +24,21 @@
 	<string name="baidu">Baidu</string>
 	<string name="sogou">Sogou</string>
 	<string name="custom">Brauch</string>
+	<string name="provider">"Quelle:&#160;"</string>
+	<string name="pathDir">"Ordnerpfad:&#160;"</string>
+	<string name="internet">Internet</string>
+	<string name="local_legacy">Local (Vermächtnis)</string>
+	<string name="unknown">Unbekannt</string>
 	<string name="enable_backup">Backup aktivieren</string>
 	<string name="no_backups">Keine Backups</string>
 	<string name="create_shortcut">Erstellen Sie eine Verknüpfung auf dem Desktop</string>
 	<string name="shortcut_created">Verknüpfung erfolgreich erstellt</string>
 	<string name="shortcut_failed">Fehlgeschlagen Verknüpfung erstellen</string>
+	<string name="clone_wiki">Klonen</string>
 	<string name="remove_wiki">Wiki entfernen</string>
 	<string name="downloading">Wird heruntergeladen</string>
 	<string name="download_complete">Download abgeschlossen</string>
+	<string name="no_internet">Keine Internetverbindung</string>
 	<string name="download_failed">Herunterladen fehlgeschlagen</string>
 	<string name="please_wait">Warten Sie mal&#8230;</string>
 	<string name="filesystem">Dateisystem</string>
@@ -42,6 +56,7 @@
 	<string name="delete_the_html_file">Löschen Sie die HTML-Datei (Kann nicht rückgängig gemacht werden!)</string>
 	<string name="missing_template">Fehlende Vorlage. Tiddloid wird nun eine neue Vorlage-Datei von TiddlyWiki.com herunterladen.</string>
 	<string name="not_a_wiki">Die ausgewählte Datei ist kein TiddlyWiki</string>
+	<string name="not_a_wiki_page">Die Seite ist kein TiddlyWiki</string>
 	<string name="failed_opening_file">Fehler beim Öffnen der Datei</string>
 	<string name="failed_creating_file">Fehler beim Erstellen der Datei</string>
 	<string name="failed_deleting_file">Fehler beim Löschen der Datei</string>
@@ -50,6 +65,7 @@
 	<string name="error_processing_file">Fehler beim Verarbeiten der Datei</string>
 	<string name="wiki_already_exists">Das Wiki existiert bereits</string>
 	<string name="wiki_not_exist">Wiki existiert nicht</string>
+	<string name="wiki_link_added">Lesezeichen erfolgreich hinzugefügt</string>
 	<string name="data_error">Datenfehler</string>
 	<string name="confirm_to_del_backup">Möchten Sie diese Version wirklich löschen?</string>
 	<string name="confirm_to_remove_wiki">Möchtest du dieses Wiki wirklich von Tiddloid entfernen?</string>
@@ -59,7 +75,6 @@
     <string name="wiki_rolled_back_successfully">Wiki zurückgerollt erfolgreich</string>
 	<string name="third_part_rising">Die Seite versucht, eine andere Anwendung zu starten. Möchtest du fortfahren?</string>
 	<string name="backup_deleted">Backup gelöscht</string>
-    <string name="action_about">Über Tiddloid</string>
 	<string name="market">Bewerte diese App</string>
 	<string name="about">
         Tiddloid ist eine App zum Arbeiten mit lokal gespeicherten TiddlyWikis. Sobald einige Ideen haben, können Sie sie sofort aufschreiben, damit Sie sie überall zugreifen können. Weitere Informationen zu TiddlyWiki finden Sie unter https://tiddlywiki.com/ .\n

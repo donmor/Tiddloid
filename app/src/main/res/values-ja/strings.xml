@@ -4,10 +4,17 @@
     <string name="default_se">Google</string>
 	<string name="template_repo">https://tiddlywiki.com/languages/ja-JP/empty.html</string>
     <!--UI-->
-    <string name="action_new">新しいWikiを作成する</string>
-	<string name="action_import">ファイルをインポートする</string>
+    <string name="action_new">新しいTiddlyWikiファイルを作成します</string>
+	<string name="action_import">TiddlyWikiファイルをインポートする</string>
+	<string name="action_dir">TiddlyWikiフォルダーを追加します</string>
 	<string name="action_fork">ウェブサイトをフォークする</string>
 	<string name="action_settings">設定</string>
+	<string name="action_about">Tiddloidについて</string>
+	<string name="action_save_to">Tiddloidに保存</string>
+	<string name="action_save_to_file">新しいファイルとして保存</string>
+	<string name="action_save_to_link">ブックマークとして保存</string>
+	<string name="action_save">変更を保存</string>
+	<string name="no_permission">ファイルシステムのアクセス許可を取得できません</string>
 	<string name="no_wiki">ここには何もありません</string>
 	<string name="url">URLまたはキーワード</string>
 	<string name="search">検索</string>
@@ -17,14 +24,21 @@
 	<string name="baidu">Baidu</string>
 	<string name="sogou">Sogou</string>
 	<string name="custom">カスタム</string>
+	<string name="provider">"ソース:&#160;"</string>
+	<string name="pathDir">"パス:&#160;"</string>
+	<string name="internet">インターネット</string>
+	<string name="local_legacy">ローカル（レガシー）</string>
+	<string name="unknown">不明</string>
 	<string name="enable_backup">バックアップを有効にする</string>
 	<string name="no_backups">バックアップなし</string>
 	<string name="create_shortcut">デスクトップにショートカットを作成する</string>
 	<string name="shortcut_created">ショートカットが作成されました</string>
 	<string name="shortcut_failed">ショートカットを作成できませんでした</string>
+	<string name="clone_wiki">コピー作成</string>
 	<string name="remove_wiki">Wikiを削除する</string>
 	<string name="downloading">ダウンロード中</string>
 	<string name="download_complete">ダウンロード完了</string>
+	<string name="no_internet">インターネット接続がありません</string>
 	<string name="download_failed">ダウンロード失敗</string>
 	<string name="please_wait">お待ちください…</string>
 	<string name="filesystem">ファイルシステム</string>
@@ -41,7 +55,8 @@
 	<string name="delete_backups_as_well">バックアップも削除する</string>
 	<string name="delete_the_html_file">HTMLファイルを削除します(元に戻せません!)。</string>
 	<string name="missing_template">テンプレートが見つかりません。TiddloidはTiddlyWiki.comから新しいテンプレートファイルをダウンロードします。</string>
-	<string name="not_a_wiki">選択されたファイルはTiddlyWikiではありません</string>
+	<string name="not_a_wiki">このファイルはTiddlyWikiではありません</string>
+	<string name="not_a_wiki_page">このページはTiddlyWikiではありません</string>
 	<string name="failed_opening_file">ファイルを開けませんでした</string>
 	<string name="failed_creating_file">ファイルの作成に失敗しました</string>
 	<string name="failed_deleting_file">ファイルの削除に失敗しました</string>
@@ -50,6 +65,7 @@
 	<string name="error_processing_file">ファイルの処理中にエラーが発生しました</string>
 	<string name="wiki_already_exists">Wikiは既に存在します</string>
 	<string name="wiki_not_exist">Wikiは存在しません</string>
+	<string name="wiki_link_added">ブックマークが追加されました</string>
 	<string name="data_error">データエラー</string>
 	<string name="confirm_to_del_backup">このバージョンを削除してもよろしいですか？</string>
 	<string name="confirm_to_remove_wiki">このWikiをTiddloidから削除しますか？</string>
@@ -59,7 +75,6 @@
     <string name="wiki_rolled_back_successfully">Wikiはロールバックされました</string>
 	<string name="third_part_rising">このページから別のアプリケーションが開かれます。続行しますか？</string>
 	<string name="backup_deleted">バックアップを削除しました</string>
-    <string name="action_about">Tiddloidについて</string>
 	<string name="market">評価する</string>
     <string name="about">
 		Tiddloidは、ローカルに保存されているTiddlyWikiを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めてどこにでもアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com を参照してください。\n

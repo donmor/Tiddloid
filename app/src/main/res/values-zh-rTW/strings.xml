@@ -4,10 +4,17 @@
     <string name="default_se">Google</string>
 	<string name="template_repo">https://tiddlywiki.com/languages/zh-Hant/empty.html</string>
     <!--UI-->
-    <string name="action_new">新維基</string>
-	<string name="action_import">導入現有維基</string>
+    <string name="action_new">創建一個新的 TiddlyWiki 文件</string>
+	<string name="action_import">導入現有TiddlyWiki文件</string>
+	<string name="action_dir">添加 TiddlyWiki 文件夾</string>
 	<string name="action_fork">分叉一個維基網站</string>
 	<string name="action_settings">設置</string>
+	<string name="action_about">關於Tiddloid</string>
+	<string name="action_save_to">保存到 Tiddloid</string>
+	<string name="action_save_to_file">保存到新文件</string>
+	<string name="action_save_to_link">存為書籤</string>
+	<string name="action_save">保存更改</string>
+	<string name="no_permission">無法獲得文件系統權限</string>
 	<string name="no_wiki">這裡什麼都沒有</string>
 	<string name="url">網址或關鍵字</string>
 	<string name="search">搜索</string>
@@ -17,14 +24,21 @@
 	<string name="baidu">百度</string>
 	<string name="sogou">搜狗</string>
 	<string name="custom">自定義</string>
+	<string name="provider">"來源:&#160;"</string>
+	<string name="pathDir">"路徑:&#160;"</string>
+	<string name="internet">網絡</string>
+	<string name="local_legacy">本地（傳統）</string>
+	<string name="unknown">不明</string>
 	<string name="enable_backup">啟用備份</string>
 	<string name="no_backups">沒有備份</string>
 	<string name="create_shortcut">在桌面上創建快捷方式</string>
 	<string name="shortcut_created">快捷方式成功創建</string>
 	<string name="shortcut_failed">無法創建快捷方式</string>
+	<string name="clone_wiki">創建副本</string>
 	<string name="remove_wiki">刪除Wiki</string>
 	<string name="downloading">下載中</string>
 	<string name="download_complete">下載完畢</string>
+	<string name="no_internet">沒有網絡連接</string>
 	<string name="download_failed">下載失敗</string>
 	<string name="please_wait">請耐心等待…</string>
 	<string name="filesystem">文件系統</string>
@@ -42,6 +56,7 @@
 	<string name="delete_the_html_file">刪除HTML文件(無法撤消!)</string>
 	<string name="missing_template">模板不存在。Tiddloid現在將從TiddlyWiki.com下載新的模板文件。</string>
 	<string name="not_a_wiki">所選文件不是TiddlyWiki</string>
+	<string name="not_a_wiki_page">該頁面不是 TiddlyWiki</string>
 	<string name="failed_opening_file">打開文件失敗</string>
 	<string name="failed_creating_file">創建文件失敗</string>
 	<string name="failed_deleting_file">刪除文件失敗</string>
@@ -50,6 +65,7 @@
 	<string name="error_processing_file">處理文件時出錯</string>
 	<string name="wiki_already_exists">維基已經存在</string>
 	<string name="wiki_not_exist">維基不存在</string>
+	<string name="wiki_link_added">書籤添加成功</string>
 	<string name="data_error">數據錯誤</string>
 	<string name="confirm_to_del_backup">您確定要刪除此版本嗎？</string>
 	<string name="confirm_to_remove_wiki">你確定要從Tiddloid中刪除這個Wiki嗎？</string>
@@ -59,7 +75,6 @@
     <string name="wiki_rolled_back_successfully">Wiki成功回滾</string>
 	<string name="third_part_rising">另一個應用程序將由此頁面打開。你想繼續嗎？</string>
 	<string name="backup_deleted">備份已刪除</string>
-	<string name="action_about">關於Tiddloid</string>
 	<string name="market">為此應用評分</string>
 	<string name="about">
 		Tiddloid是一款適用於本地存儲的TiddlyWiki的應用程序。一旦有了一些想法，您可以立即將它們寫下來，以便您可以隨時隨地訪問這些想法。有關TiddlyWiki的更多詳細信息，請參閱https://tiddlywiki.com/。 \n

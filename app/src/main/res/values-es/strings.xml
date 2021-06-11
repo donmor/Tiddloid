@@ -4,10 +4,17 @@
 	<string name="default_se">Google</string>
 	<string name="template_repo">https://tiddlywiki.com/languages/es-ES/empty.html</string>
 	<!--UI-->
-	<string name="action_new">Crear un nuevo wiki</string>
-	<string name="action_import">Importar un archivo</string>
+	<string name="action_new">Crea un nuevo archivo TiddlyWiki</string>
+	<string name="action_import">Importar un archivo TiddlyWiki</string>
+	<string name="action_dir">Agregar una carpeta TiddlyWiki</string>
 	<string name="action_fork">Bifurcar un sitio web</string>
 	<string name="action_settings">Ajustes</string>
+	<string name="action_about">Acerca de Tiddloid</string>
+	<string name="action_save_to">Guardar en Tiddloid</string>
+	<string name="action_save_to_file">Guardar como un archivo nuevo</string>
+	<string name="action_save_to_link">Guardar como marcador</string>
+	<string name="action_save">Guardar cambios</string>
+	<string name="no_permission">No se pueden obtener los permisos del sistema de archivos</string>
 	<string name="no_wiki">No hay nada aquí</string>
 	<string name="url">URL o palabra clave</string>
 	<string name="search">Buscar</string>
@@ -17,14 +24,21 @@
 	<string name="baidu">Baidu</string>
 	<string name="sogou">Sogou</string>
 	<string name="custom">Personalizado</string>
+	<string name="provider">"Fuente:&#160;"</string>
+	<string name="pathDir">"Ruta:&#160;"</string>
+	<string name="internet">Internet</string>
+	<string name="local_legacy">Local (heredado)</string>
+	<string name="unknown">Desconocido</string>
 	<string name="enable_backup">Habilitar copia de seguridad</string>
 	<string name="no_backups">No hay copias de seguridad</string>
 	<string name="create_shortcut">Crear un acceso directo en el escritorio</string>
 	<string name="shortcut_created">Acceso directo creado correctamente</string>
 	<string name="shortcut_failed">Error al crear acceso directo</string>
+	<string name="clone_wiki">Clonar</string>
 	<string name="remove_wiki">Eliminar Wiki</string>
 	<string name="downloading">Descargando</string>
 	<string name="download_complete">Descarga completa</string>
+	<string name="no_internet">Sin conexión a Internet</string>
 	<string name="download_failed">Descarga fracasó</string>
 	<string name="please_wait">Por favor espera&#8230;</string>
 	<string name="filesystem">Sistema de archivos</string>
@@ -42,6 +56,7 @@
 	<string name="delete_the_html_file">Eliminar el archivo HTML (no se puede deshacer!)</string>
 	<string name="missing_template">Falta la plantilla. Tiddloid ahora descargará un nuevo archivo de plantilla de TiddlyWiki.com.</string>
 	<string name="not_a_wiki">El archivo seleccionado no es un TiddlyWiki</string>
+	<string name="not_a_wiki_page">La página no es un TiddlyWiki</string>
 	<string name="failed_opening_file">Error al abrir el archivo</string>
 	<string name="failed_creating_file">Error al crear el archivo</string>
 	<string name="failed_deleting_file">Falló la eliminación del archivo</string>
@@ -50,6 +65,7 @@
 	<string name="error_processing_file">Error al procesar el archivo</string>
 	<string name="wiki_already_exists">El wiki ya existe</string>
     <string name="wiki_not_exist">Wiki no existe</string>
+	<string name="wiki_link_added">Favorito agregado correctamente</string>
 	<string name="data_error">Error de datos</string>
 	<string name="confirm_to_del_backup">¿Estás seguro de que quieres eliminar esta versión?</string>
 	<string name="confirm_to_remove_wiki">¿Estás seguro de que deseas eliminar esta Wiki de Tiddloid?</string>
@@ -59,7 +75,6 @@
     <string name="wiki_rolled_back_successfully">Wiki revierte con éxito</string>
 	<string name="third_part_rising">La página está intentando iniciar otra aplicación. ¿Quieres continuar?</string>
 	<string name="backup_deleted">Copia de seguridad ha sido eliminado</string>
-    <string name="action_about">Acerca de Tiddloid</string>
 	<string name="market">Califica esta aplicación</string>
 	<string name="about">
         Tiddloid es una aplicación para trabajar con TiddlyWikis almacenados localmente. Una vez que tenga algunas ideas, puede escribirlas inmediatamente para que pueda acceder a ellas desde cualquier lugar. Para obtener más detalles sobre TiddlyWiki, consulte https://tiddlywiki.com/ .\n
