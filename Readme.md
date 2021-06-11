@@ -12,25 +12,67 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 ### Features
 
-* Create new Wikis with latest template
-* Import existing Wikis stored on a writable device
-* Browse on the Internet and fork Wiki sites interested
-* TiddlyWiki detection
-* Saving TiddlyWikis to local files by clicking the Save button
-* Backup system that compatible with TiddlyDesktop, the desktop TiddlyWiki saver
-* Creating shortcuts to existing wiki on desktop
+* Creating new TiddlyWiki files with latest template
+* Importing existing TiddlyWiki files stored on a writable source
+* Adding a folder containing TiddlyWiki-based `index.htm(l)`
+* Receiving a TiddlyWiki site URL from Browser and save as a new file or a bookmark
+* Opening an HTML file and adding to the list if it is a valid TiddlyWiki
+* Applying theme color to the UI with some in-wiki configurations, as well as other tweaks.
+* Saving changes by clicking the Save button
+* A Backup system that perserves your previous versions in case of misoperations
+* Convenient operations like `Create shortcut`, `Clone` and `Delete`
+* Importing or exporting wiki list data
 
-### Please notice (1.4 and above)
+### Frequently Asked Questions
 
-* Tiddloid now supports wiki list data backup/restore.
+* I can't find where to importing/exporting wiki list data.
+
+    The wiki list importing/exporting are hidden features since it's seldom used.
+
     * To import: Copy `data.json` to `INTERNAL/Android/data/top.donmor.tiddloid/files/` before running for the first time. If you have previously run the program, clear the data in `Settings/Apps` and copy the file.
     * To export: Create a tiddler with: `<a href="javascript:window.twi.exportDB()">export</a>` and click the link. A `data.json` will be generated under `INTERNAL/Android/data/top.donmor.tiddloid/files/`.
-* Now supports Applying theme color to the window or hiding the toolbar on loaded depending on configurations inside wiki.
-    * Apply theme color: Check `Control Panel/Appearance/Client Tweaks/Tiddloid/Apply theme color to system bars` (in future versions) or create the tiddler: `$:/config/Tiddloid/ApplyTheme` with `yes`.
-    * Hide toolbar: Check `Control Panel/Appearance/Client Tweaks/Tiddloid/Hide toolbar on loading complete` (in future versions) or create the tiddler: `$:/config/Tiddloid/HideToolbar` with `yes`.
-* Now supports forking TiddlyWiki Classic.
-    * No backstage/save button: Go back and enter the same page again.
-* TiddlyWiki 5.1.23 has critical bugs on Android 5.1 and below (WebView 39). Another thing is that JSON behaves differently between 5.0+ and 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all features.
+
+* How to apply UI tweaks?
+
+    Install the plugin provided along with the apk and: 
+
+    * Apply theme color: Check `Control Panel/Appearance/Tiddloid Tweaks/Apply theme color to system bars`.
+    * Hide toolbar: Check `Control Panel/Appearance/Tiddloid Tweaks/Hide toolbar on loading complete`.
+
+* I encountered a Javascript error followed by a white screen in newly created files.
+
+    * Check your Android version. TiddlyWiki 5.1.23 has critical bugs on Android 5.1 and below (WebView 39). A solution is to get a pre-release version of TiddlyWiki, which have had this bug fixed or, a previous version without this bug. Another thing is that JSON behaves differently between 5.0+ and 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all features.
+
+* My wiki list change its order randomly every time.
+
+    * Check your Android version. One of the functions in the JSON library behaves differently below 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all of its features.
+
+* I upgraded from 1.4 and all of my TiddlyWikis added before no longer to work.
+
+    * Check if your system revoked local storage accessing permissions. If you're using Android Q, a permission acquirement page will appear at the first time you use legacy stuffs. Otherwise, a pop-up window will appear if running on Android M and above.
+
+* I still want to add `Local (Legacy)` wikis.
+
+    * Install a file manager designed for old versions of Android that opening files by passing `file://`URIs, open a HTML file, and choose `Add to Tiddloid`.
+
+* Why there's a Tiddloid Lite? What's the difference between the two versions?
+
+    In the past 1.x days, Tiddloid use legacy `file://` ways to handle files, causing the lack of access to cloud medias. Once I decided to make another branch that implements Android's SAF (i.e. Storage Access Framework), and finally it became a lightweight version. Now since Tiddloid 2.0 has been refactored to use SAF, there'll be no more functional updates for Tiddloid Lite, only bug fixes will be applied, and it'll remain LITE.
+
+    Here's the difference between different versions:
+
+    | Feature                                   | Tiddloid 1.x  | Tiddloid 2.0 and above                                       | [Tiddloid Lite](https://github.com/donmor/TiddloidLite) |
+    | ----------------------------------------- | ------------- | ------------------------------------------------------------ | -------------------------------- |
+    | File API                                  | Java File API | Android Storage Access Framework and also Java File API      | Android Storage Access Framework |
+    | Backup system                             | Yes           | Yes                                                          | No                               |
+    | Search-and-Fork system                    | Yes           | No (Instead it receives shared URLs from browsers and show options to save the page) | No                               |
+    | Downloader                                | Yes           | No                                                           | No                               |
+    | Direct access to files in the same folder | Yes           | Partial (TiddlyWiki folders only, by caching all files)      | No                               |
+    | Cloud Service                             | No            | Yes (via SAF)                                                | Yes (via SAF)                    |
+    | Template | Download on first startup | Download on creating new wiki, and cached in case it is unable to access the Internet |Download on creating new wiki|
+    | Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis |Supports latest Android versions best and supports most of TW5|
+    | Recommended Android version | Android 4.4 ~ 9.0 | Android 4.4 and above, best for 8.0 and above |Android 4.4 and above, best for 8.0 and above|
+
 
 ### License
 
@@ -50,7 +92,6 @@ is permitted UNDER THESE CONDITIONS:
 
 This app is made possible with the help of these open source projects:
 
-* FileDialog - https://github.com/donmor/FileDialog ,
 * Json - https://json.org/ ,
 * Jsoup - https://jsoup.org/ .
 
@@ -58,32 +99,7 @@ License files provided in /lic.
 
 ### Localization
 
-The localization of this app is currently provided by Google Translation. Pull requests are welcomed if you have better localization.
-
-### Using Tiddloid on Android Q and above
-
-Since Google introduced scoped storage in Android Q, Tiddloid can no longer access the external storage(/sdcard). To continue using Tiddloid on Q and above, connect your device to adb and run this command:
-
-```
-adb shell cmd appops set top.donmor.tiddloid android:legacy_storage allow
-```
-
-And then force stop the app.
-
-Another choice is to change to [Tiddloid Lite](https://github.com/donmor/TiddloidLite). It is a lightweight version of Tiddloid, which has better compatibility to latest Android builds.
-Here's the difference between Tiddloid and Tiddloid Lite:
-
-| Feature | Tiddloid | Tiddloid Lite |
-| - | - | - |
-| File API | Java File API | Android Storage Access Framework |
-| Backup system | Yes | No |
-| Search-and-Fork system | Yes | No |
-| Downloader | Yes | No |
-| Local file direct access | Yes | No |
-| Cloud Service | No | Yes(via SAF) |
-| Template | Download on first startup | Download on creating new wiki
-| Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android version best and supports most of TW5 |
-| Recommended Android version | Android 19 ~ 28 | Android 21 ~ |
+The localization of this app is currently provided by Google Translation. Pull requests are welcomed if you have better translations.
 
 ### About us
 
