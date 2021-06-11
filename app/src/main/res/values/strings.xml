@@ -28,22 +28,6 @@
             return classic;
         })();
     </string>
-    <string name="js_blob" translatable="false">
-        var reader = new FileReader();
-        reader.onload = function() {
-            window.twi.getB64(reader.result.replace(/^data:.+;base64,/, \'\'),\'$dest$\');
-        };
-        var blobString = \'$blob$\';
-        var xhr = new XMLHttpRequest();
-        xhr.open(\'GET\', blobString, true);
-        xhr.responseType = \'blob\';
-        xhr.onload = function(e) {
-            if (this.status == 200) {
-                reader.readAsDataURL(this.response);
-            }
-        };
-        xhr.send();
-    </string>
     <string name="js_exit" translatable="false">
         (function(){
             return $tw.saverHandler != undefined &amp;&amp; $tw.saverHandler.isDirty();
@@ -112,26 +96,11 @@
     <string name="rollback" translatable="false">rollback</string>
     <string name="del_backup" translatable="false">del_backup</string>
     <!--JSON and Settings-->
-<!--    <string name="default_se">Google</string>-->
     <string name="template_repo">https://tiddlywiki.com/empty.html</string>
-<!--    &lt;!&ndash;Search&ndash;&gt;-->
-<!--    <string name="mark_Go" translatable="false">&#127760;</string>-->
-<!--    <string name="mark_Search" translatable="false">&#128269;</string>-->
-<!--    <string name="mark_Return" translatable="false">&#9166;</string>-->
-<!--    <string name="s_google" translatable="false">https://www.google.com/search?q=%s</string>-->
-<!--    <string name="s_bing" translatable="false">https://www.bing.com/search?q=%s</string>-->
-<!--    <string name="s_baidu" translatable="false">https://www.baidu.com/s?wd=%s</string>-->
-<!--    <string name="s_sogou" translatable="false">https://www.sogou.com/web?query=%s</string>-->
-<!--    <string name="su_google" translatable="false">http://suggestqueries.google.com/complete/search?output=toolbar&amp;q=#content#</string>-->
-<!--    <string name="su_bing" translatable="false">http://api.bing.com/qsonhs.aspx?q=#content#</string>-->
-<!--    <string name="su_baidu" translatable="false">http://suggestion.baidu.com/su?wd=#content#</string>-->
-<!--    <string name="su_sogou" translatable="false">https://www.sogou.com/suggnew/ajajjson?type=web&amp;key=#content#</string>-->
     <!--UI-->
     <string name="action_new">New TiddlyWiki file</string>
     <string name="action_import">Import a TiddlyWiki file</string>
     <string name="action_dir">Add a TiddlyWiki folder</string>
-<!--    <string name="action_fork">Fork a website</string>-->
-<!--    <string name="action_settings">Settings</string>-->
     <string name="action_about">About Tiddloid</string>
     <string name="action_save_to">Save to Tiddloid</string>
     <string name="action_save_to_file">Save as a new file</string>
@@ -139,19 +108,11 @@
     <string name="action_save">Save changes</string>
     <string name="no_permission">Unable to get filesystem permissions</string>
     <string name="no_wiki">There is nothing here</string>
-<!--    <string name="url">URL or keyword</string>-->
     <string name="provider">Source:&#160;</string>
     <string name="pathDir">Path:&#160;</string>
     <string name="internet">Internet</string>
     <string name="local_legacy">Local (Legacy)</string>
     <string name="unknown">Unknown</string>
-<!--    <string name="search">Search</string>-->
-<!--    <string name="search_engine">Search Engine</string>-->
-<!--    <string name="google">Google</string>-->
-<!--    <string name="bing">Bing</string>-->
-<!--    <string name="baidu">Baidu</string>-->
-<!--    <string name="sogou">Sogou</string>-->
-<!--    <string name="custom">Custom</string>-->
     <string name="enable_backup">Enable backup</string>
     <string name="no_backups">No backups</string>
     <string name="create_shortcut">Create a shortcut</string>
@@ -159,17 +120,9 @@
     <string name="shortcut_failed">Failed to create shortcut</string>
     <string name="clone_wiki">Clone</string>
     <string name="remove_wiki">Remove</string>
-<!--    <string name="downloading">Downloading</string>-->
-<!--    <string name="download_complete">Download complete</string>-->
     <string name="no_internet">No Internet connection</string>
     <string name="download_failed">Download failed</string>
     <string name="please_wait">Please wait&#8230;</string>
-<!--    <string name="filesystem">Filesystem</string>-->
-<!--    <string name="show_hidden_files">Show hidden(.) files</string>-->
-<!--    <string name="template">Template</string>-->
-<!--    <string name="update_template">Update the template</string>-->
-<!--    <string name="e_g_cse">e.g google.com/search?q=%s</string>-->
-<!--    <string name="ready_to_fork">Ready to fork this Wiki. Click \"Save changes\" to continue.</string>-->
     <string name="failed">Failed</string>
     <string name="cancelled">Cancelled</string>
     <string name="wiki_replaced">Existing Wiki Overwritten</string>
@@ -177,10 +130,8 @@
     <string name="backup_failed">Backup failed</string>
     <string name="delete_backups_as_well">Delete backups as well</string>
     <string name="delete_the_html_file">Delete the HTML file (Can\'t be undone!)</string>
-<!--    <string name="missing_template">Missing template. Tiddloid will now download a new template file from TiddlyWiki.com.</string>-->
     <string name="not_a_wiki">The file selected is not a TiddlyWiki</string>
     <string name="not_a_wiki_page">"The page is not a TiddlyWiki"</string>
-<!--    <string name="failed_opening_file">Failed opening the file</string>-->
     <string name="failed_creating_file">Failed creating the file</string>
     <string name="failed_deleting_file">Failed deleting the file</string>
     <string name="failed_writing_file">Failed writing the file</string>
@@ -203,7 +154,6 @@
         Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down so that you can access them anywhere. For more details of TiddlyWiki, please see https://tiddlywiki.com/ .\n
         \n
         This app is released under GPL v2 license with the help of these open source projects:\n
-        FileDialog - https://github.com/donmor/FileDialog ,\n
         Json - https://json.org/ ,\n
         Jsoup - https://jsoup.org/ ,\n
         License files provided with source codes.\n

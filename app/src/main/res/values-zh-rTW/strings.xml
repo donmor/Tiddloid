@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--JSON and Settings-->
-    <string name="default_se">Google</string>
 	<string name="template_repo">https://tiddlywiki.com/languages/zh-Hant/empty.html</string>
     <!--UI-->
     <string name="action_new">創建一個新的 TiddlyWiki 文件</string>
 	<string name="action_import">導入現有TiddlyWiki文件</string>
 	<string name="action_dir">添加 TiddlyWiki 文件夾</string>
-	<string name="action_fork">分叉一個維基網站</string>
-	<string name="action_settings">設置</string>
 	<string name="action_about">關於Tiddloid</string>
 	<string name="action_save_to">保存到 Tiddloid</string>
 	<string name="action_save_to_file">保存到新文件</string>
@@ -16,14 +13,6 @@
 	<string name="action_save">保存更改</string>
 	<string name="no_permission">無法獲得文件系統權限</string>
 	<string name="no_wiki">這裡什麼都沒有</string>
-	<string name="url">網址或關鍵字</string>
-	<string name="search">搜索</string>
-	<string name="search_engine">搜索引擎</string>
-	<string name="google">谷歌</string>
-	<string name="bing">必應</string>
-	<string name="baidu">百度</string>
-	<string name="sogou">搜狗</string>
-	<string name="custom">自定義</string>
 	<string name="provider">"來源:&#160;"</string>
 	<string name="pathDir">"路徑:&#160;"</string>
 	<string name="internet">網絡</string>
@@ -36,17 +25,9 @@
 	<string name="shortcut_failed">無法創建快捷方式</string>
 	<string name="clone_wiki">創建副本</string>
 	<string name="remove_wiki">刪除Wiki</string>
-	<string name="downloading">下載中</string>
-	<string name="download_complete">下載完畢</string>
 	<string name="no_internet">沒有網絡連接</string>
 	<string name="download_failed">下載失敗</string>
 	<string name="please_wait">請耐心等待…</string>
-	<string name="filesystem">文件系統</string>
-	<string name="show_hidden_files">顯示隱藏(.)文件</string>
-	<string name="template">模板</string>
-	<string name="update_template">更新模板</string>
-	<string name="e_g_cse">例如: google.com/search?q=%s</string>
-	<string name="ready_to_fork">已經準備好分叉這個Wiki。點擊“保存更改”繼續。</string>
 	<string name="failed">失敗</string>
 	<string name="cancelled">取消</string>
 	<string name="wiki_replaced">現有的Wiki被覆蓋</string>
@@ -54,10 +35,8 @@
 	<string name="backup_failed">備份失敗</string>
 	<string name="delete_backups_as_well">也刪除備份</string>
 	<string name="delete_the_html_file">刪除HTML文件(無法撤消!)</string>
-	<string name="missing_template">模板不存在。Tiddloid現在將從TiddlyWiki.com下載新的模板文件。</string>
 	<string name="not_a_wiki">所選文件不是TiddlyWiki</string>
 	<string name="not_a_wiki_page">該頁面不是 TiddlyWiki</string>
-	<string name="failed_opening_file">打開文件失敗</string>
 	<string name="failed_creating_file">創建文件失敗</string>
 	<string name="failed_deleting_file">刪除文件失敗</string>
 	<string name="failed_writing_file">寫文件失敗</string>
@@ -78,12 +57,12 @@
 	<string name="market">為此應用評分</string>
 	<string name="about">
 		Tiddloid是一款適用於本地存儲的TiddlyWiki的應用程序。一旦有了一些想法，您可以立即將它們寫下來，以便您可以隨時隨地訪問這些想法。有關TiddlyWiki的更多詳細信息，請參閱https://tiddlywiki.com/。 \n
-        \n
-        本應用程序遵循GPLv2許可發布，其完成離不開這些開源項目的幫助：\n
-        Json - https://json.org/ ,\n
-        Jsoup - https://jsoup.org/ ,\n
-        許可證文件與代碼一起提供。 \n
-        \n
-        有關本應用程式的更多詳細信息，請訪問項目頁面（ https://github.com/donmor/Tiddloid/ ）或我的主頁（ https://donmor.top/ ）。
+		\n
+		本應用程序遵循GPLv2許可發布，其完成離不開這些開源項目的幫助：\n
+		Json - https://json.org/ ,\n
+		Jsoup - https://jsoup.org/ ,\n
+		許可證文件與代碼一起提供。 \n
+		\n
+		有關本應用程式的更多詳細信息，請訪問項目頁面（ https://github.com/donmor/Tiddloid/ ）或我的主頁（ https://donmor.top/ ）。
 	</string>
 </resources>

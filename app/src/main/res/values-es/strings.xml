@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
 	<!--JSON and Settings-->
-	<string name="default_se">Google</string>
 	<string name="template_repo">https://tiddlywiki.com/languages/es-ES/empty.html</string>
 	<!--UI-->
 	<string name="action_new">Crea un nuevo archivo TiddlyWiki</string>
 	<string name="action_import">Importar un archivo TiddlyWiki</string>
 	<string name="action_dir">Agregar una carpeta TiddlyWiki</string>
-	<string name="action_fork">Bifurcar un sitio web</string>
-	<string name="action_settings">Ajustes</string>
 	<string name="action_about">Acerca de Tiddloid</string>
 	<string name="action_save_to">Guardar en Tiddloid</string>
 	<string name="action_save_to_file">Guardar como un archivo nuevo</string>
@@ -16,14 +13,6 @@
 	<string name="action_save">Guardar cambios</string>
 	<string name="no_permission">No se pueden obtener los permisos del sistema de archivos</string>
 	<string name="no_wiki">No hay nada aquí</string>
-	<string name="url">URL o palabra clave</string>
-	<string name="search">Buscar</string>
-	<string name="search_engine">Buscador</string>
-	<string name="google">Google</string>
-	<string name="bing">Bing</string>
-	<string name="baidu">Baidu</string>
-	<string name="sogou">Sogou</string>
-	<string name="custom">Personalizado</string>
 	<string name="provider">"Fuente:&#160;"</string>
 	<string name="pathDir">"Ruta:&#160;"</string>
 	<string name="internet">Internet</string>
@@ -36,17 +25,9 @@
 	<string name="shortcut_failed">Error al crear acceso directo</string>
 	<string name="clone_wiki">Clonar</string>
 	<string name="remove_wiki">Eliminar Wiki</string>
-	<string name="downloading">Descargando</string>
-	<string name="download_complete">Descarga completa</string>
 	<string name="no_internet">Sin conexión a Internet</string>
 	<string name="download_failed">Descarga fracasó</string>
 	<string name="please_wait">Por favor espera&#8230;</string>
-	<string name="filesystem">Sistema de archivos</string>
-	<string name="show_hidden_files">Montrer les fichiers cachés(.)</string>
-	<string name="template">Modelo</string>
-	<string name="update_template">Plantilla de actualización</string>
-	<string name="e_g_cse">e.g google.com/search?q=%s</string>
-	<string name="ready_to_fork">Listo para bifurcar este wiki. Haga clic en "Guardar cambios" para continuar.</string>
 	<string name="failed">Ha fallado</string>
 	<string name="cancelled">Cancelado</string>
 	<string name="wiki_replaced">Wiki existente fue sobrescrito</string>
@@ -54,10 +35,8 @@
 	<string name="backup_failed">Copia de seguridad fallida</string>
 	<string name="delete_backups_as_well">Eliminar copias de seguridad también</string>
 	<string name="delete_the_html_file">Eliminar el archivo HTML (no se puede deshacer!)</string>
-	<string name="missing_template">Falta la plantilla. Tiddloid ahora descargará un nuevo archivo de plantilla de TiddlyWiki.com.</string>
 	<string name="not_a_wiki">El archivo seleccionado no es un TiddlyWiki</string>
 	<string name="not_a_wiki_page">La página no es un TiddlyWiki</string>
-	<string name="failed_opening_file">Error al abrir el archivo</string>
 	<string name="failed_creating_file">Error al crear el archivo</string>
 	<string name="failed_deleting_file">Falló la eliminación del archivo</string>
 	<string name="failed_writing_file">Error al escribir el archivo</string>

@@ -1,14 +1,11 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <!--JSON and Settings-->
-    <string name="default_se">Google</string>
 	<string name="template_repo">https://tiddlywiki.com/languages/ja-JP/empty.html</string>
     <!--UI-->
     <string name="action_new">新しいTiddlyWikiファイルを作成します</string>
 	<string name="action_import">TiddlyWikiファイルをインポートする</string>
 	<string name="action_dir">TiddlyWikiフォルダーを追加します</string>
-	<string name="action_fork">ウェブサイトをフォークする</string>
-	<string name="action_settings">設定</string>
 	<string name="action_about">Tiddloidについて</string>
 	<string name="action_save_to">Tiddloidに保存</string>
 	<string name="action_save_to_file">新しいファイルとして保存</string>
@@ -16,14 +13,6 @@
 	<string name="action_save">変更を保存</string>
 	<string name="no_permission">ファイルシステムのアクセス許可を取得できません</string>
 	<string name="no_wiki">ここには何もありません</string>
-	<string name="url">URLまたはキーワード</string>
-	<string name="search">検索</string>
-	<string name="search_engine">検索エンジン</string>
-	<string name="google">Google</string>
-	<string name="bing">Bing</string>
-	<string name="baidu">Baidu</string>
-	<string name="sogou">Sogou</string>
-	<string name="custom">カスタム</string>
 	<string name="provider">"ソース:&#160;"</string>
 	<string name="pathDir">"パス:&#160;"</string>
 	<string name="internet">インターネット</string>
@@ -36,17 +25,9 @@
 	<string name="shortcut_failed">ショートカットを作成できませんでした</string>
 	<string name="clone_wiki">コピー作成</string>
 	<string name="remove_wiki">Wikiを削除する</string>
-	<string name="downloading">ダウンロード中</string>
-	<string name="download_complete">ダウンロード完了</string>
 	<string name="no_internet">インターネット接続がありません</string>
 	<string name="download_failed">ダウンロード失敗</string>
 	<string name="please_wait">お待ちください…</string>
-	<string name="filesystem">ファイルシステム</string>
-	<string name="show_hidden_files">隠しファイル(.)を表示する</string>
-	<string name="template">テンプレート</string>
-	<string name="update_template">テンプレートを更新する</string>
-	<string name="e_g_cse">例: google.com/search?q=%s</string>
-	<string name="ready_to_fork">このWikiをフォークする準備ができました。[Save Changes]をクリックして続行します。</string>
 	<string name="failed">失敗</string>
 	<string name="cancelled">キャンセル</string>
 	<string name="wiki_replaced">既存のWikiを上書きされました</string>
@@ -54,10 +35,8 @@
 	<string name="backup_failed">バックアップ失敗</string>
 	<string name="delete_backups_as_well">バックアップも削除する</string>
 	<string name="delete_the_html_file">HTMLファイルを削除します(元に戻せません!)。</string>
-	<string name="missing_template">テンプレートが見つかりません。TiddloidはTiddlyWiki.comから新しいテンプレートファイルをダウンロードします。</string>
 	<string name="not_a_wiki">このファイルはTiddlyWikiではありません</string>
 	<string name="not_a_wiki_page">このページはTiddlyWikiではありません</string>
-	<string name="failed_opening_file">ファイルを開けませんでした</string>
 	<string name="failed_creating_file">ファイルの作成に失敗しました</string>
 	<string name="failed_deleting_file">ファイルの削除に失敗しました</string>
 	<string name="failed_writing_file">ファイルの書き込みに失敗しました</string>
@@ -78,12 +57,12 @@
 	<string name="market">評価する</string>
     <string name="about">
 		Tiddloidは、ローカルに保存されているTiddlyWikiを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めてどこにでもアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com を参照してください。\n
-        \n
-        このアプリは、これらのオープンソースプロジェクトの助けを借りて、GPLv2ライセンスの下でリリースされています：\n
+		\n
+		このアプリは、これらのオープンソースプロジェクトの助けを借りて、GPLv2ライセンスの下でリリースされています：\n
         Json - https://json.org/ ,\n
         Jsoup - https://jsoup.org/ ,\n
-        ライセンスファイルはソースコードとともに提供されます。\n
-        \n
-        このアプリの詳細については、プロジェクトページ（ https://github.com/donmor/Tiddloid/ ）または私のホームページ（ https://donmor.top/ ）をご覧ください。
+		ライセンスファイルはソースコードとともに提供されます。\n
+		\n
+		このアプリの詳細については、プロジェクトページ（ https://github.com/donmor/Tiddloid/ ）または私のホームページ（ https://donmor.top/ ）をご覧ください。
 	</string>
 </resources>
