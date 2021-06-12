@@ -2,11 +2,11 @@
 
 ![avatar](img/Tiddloid.png)
 
-&ensp;&ensp;&ensp;&ensp;&ensp;[![CoolApk](https://www.coolapk.com/static/img/icon.png)](https://www.coolapk.com/apk/top.donmor.tiddloid)&ensp;&ensp;&ensp;&ensp;<img src="img/qr.png" width="72" height="72" alt="QrCode"/>
+&ensp;&ensp;&ensp;&ensp;&ensp;[<img src="https://static.coolapk.com/static/web/v8/images/header-logo.png" width="72" height="72" alt="CoolApk" />](https://www.coolapk.com/apk/top.donmor.tiddloid)&ensp;&ensp;&ensp;&ensp;<img src="img/qr.png" width="72" height="72" alt="QrCode"/>
 
 Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere.
 
-<img src="img/img01.png" width="360" height="640" alt="01"/>&emsp;&emsp;<img src="img/img02.png" width="360" height="640" alt="02"/>
+<img src="img/img01.png" width="180" height="320" alt="01"/>&emsp;<img src="img/img02.png" width="180" height="320" alt="02"/>&emsp;<img src="img/img03.png" width="180" height="320" alt="02"/>&emsp;<img src="img/img04.png" width="180" height="320" alt="02"/>
 
 See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
@@ -15,11 +15,11 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 * Creating new TiddlyWiki files with latest template
 * Importing existing TiddlyWiki files stored on a writable source
 * Adding a folder containing TiddlyWiki-based `index.htm(l)`
-* Receiving a TiddlyWiki site URL from Browser and save as a new file or a bookmark
+* Receiving a TiddlyWiki site URL shared from Browser and save as a new file or a bookmark
 * Opening an HTML file and adding to the list if it is a valid TiddlyWiki
-* Applying theme color to the UI with some in-wiki configurations, as well as other tweaks.
+* Applying theme color to the UI with some in-wiki configurations, as well as other tweaks
 * Saving changes by clicking the Save button
-* A Backup system that perserves your previous versions in case of misoperations
+* A Backup system that preserves your previous versions in case of misoperations
 * Convenient operations like `Create shortcut`, `Clone` and `Delete`
 * Importing or exporting wiki list data
 
@@ -41,7 +41,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * I encountered a Javascript error followed by a white screen in newly created files.
 
-    * Check your Android version. TiddlyWiki 5.1.23 has critical bugs on Android 5.1 and below (WebView 39). A solution is to get a pre-release version of TiddlyWiki, which have had this bug fixed or, a previous version without this bug. Another thing is that JSON behaves differently between 5.0+ and 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all features.
+    * Check your Android version. TiddlyWiki 5.1.23 has critical bugs on Android 5.1 and below (WebView 39). A solution is to get a pre-release version of TiddlyWiki, which have had this bug fixed or, a previous version without this bug.
 
 * My wiki list change its order randomly every time.
 
@@ -49,7 +49,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * I upgraded from 1.4 and all of my TiddlyWikis added before no longer to work.
 
-    * Check if your system revoked local storage accessing permissions. If you're using Android Q, a permission acquirement page will appear at the first time you use legacy stuffs. Otherwise, a pop-up window will appear if running on Android M and above.
+    * Check if your system revoked local storage accessing permissions. If you're using Android R, a permission acquirement page will appear at the first time you use legacy stuffs. Otherwise, a pop-up window will appear if running on Android M and above.
 
 * I still want to add `Local (Legacy)` wikis.
 
@@ -57,7 +57,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * Why there's a Tiddloid Lite? What's the difference between the two versions?
 
-    In the past 1.x days, Tiddloid use legacy `file://` ways to handle files, causing the lack of access to cloud medias. Once I decided to make another branch that implements Android's SAF (i.e. Storage Access Framework), and finally it became a lightweight version. Now since Tiddloid 2.0 has been refactored to use SAF, there'll be no more functional updates for Tiddloid Lite, only bug fixes will be applied, and it'll remain LITE.
+    In the past 1.x days, Tiddloid use legacy `file://` ways to handle files, causing the lack of access to cloud medias. Later I made another branch that implements Android's SAF (i.e. Storage Access Framework), and finally it became a lightweight version. Now since Tiddloid 2.0 has been refactored to use SAF, there'll be no more functional updates for Tiddloid Lite, only bug fixes will be applied, and it'll remain LITE.
 
     Here's the difference between different versions:
 
@@ -67,7 +67,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
     | Backup system                             | Yes           | Yes                                                          | No                               |
     | Search-and-Fork system                    | Yes           | No (Instead it receives shared URLs from browsers and show options to save the page) | No                               |
     | Downloader                                | Yes           | No                                                           | No                               |
-    | Direct access to files in the same folder | Yes           | Partial (TiddlyWiki folders only, by caching all files)      | No                               |
+    | Direct access to files in the same folder | Yes           | Partial (Legacy, or TiddlyWiki folders by caching all files) | No                               |
     | Cloud Service                             | No            | Yes (via SAF)                                                | Yes (via SAF)                    |
     | Template | Download on first startup | Download on creating new wiki, and cached in case it is unable to access the Internet |Download on creating new wiki|
     | Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis |Supports latest Android versions best and supports most of TW5|
