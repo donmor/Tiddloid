@@ -97,7 +97,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private Uri uri = null;
-	private boolean isClassic, hideAppbar = false, ready = false;
+	private boolean isClassic, hideAppbar = false, ready = false, failed = false;
 	private byte[] exData = null;
 	private Menu optMenu;
 	private String id;
@@ -252,13 +252,18 @@ public class TWEditorWV extends AppCompatActivity {
 						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 					Bundle bu = new Bundle();
 					bu.putString(MainActivity.KEY_ID, id);
+					failed = false;
 					nextWiki(new Intent().putExtras(bu));
 				} catch (IOException e) {
 					e.printStackTrace();
 					Toast.makeText(TWEditorWV.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
+					failed = true;
+					dumpOnFail(exData, u);
 				} catch (JSONException e) {
 					e.printStackTrace();
 					Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+					failed = true;
+					dumpOnFail(exData, u);
 				}
 			}
 			exData = null;
@@ -435,10 +440,13 @@ public class TWEditorWV extends AppCompatActivity {
 					os.flush();
 					if (lengthTotal != len)
 						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
+					failed = false;
 					runOnUiThread(() -> getInfo(wv));
 				} catch (IOException e) {
 					e.printStackTrace();
 					Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
+					failed = true;
+					dumpOnFail(data.getBytes(StandardCharsets.UTF_8), uri);
 				}
 			}
 
@@ -669,7 +677,7 @@ public class TWEditorWV extends AppCompatActivity {
 
 	// 保存提醒
 	private void confirmAndExit(boolean dirty, final Intent nextWikiIntent) {
-		if (dirty) {
+		if (failed || dirty) {
 			AlertDialog confirmExit = new AlertDialog.Builder(this)
 					.setTitle(android.R.string.dialog_alert_title)
 					.setMessage(R.string.confirm_to_exit_wiki)
@@ -786,7 +794,7 @@ public class TWEditorWV extends AppCompatActivity {
 				private boolean value = false;
 
 				availableSC(Context context, Uri u0) {
-				try {
+					try {
 						DocumentFile mdf, p, df;
 						mdf = DocumentFile.fromTreeUri(context, u0);
 						if (mdf == null || !mdf.isDirectory())
@@ -1083,6 +1091,25 @@ public class TWEditorWV extends AppCompatActivity {
 			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
 		}
 
+	}
+
+	private void dumpOnFail(byte[] data, Uri u) {
+		String mfn = Uri.parse(Uri.decode(u.toString())).getLastPathSegment();
+		File dumpDir = new File(new File(getExternalFilesDir(null), Uri.encode(u.getSchemeSpecificPart())), mfn + MainActivity.BACKUP_POSTFIX);
+		dumpDir.mkdirs();
+		try (ByteArrayInputStream is = new ByteArrayInputStream(data);
+				FileOutputStream os = new FileOutputStream(new File(dumpDir, new StringBuilder(mfn).insert(mfn.lastIndexOf('.'), MainActivity.formatBackup(System.currentTimeMillis())).toString()))) {
+			int len = is.available(), length, lenTotal = 0;
+			byte[] bytes = new byte[MainActivity.BUF_SIZE];
+			while ((length = is.read(bytes)) > -1) {
+				os.write(bytes, 0, length);
+				lenTotal += length;
+			}
+			os.flush();
+			if (lenTotal != len) throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
+		} catch (IOException | SecurityException e) {
+			e.printStackTrace();
+		}
 	}
 
 	// 生成icon

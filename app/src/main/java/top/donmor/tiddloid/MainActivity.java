@@ -1172,7 +1172,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	private static String formatBackup(long time) {
+	static String formatBackup(long time) {
 		SimpleDateFormat format = new SimpleDateFormat(MASK_SDF_BACKUP, Locale.US);
 		format.setTimeZone(TimeZone.getTimeZone(KEY_TZ_UTC));
 		return '.' + format.format(new Date(time));

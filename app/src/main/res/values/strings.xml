@@ -143,7 +143,7 @@
     <string name="data_error">Data error</string>
     <string name="confirm_to_del_backup">Are you sure you want to delete this version?</string>
     <string name="confirm_to_remove_wiki">Are you sure you want to remove this Wiki from Tiddloid?</string>
-    <string name="confirm_to_auto_remove_wiki">&#x200f;The wiki is no longer available. Do you want to remove it?</string>
+    <string name="confirm_to_auto_remove_wiki">The wiki is no longer available. Do you want to remove it?</string>
     <string name="confirm_to_rollback">Do you want to restore to the previous backup? A backup of the current version will be generated.</string>
     <string name="confirm_to_exit_wiki">Unsaved changes detected. Are you sure you want to quit?</string>
     <string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
