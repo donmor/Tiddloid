@@ -278,7 +278,7 @@ public class TWEditorWV extends AppCompatActivity {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
 				ready = newProgress == 100;
-				toolbar.setVisibility(getResources().getConfiguration().orientation == Configuration.ORIENTATION_LANDSCAPE || hideAppbar && ready ? View.GONE : View.VISIBLE);
+				toolbar.setVisibility(hideAppbar && ready ? View.GONE : View.VISIBLE);
 				wvProgress.setVisibility(ready ? View.GONE : View.VISIBLE);
 				wvProgress.setProgress(newProgress);
 				super.onProgressChanged(view, newProgress);
@@ -614,7 +614,7 @@ public class TWEditorWV extends AppCompatActivity {
 				// appbar隐藏
 				hideAppbar = KEY_YES.equals(array.getString(2));
 				Configuration newConfig = getResources().getConfiguration();
-				toolbar.setVisibility(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE || hideAppbar && ready ? View.GONE : View.VISIBLE);
+				toolbar.setVisibility(hideAppbar && ready ? View.GONE : View.VISIBLE);
 				// 解取主题色
 				String color = array.getString(3);
 				float[] l = new float[3];
@@ -1142,8 +1142,7 @@ public class TWEditorWV extends AppCompatActivity {
 		if (themeColor != null) Color.colorToHSV(themeColor, l);
 		boolean lightBar = themeColor != null ? l[2] > 0.75 : (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;    // 系统栏模式 根据主题色灰度/日夜模式
 		int bar = 0;
-		boolean landscape = newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE;
-		toolbar.setVisibility(wApp != null && (landscape || hideAppbar && ready) ? View.GONE : View.VISIBLE);
+		toolbar.setVisibility(wApp != null && (hideAppbar && ready) ? View.GONE : View.VISIBLE);
 		Window window = getWindow();
 		if (MainActivity.APIOver23) {
 			window.setStatusBarColor(primColor);
@@ -1151,7 +1150,7 @@ public class TWEditorWV extends AppCompatActivity {
 				window.setNavigationBarColor(primColor);
 			bar = lightBar ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR | (MainActivity.APIOver26 ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : 0) : View.SYSTEM_UI_FLAG_VISIBLE;
 		}
-		window.getDecorView().setSystemUiVisibility(bar | (landscape ? View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY : View.SYSTEM_UI_FLAG_VISIBLE));
+		window.getDecorView().setSystemUiVisibility(bar | (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY : View.SYSTEM_UI_FLAG_VISIBLE));
 		findViewById(R.id.wv_appbar).setBackgroundColor(primColor);
 		toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);// 刷新字色
 		toolbar.setSubtitleTextAppearance(this, R.style.TextAppearance_AppCompat_Small);
