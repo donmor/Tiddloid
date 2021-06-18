@@ -69,7 +69,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
     | Downloader                                | Yes           | No                                                           | No                               |
     | Direct access to files in the same folder | Yes           | Partial (Legacy, or TiddlyWiki folders by caching all files) | No                               |
     | Cloud Service                             | No            | Yes (via SAF)                                                | Yes (via SAF)                    |
-    | Template | Download on first startup | Download on creating new wiki, and cached in case it is unable to access the Internet |Download on creating new wiki|
+    | Template | Download on first startup      | Download on creating new wiki, and cached in case it is unable to access the Internet |Download on creating new wiki|
     | Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis |Supports latest Android versions best and supports most of TW5|
     | Recommended Android version | Android 4.4 ~ 9.0 | Android 4.4 and above, best for 8.0 and above |Android 4.4 and above, best for 8.0 and above|
 
