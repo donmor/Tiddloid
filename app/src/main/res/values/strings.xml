@@ -1,6 +1,4 @@
 <resources>
-    <string name="app_name" translatable="false">Tiddloid</string>
-    <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
     <!--JS-->
     <string name="js_is_wiki" translatable="false">
         (function(){
@@ -90,6 +88,9 @@
         })();
     </string>
     <!--Misc-->
+    <string name="app_name" translatable="false">Tiddloid</string>
+    <string name="entry_name">Add to Tiddloid</string>
+    <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
     <string name="logo" translatable="false">logo</string>
     <string name="path" translatable="false">path</string>
     <string name="icon" translatable="false">icon</string>

@@ -1,5 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
+	<!--Misc-->
+	<string name="entry_name">Agregar a Tiddloid</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/es-ES/empty.html</string>
 	<!--UI-->

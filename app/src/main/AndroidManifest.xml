@@ -42,10 +42,10 @@
             android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
             android:exported="true"
             android:hardwareAccelerated="true"
-            android:label="Add to Tiddloid"
+            android:label="@string/entry_name"
             android:launchMode="singleTop"
             android:theme="@style/AppTheme.NoActionBar"
-            tools:targetApi="n"><!--TODO: label -> R.string-->
+            tools:targetApi="n">
             <intent-filter>
                 <action android:name="android.intent.action.VIEW" />
                 <category android:name="android.intent.category.DEFAULT" />

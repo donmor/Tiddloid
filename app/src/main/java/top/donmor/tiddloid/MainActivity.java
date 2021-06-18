@@ -11,7 +11,6 @@ import android.accounts.NetworkErrorException;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -36,12 +35,15 @@ import android.text.TextUtils;
 import android.text.method.LinkMovementMethod;
 import android.text.util.Linkify;
 import android.util.Base64;
+import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.widget.CheckBox;
+import android.widget.LinearLayout;
+import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -103,6 +105,7 @@ public class MainActivity extends AppCompatActivity {
 	private JSONObject db;
 	private ActivityResultLauncher<Intent> getChooserClone, getChooserCreate, getChooserImport, getChooserTree, getPermissionRequest;
 	private boolean acquiringStorage = false;
+	private int dialogPadding;
 
 	// CONSTANT
 	static final int TAKE_FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION, BUF_SIZE = 4096;
@@ -167,7 +170,7 @@ public class MainActivity extends AppCompatActivity {
 		getWindow().setFormat(PixelFormat.RGBA_8888);
 		AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 		setContentView(R.layout.activity_main);
-
+		dialogPadding = (int) (getResources().getDisplayMetrics().density * 30);
 		try {    // 加载JSON数据
 			db = readJson(this);
 			if (!db.has(DB_KEY_WIKI)) throw new JSONException(EXCEPTION_JSON_DATA_ERROR);
@@ -566,9 +569,21 @@ public class MainActivity extends AppCompatActivity {
 
 	private void getSrcFromUri(OnGetSrc cb) {
 		// 对话框等待
-		final ProgressDialog progressDialog = new ProgressDialog(this);
-		progressDialog.setMessage(getString(R.string.please_wait));
-		progressDialog.setProgressStyle(ProgressDialog.STYLE_SPINNER);
+		LinearLayout layout = new LinearLayout(this);
+		layout.setPaddingRelative(dialogPadding, dialogPadding, dialogPadding, 0);
+		layout.setGravity(Gravity.CENTER_VERTICAL);
+		ProgressBar progressBar = new ProgressBar(this);
+		progressBar.setIndeterminate(true);
+		progressBar.setPaddingRelative(0, 0,dialogPadding,0);
+		layout.addView(progressBar);
+		TextView lblWait = new TextView(this);
+		lblWait.setText(R.string.please_wait);
+		lblWait.setTextAppearance(this, android.R.style.TextAppearance_DeviceDefault_Small);
+		layout.addView(lblWait);
+		final AlertDialog progressDialog = new AlertDialog.Builder(this)
+				.setView(layout)
+				.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
+				.create();
 		progressDialog.setCanceledOnTouchOutside(false);
 		final Thread thread = new Thread(() -> {
 			boolean interrupted = false;
@@ -635,8 +650,6 @@ public class MainActivity extends AppCompatActivity {
 				if (!interrupted) runOnUiThread(() -> cb.run(dest));
 			}
 		});
-
-		progressDialog.setButton(DialogInterface.BUTTON_NEGATIVE, getText(android.R.string.cancel), (dialogInterface, i) -> progressDialog.cancel());
 		progressDialog.setOnShowListener(dialog -> thread.start());
 		progressDialog.setOnCancelListener(dialogInterface -> thread.interrupt());
 		progressDialog.show();
