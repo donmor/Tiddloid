@@ -1,1 +1,1 @@
-Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来以供随时查阅。
+Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。

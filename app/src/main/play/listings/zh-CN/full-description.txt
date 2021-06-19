@@ -1,12 +1,15 @@
 Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来以供随时查阅。有关TiddlyWiki的更多详细信息，请参阅https://tiddlywiki.com/。
 特性
 - 使用最新模板创建新的Wiki
-- 导入存储在可写设备上的现有Wiki
-- 在互联网上浏览并对感兴趣的TiddlyWiki网站创建一份本地副本
-- TiddlyWiki检测
-- 单击“保存”按钮将TiddlyWiki保存到本地文件
-- 与TiddlyDesktop兼容的备份系统（TiddlyDesktop是TiddlyWiki的桌面客户端程序）
-- 可在桌面上创建现有Wiki的快捷方式
+- 导入存储在可写来源的现有Wiki
+- 添加一个包含基于TiddlyWiki的index.htm(l)的文件夹
+- 接收从浏览器分享的TiddlyWiki站点URL并存为新文件或书签
+- 打开一个HTML文件，如果是TiddlyWiki则添加到列表
+- 通过Wiki内配置实现应用主题色到系统界面，以及其他调整选项
+- 点击保存按钮保存更改
+- 历史版本备份功能
+- 便捷的管理功能如创建快捷方式, 创建副本和移除等
+- 导入/导出Wiki列表
 许可
   本应用程序遵循GPLv2许可发布，其完成离不开这些开源项目的帮助：
   - Json - https://json.org/,

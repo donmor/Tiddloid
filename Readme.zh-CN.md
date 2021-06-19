@@ -12,7 +12,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
 ### 主要功能
 
-* 使用最新模板创建新的TiddlyWiki
+* 使用最新模板创建新的Wiki
 * 导入存储在可写来源的现有Wiki
 * 添加一个包含基于TiddlyWiki的`index.htm(l)`的文件夹
 * 接收从浏览器分享的TiddlyWiki站点URL并存为新文件或书签
@@ -20,7 +20,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 * 通过Wiki内配置实现应用主题色到系统界面，以及其他调整选项
 * 点击保存按钮保存更改
 * 历史版本备份功能
-* 便捷的管理功能如`创建快捷方式`, `创建副本` and `移除`等
+* 便捷的管理功能如`创建快捷方式`, `创建副本`和`移除`等
 * 导入/导出Wiki列表
 
 ### FAQ
@@ -61,7 +61,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
     以下是不同版本之间的差异：
 
-    | 功能                               | Tiddloid 1.x  | Tiddloid 2.0 及以上                                    | [Tiddloid Lite](https://github.com/donmor/TiddloidLite) |
+    | 功能                               | Tiddloid 1.x  | Tiddloid 2.0 及以上                                    | [Tiddloid Lite](https://gitee.com/donmor/TiddloidLite) |
     | ----------------------------------------- | ------------- | ------------------------------------------------------------ | -------------------------------- |
     | 文件API                                | Java文件API | Android SAF以及 Java文件API  | Android SAF |
     | 备份系统                        | 有          | 有                                                         | 无                              |

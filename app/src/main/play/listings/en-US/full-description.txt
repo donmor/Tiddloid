@@ -1,12 +1,15 @@
 Tiddloid Lite, a lightweight version of Tiddloid, is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere. See https://tiddlywiki.com/ for more details of TiddlyWiki.
 Features
-- Create new Wikis with latest template
-- Import existing Wikis from file providers, supporting local and cloud.
-- Browse on the Internet and fork Wiki sites interested
-- TiddlyWiki detection
-- Saving TiddlyWikis to the source file by clicking the Save button
-- Backup system that compatible with TiddlyDesktop, the desktop TiddlyWiki saver
-- Creating shortcuts to existing wiki on desktop
+- Creating new TiddlyWiki files with latest template
+- Importing existing TiddlyWiki files stored on a writable source
+- Adding a folder containing TiddlyWiki-based index.htm(l)
+- Receiving a TiddlyWiki site URL shared from Browser and save as a new file or a bookmark
+- Opening an HTML file and adding to the list if it is a valid TiddlyWiki
+- Applying theme color to the UI with some in-wiki configurations, as well as other tweaks
+- Saving changes by clicking the Save button
+- A Backup system that preserves your previous versions in case of misoperations
+- Convenient operations like Create shortcut, Clone and Delete
+- Importing or exporting wiki list data
 This app is released under GPL v2 license　with the help of these open source projects:
   Json - https://json.org/ ,
   Jsoup - https://jsoup.org/ ,
