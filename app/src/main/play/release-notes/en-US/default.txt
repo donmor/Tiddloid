@@ -1,14 +1,3 @@
 Update details:
-- Refactored file system implementation and now it mainly use Storage Access Framework (lecacy file:// mode still initially supported).
-- Now supports SAF folder mode by caching the selected directory (Requiring an index.html or index.htm in the folder, which will be automatically created if not exists).
-- Backup system that supports SAF mode (in external files dir) and SAF folder mode.
-- Refactored fork system to clone function.
-  - Dropped web search mode
-  - added support for receiving shared html file/text containing a url
-  - added support for opening a http(s) uri/html file (if using a legacy file manager that produces file:// uri, a legacy wiki will be added)
-  - in addition, added support for saving http(s):// link to the wiki list as a shortcut, which can be cloned to a file anytime you want.
-- added a save button to the toolbar. You can save your work even if you hid your save button in wiki control panel.
-- Fixed a bug causing malfunction of wiki detection with TWC.
-- Fixed a bug causing mistaken permission revocation when having a page opened and perform a missing wiki auto-remove.
-- Inspired by an issue, Now the modified data will be dumped into INTERNAL/Android/data/top.donmor.tiddloid/files if failed to save
-- Wiki page's toolbar will no longer hide itself under landscape mode UNLESS configured using the plugin
+- Fixed a bug causing "Wiki already exists" pops up when opening a saved link.
+- Fixed a bug causing failure on accessing a website requiring HTTP authentication

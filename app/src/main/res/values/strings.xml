@@ -1,7 +1,7 @@
 <resources>
     <!--JS-->
     <string name="js_is_wiki" translatable="false">
-        (function(){
+        (function() {
             var isTW = (mta = document.getElementsByTagName(\"meta\")[\"application-name\"])!= null &amp;&amp; mta.content==\"TiddlyWiki\" || typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\";
             if (isTW &amp;&amp; typeof(version) == \"undefined\" &amp;&amp; $tw.wiki == undefined) {
                 document.body.addEventListener(\"DOMNodeInserted\", cbDecrypt = function () {
@@ -15,7 +15,7 @@
         })();
     </string>
     <string name="js_is_classic" translatable="false">
-        (function(){
+        (function() {
             var classic = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\";
             if (classic) {
                 window.saveFile = function(path,text) {
@@ -27,17 +27,53 @@
         })();
     </string>
     <string name="js_exit" translatable="false">
-        (function(){
+        (function() {
             return $tw.saverHandler != undefined &amp;&amp; $tw.saverHandler.isDirty();
         })();
     </string>
     <string name="js_exit_c" translatable="false">
-        (function(){
+        (function() {
             return (store.isDirty() || story.areAnyDirty());
         })();
     </string>
+    <string name="js_pop" translatable="false">
+        (function() {
+            new $tw.Story().navigateTiddler(\"%1$s\");
+        })();
+    </string>
+
+    <string name="js_settings_c" translatable="false">
+        (function() {
+            setOption(\"chkSaveBackups\",false);
+        })();"
+    </string>
+    <string name="js_settings_c2" translatable="false">
+        (function() {
+            readOnly = false;
+            backstage.init();
+            refreshAll();
+            story.refreshAllTiddlers();
+        })();
+    </string>
+    <string name="js_print" translatable="false">
+        (function() {
+            window.print = function() {
+                window.twi.print();
+            }
+        })();
+    </string>
+    <string name="js_save" translatable="false">
+        (function() {
+            $tw.saverHandler.saveWiki();
+        })();
+    </string>
+    <string name="js_save_c" translatable="false">
+        (function() {
+            saveChanges();
+        })()
+    </string>
     <string name="js_info" translatable="false">
-        (function(){
+        (function() {
             if (undefined == $tw.wiki) {
                 return [document.title, \"\", \"enc\", \"enc\", \"enc\"]
             }
@@ -79,7 +115,7 @@
         })();
     </string>
     <string name="js_info_c" translatable="false">
-        (function(){
+        (function() {
             var tl_title =  store.getTiddlerText(\"SiteTitle\");
             var tl_subtitle = store.getTiddlerText(\"SiteSubtitle\");
             var tl_fic = store.getTiddlerText(\"favicon.ico\");
@@ -150,6 +186,9 @@
     <string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
     <string name="third_part_rising">The page is trying to start another application. Do you want to continue?</string>
     <string name="backup_deleted">Backup deleted</string>
+    <string name="hint_login">Login to %1$s</string>
+    <string name="hint_username">Username</string>
+    <string name="hint_password">Password</string>
     <string name="market">Rate This App</string>
     <string name="about">
         Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down so that you can access them anywhere. For more details of TiddlyWiki, please see https://tiddlywiki.com/ .\n

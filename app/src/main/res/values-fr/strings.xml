@@ -56,6 +56,9 @@
     <string name="wiki_rolled_back_successfully">Wiki restauré avec succès</string>
 	<string name="third_part_rising">La page tente de démarrer une autre application. Voulez-vous continuer?</string>
 	<string name="backup_deleted">Sauvegarde supprimée</string>
+	<string name="hint_login">Connectez-vous à %1$s</string>
+	<string name="hint_username">Nom d\'utilisateur</string>
+	<string name="hint_password">Mot de passe</string>
 	<string name="market">Évaluer l\'application</string>
 	<string name="about">
         Tiddloid est une application pour travailler avec les TiddlyWikis stockés localement. Une fois avoir des idées, vous pouvez les écrire immédiatement vers le bas afin que vous puissiez y accéder partout. Pour plus de détails sur TiddlyWiki, veuillez consulter https://tiddlywiki.com/ .\n

@@ -56,6 +56,9 @@
     <string name="wiki_rolled_back_successfully">Wikiはロールバックされました</string>
 	<string name="third_part_rising">このページから別のアプリケーションが開かれます。続行しますか？</string>
 	<string name="backup_deleted">バックアップを削除しました</string>
+	<string name="hint_login">"%1$sにログイン "</string>
+	<string name="hint_username">ユーザー名</string>
+	<string name="hint_password">パスワード</string>
 	<string name="market">評価する</string>
     <string name="about">
 		Tiddloidは、ローカルに保存されているTiddlyWikiを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めてどこにでもアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com を参照してください。\n

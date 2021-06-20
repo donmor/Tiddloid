@@ -8,6 +8,7 @@ package top.donmor.tiddloid;
 
 import android.content.ActivityNotFoundException;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
 import android.content.res.Configuration;
@@ -27,6 +28,7 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.provider.DocumentsContract;
+import android.text.InputType;
 import android.text.TextUtils;
 import android.util.Base64;
 import android.view.Menu;
@@ -35,6 +37,8 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
 import android.view.WindowManager;
+import android.view.inputmethod.EditorInfo;
+import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
@@ -42,6 +46,7 @@ import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
 import android.webkit.WebViewClient;
+import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -84,12 +89,11 @@ import java.util.Iterator;
 import java.util.Locale;
 
 public class TWEditorWV extends AppCompatActivity {
-	private JSONObject db;
-	private JSONObject wApp;
+	private JSONObject db, wApp;
 	private WebChromeClient wcc;
 	private View mCustomView;
 	private WebChromeClient.CustomViewCallback mCustomViewCallback;
-	private int mOriginalOrientation;
+	private int mOriginalOrientation, dialogPadding;
 	private Integer themeColor = null;
 	private float scale;
 	private ValueCallback<Uri[]> uploadMessage;
@@ -114,13 +118,6 @@ public class TWEditorWV extends AppCompatActivity {
 			MIME_ANY = "*/*",
 			MIME_TEXT = "text/plain",
 			REX_SP_CHR = "\\s",
-			STR_JS_POP_PRE = "(function(){new $tw.Story().navigateTiddler(\"",
-			STR_JS_POP_POST = "\");})();",
-			STR_JS_SETTINGS_C = "(function(){setOption(\"chkSaveBackups\",false);})();",
-			STR_JS_SETTINGS_C2 = "(function(){readOnly=false;backstage.init();refreshAll();story.refreshAllTiddlers();})();",
-			STR_JS_PRINT = "(function(){window.print=function(){window.twi.print();}})();",
-			STR_JS_SAVE = "(function(){$tw.saverHandler.saveWiki();})();",
-			STR_JS_SAVE_C = "(function(){saveChanges();})();",
 			KEY_COL = ":",
 			KEY_ENC = "enc",
 			KEY_ALG = "MD5",
@@ -137,6 +134,7 @@ public class TWEditorWV extends AppCompatActivity {
 		getWindow().setFlags(WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED, WindowManager.LayoutParams.FLAG_HARDWARE_ACCELERATED);
 		AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 		setContentView(R.layout.tweditor);
+		dialogPadding = (int) (getResources().getDisplayMetrics().density * 20);
 		// 初始化db
 		try {
 			db = MainActivity.readJson(this);
@@ -345,7 +343,7 @@ public class TWEditorWV extends AppCompatActivity {
 						Uri u1;
 						String p;
 						if ((u1 = Uri.parse(url)).getSchemeSpecificPart().equals(Uri.parse(wv.getUrl()).getSchemeSpecificPart()) && (p = u1.getFragment()) != null) {
-							wv.evaluateJavascript(STR_JS_POP_PRE + Uri.decode(p) + STR_JS_POP_POST, null);
+							wv.evaluateJavascript(getString(R.string.js_pop, Uri.decode(p)), null);
 							dialog.dismiss();
 						}
 						super.onPageFinished(view, url);
@@ -471,6 +469,34 @@ public class TWEditorWV extends AppCompatActivity {
 				return overrideUrlLoading(view, request.getUrl());
 			}
 
+			@Override
+			public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+				LinearLayout layout = new LinearLayout(TWEditorWV.this);
+				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
+				params.setMarginStart(dialogPadding);
+				params.setMarginEnd(dialogPadding);
+				layout.setOrientation(LinearLayout.VERTICAL);
+				EditText username = new EditText(TWEditorWV.this), password = new EditText(TWEditorWV.this);
+				username.setHint(R.string.hint_username);
+				username.setSingleLine();
+				username.setImeOptions(EditorInfo.IME_ACTION_NEXT);
+				password.setHint(R.string.hint_password);
+				password.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_PASSWORD);
+				password.setSingleLine();
+				layout.addView(username, params);
+				layout.addView(password, params);
+				final AlertDialog dialog = new AlertDialog.Builder(TWEditorWV.this)
+						.setTitle(getString(R.string.hint_login, host))
+						.setMessage(realm)
+						.setView(layout)
+						.setPositiveButton(android.R.string.ok, (dialog12, which) -> handler.proceed(username.getText().toString(), password.getText().toString()))
+						.setNegativeButton(android.R.string.cancel, null)
+						.create();
+				dialog.setOnShowListener(dialog13 -> username.requestFocus());
+				password.setOnEditorActionListener((v, actionId, event) -> (actionId == EditorInfo.IME_ACTION_DONE || actionId == EditorInfo.IME_ACTION_NEXT || actionId == EditorInfo.IME_NULL) && dialog.getButton(DialogInterface.BUTTON_POSITIVE).performClick());
+				dialog.show();
+			}
+
 			// 加载开始
 			@Override
 			public void onPageStarted(WebView view, String url, Bitmap favicon) {
@@ -483,7 +509,7 @@ public class TWEditorWV extends AppCompatActivity {
 			// 加载完成回调
 			@Override
 			public void onPageFinished(final WebView view, String url) {
-				view.evaluateJavascript(STR_JS_PRINT, null);
+				view.evaluateJavascript(getString(R.string.js_print), null);
 				view.evaluateJavascript(getString(R.string.js_is_wiki), value -> {
 					if (Boolean.parseBoolean(value))
 						view.evaluateJavascript(getString(R.string.js_is_classic), value1 -> {
@@ -492,9 +518,9 @@ public class TWEditorWV extends AppCompatActivity {
 							view.getSettings().setBuiltInZoomControls(isClassic);
 							view.getSettings().setDisplayZoomControls(isClassic);
 							if (isClassic) {
-								view.evaluateJavascript(STR_JS_SETTINGS_C, null);
+								view.evaluateJavascript(getString(R.string.js_settings_c), null);
 								if (MainActivity.SCH_CONTENT.equals(Uri.parse(view.getUrl()).getScheme()))
-									view.evaluateJavascript(STR_JS_SETTINGS_C2, null);
+									view.evaluateJavascript(getString(R.string.js_settings_c2), null);
 							}
 						});
 					else if (!URL_BLANK.equals(url)) {
@@ -669,7 +695,7 @@ public class TWEditorWV extends AppCompatActivity {
 				break;
 			case idSaveFile:
 			case idSave:
-				wv.evaluateJavascript(isClassic ? STR_JS_SAVE_C : STR_JS_SAVE, null);
+				wv.evaluateJavascript(getString(isClassic ? R.string.js_save_c : R.string.js_save), null);
 				break;
 		}
 		return super.onOptionsItemSelected(item);
@@ -717,7 +743,6 @@ public class TWEditorWV extends AppCompatActivity {
 		JSONObject wa;
 		Bundle bu;
 		final Uri u;
-//		String data = null;
 		String nextWikiId = null;
 		final String action = nextWikiIntent.getAction();
 		if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式，scheme -> content/file/http(s)
@@ -728,7 +753,6 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 			if (MainActivity.SCH_CONTENT.equals(u.getScheme()) || MainActivity.SCH_FILE.equals(u.getScheme())) {
 				try {
-//					wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
 					wa = null;
 					boolean exist = false;
 					Iterator<String> iterator = wl.keys();
@@ -858,7 +882,6 @@ public class TWEditorWV extends AppCompatActivity {
 			while (iterator.hasNext()) {
 				if (Uri.parse(u.getScheme() + KEY_COL + u.getSchemeSpecificPart()).toString().equals((wa = wl.optJSONObject(iterator.next())) != null ? wa.optString(MainActivity.DB_KEY_URI) : null)) {
 					wApp = wa;
-					Toast.makeText(this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 					break;
 				}
 			}

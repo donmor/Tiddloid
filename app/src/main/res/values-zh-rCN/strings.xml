@@ -56,6 +56,9 @@
     <string name="wiki_rolled_back_successfully">Wiki成功还原</string>
 	<string name="third_part_rising">此页面正在请求打开另一个应用程序。要继续吗？</string>
 	<string name="backup_deleted">备份已删除</string>
+	<string name="hint_login">登录到 %1$s</string>
+	<string name="hint_username">用户名</string>
+	<string name="hint_password">Password</string>
 	<string name="market">打分并评价</string>
 	<string name="about">
 		Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来以供随时查阅。有关TiddlyWiki的更多详细信息，请参阅https://tiddlywiki.com/。\n
