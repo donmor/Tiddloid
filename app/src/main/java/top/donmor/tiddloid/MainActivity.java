@@ -825,9 +825,12 @@ public class MainActivity extends AppCompatActivity {
 	private void createWiki(Uri uri, boolean clone) {
 		OnGetSrc cb = file -> {
 			if (file.exists() && isWiki(file)) {
-				try (FileInputStream is = new FileInputStream(file);
-						OutputStream os = getContentResolver().openOutputStream(uri)) {
-					if (os == null) throw new FileNotFoundException(EXCEPTION_DOCUMENT_IO_ERROR);
+				try (ParcelFileDescriptor ofd = getContentResolver().openFileDescriptor(uri, KEY_FD_RW);
+						FileInputStream is = new FileInputStream(file);
+						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+						FileChannel ic = is.getChannel();
+						FileChannel oc = os.getChannel()) {
+//					if (os == null) throw new FileNotFoundException(EXCEPTION_DOCUMENT_IO_ERROR);
 					// 查重
 					String id = null;
 					JSONObject wl = db.getJSONObject(DB_KEY_WIKI), wa = null;
@@ -849,14 +852,16 @@ public class MainActivity extends AppCompatActivity {
 					wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
 					wa.put(DB_KEY_BACKUP, false);
 					MainActivity.writeJson(MainActivity.this, db);
-					int len = is.available(), length, lenTotal = 0;
-					byte[] bytes = new byte[BUF_SIZE];
-					while ((length = is.read(bytes)) > -1) {
-						os.write(bytes, 0, length);
-						lenTotal += length;
-					}
-					os.flush();
-					if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
+					ic.transferTo(0, ic.size(), oc);
+					ic.force(true);
+//					int len = is.available(), length, lenTotal = 0;
+//					byte[] bytes = new byte[BUF_SIZE];
+//					while ((length = is.read(bytes)) > -1) {
+//						os.write(bytes, 0, length);
+//						lenTotal += length;
+//					}
+//					os.flush();
+//					if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
 					try {
 						getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
 					} catch (RuntimeException e) {
@@ -931,17 +936,22 @@ public class MainActivity extends AppCompatActivity {
 				return;
 			}
 			getSrcFromUri(file -> {
-				try (FileInputStream is = new FileInputStream(file);
-						OutputStream os = getContentResolver().openOutputStream(nf.getUri())) {
-					if (os == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
-					int len = is.available(), length, lenTotal = 0;
-					byte[] bytes = new byte[BUF_SIZE];
-					while ((length = is.read(bytes)) > -1) {
-						os.write(bytes, 0, length);
-						lenTotal += length;
-					}
-					os.flush();
-					if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
+				try (ParcelFileDescriptor ofd = getContentResolver().openFileDescriptor(nf.getUri(), KEY_FD_RW);
+						FileInputStream is = new FileInputStream(file);
+						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+						FileChannel ic = is.getChannel();
+						FileChannel oc = os.getChannel()) {
+					ic.transferTo(0, ic.size(), oc);
+					ic.force(true);
+//					if (os == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
+//					int len = is.available(), length, lenTotal = 0;
+//					byte[] bytes = new byte[BUF_SIZE];
+//					while ((length = is.read(bytes)) > -1) {
+//						os.write(bytes, 0, length);
+//						lenTotal += length;
+//					}
+//					os.flush();
+//					if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
 					addDir(uri);
 				} catch (IOException e) {
 					e.printStackTrace();
