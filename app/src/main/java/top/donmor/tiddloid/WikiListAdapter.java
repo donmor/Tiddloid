@@ -86,8 +86,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			final String id = ids.get(position);
 			JSONObject wa = wl.getJSONObject(id);
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
-			if (MainActivity.SCH_FILE.equals(Uri.parse(wa.optString(MainActivity.DB_KEY_URI)).getScheme()))
-				holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
+			holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			if (fib64.length() > 0) {
 				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
 				Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
