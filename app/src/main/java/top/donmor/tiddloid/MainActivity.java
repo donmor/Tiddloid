@@ -829,7 +829,7 @@ public class MainActivity extends AppCompatActivity {
 					wa.put(KEY_NAME, KEY_TW);
 					wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
 					wa.put(DB_KEY_BACKUP, false);
-					MainActivity.writeJson(MainActivity.this, db);
+					writeJson(MainActivity.this, db);
 					ic.transferTo(0, ic.size(), oc);
 					ic.force(true);
 					try {
@@ -839,7 +839,7 @@ public class MainActivity extends AppCompatActivity {
 					}
 					if (!loadPage(id))
 						Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-				} catch (IOException e) {
+				} catch (IOException | NullPointerException e) {
 					e.printStackTrace();
 					Toast.makeText(MainActivity.this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
 				} catch (JSONException e) {
@@ -914,7 +914,7 @@ public class MainActivity extends AppCompatActivity {
 					ic.transferTo(0, ic.size(), oc);
 					ic.force(true);
 					addDir(uri);
-				} catch (IOException e) {
+				} catch (IOException | NullPointerException e) {
 					e.printStackTrace();
 					Toast.makeText(MainActivity.this, R.string.download_failed, Toast.LENGTH_SHORT).show();
 				}
