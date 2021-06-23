@@ -28,6 +28,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Handler;
+import android.os.ParcelFileDescriptor;
 import android.provider.DocumentsContract;
 import android.provider.Settings;
 import android.text.SpannableString;
@@ -125,6 +126,7 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_BACKUP = "backup",
 			KEY_FN_INDEX = "index.html",
 			KEY_FN_INDEX2 = "index.htm",
+			KEY_FD_RW = "rw",
 			MASK_SDF_BACKUP = "yyyyMMddHHmmssSSS",
 			SCH_CONTENT = "content",
 			SCH_FILE = "file",
@@ -417,20 +419,24 @@ public class MainActivity extends AppCompatActivity {
 								if (!isWiki(MainActivity.this, u1)) throw new IOException(EXCEPTION_WIKI_NOT_AVAILABLE);
 								File dest = new File(getCacheDir(), CLONING_FILE_NAME);
 								dest.createNewFile();
-								try (InputStream is = getContentResolver().openInputStream(u1);
-										OutputStream os = new FileOutputStream(dest)) {
-									if (is == null) throw new FileNotFoundException(EXCEPTION_DOCUMENT_IO_ERROR);
-									int len = is.available(), length, lenTotal = 0;
-									byte[] bytes = new byte[BUF_SIZE];
-									while ((length = is.read(bytes)) > -1) {
-										os.write(bytes, 0, length);
-										lenTotal += length;
-									}
-									os.flush();
-									if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
+								try (ParcelFileDescriptor ifd = getContentResolver().openFileDescriptor(u1, KEY_FD_RW);
+										FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+										FileOutputStream os = new FileOutputStream(dest);
+										FileChannel ic = is.getChannel();
+										FileChannel oc = os.getChannel()) {
+									ic.transferTo(0, ic.size(), oc);
+									ic.force(true);
+//									int len = is.available(), length, lenTotal = 0;
+//									byte[] bytes = new byte[BUF_SIZE];
+//									while ((length = is.read(bytes)) > -1) {
+//										os.write(bytes, 0, length);
+//										lenTotal += length;
+//									}
+//									os.flush();
+//									if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
 									getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
 								}
-							} catch (IOException | IllegalArgumentException e) {
+							} catch (IOException | IllegalArgumentException | NullPointerException e) {
 								e.printStackTrace();
 								Toast.makeText(MainActivity.this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 							}
@@ -479,23 +485,31 @@ public class MainActivity extends AppCompatActivity {
 											} catch (IOException e) {
 												e.printStackTrace();
 											}
-											try (InputStream is = getContentResolver().openInputStream(tu != null ? bdf.getUri() : Uri.fromFile(bf));
-													OutputStream os = getContentResolver().openOutputStream(tu != null ? tu : u)) {    // 由于SAF限制，文件模式无法还原丢失的文件，除非在原位创建一个文件，即使该文件是空的
-												if (is == null || os == null)
-													throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
-												int len = is.available(), length, lenTotal = 0;
-												byte[] bytes = new byte[BUF_SIZE];
-												while ((length = is.read(bytes)) > -1) {
-													os.write(bytes, 0, length);
-													lenTotal += length;
-												}
-												os.flush();
-												if (lenTotal != len)
-													throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
+											try (ParcelFileDescriptor ifd = getContentResolver().openFileDescriptor(tu != null ? bdf.getUri() : Uri.fromFile(bf), KEY_FD_RW);
+													ParcelFileDescriptor ofd = getContentResolver().openFileDescriptor(tu != null ? bdf.getUri() : Uri.fromFile(bf), KEY_FD_RW);
+													FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+													FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+//													InputStream is = getContentResolver().openInputStream(tu != null ? bdf.getUri() : Uri.fromFile(bf));
+//													OutputStream os = getContentResolver().openOutputStream(tu != null ? tu : u)
+													FileChannel ic = is.getChannel();
+													FileChannel oc = os.getChannel()) {    // 由于SAF限制，文件模式无法还原丢失的文件，除非在原位创建一个文件，即使该文件是空的
+												ic.transferTo(0, ic.size(), oc);
+												ic.force(true);
+//												if (is == null || os == null)
+//													throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
+//												int len = is.available(), length, lenTotal = 0;
+//												byte[] bytes = new byte[BUF_SIZE];
+//												while ((length = is.read(bytes)) > -1) {
+//													os.write(bytes, 0, length);
+//													lenTotal += length;
+//												}
+//												os.flush();
+//												if (lenTotal != len)
+//													throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
 												wikiConfigDialog.dismiss();
 												Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
 												loadPage(id);
-											} catch (IOException e) {
+											} catch (IOException | NullPointerException e) {
 												e.printStackTrace();
 												Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
 											}
@@ -574,7 +588,7 @@ public class MainActivity extends AppCompatActivity {
 		layout.setGravity(Gravity.CENTER_VERTICAL);
 		ProgressBar progressBar = new ProgressBar(this);
 		progressBar.setIndeterminate(true);
-		progressBar.setPaddingRelative(0, 0,dialogPadding,0);
+		progressBar.setPaddingRelative(0, 0, dialogPadding, 0);
 		layout.addView(progressBar);
 		TextView lblWait = new TextView(this);
 		lblWait.setText(R.string.please_wait);
@@ -1171,17 +1185,27 @@ public class MainActivity extends AppCompatActivity {
 			if ((bdf = mdf.createFile(TYPE_HTML, bfn)) == null)
 				throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 		}
-		try (InputStream is = context.getContentResolver().openInputStream(tree ? df.getUri() : u);
-				OutputStream os = context.getContentResolver().openOutputStream(tree ? bdf.getUri() : Uri.fromFile(new File(mfd, bfn)))) {
-			if (is == null || os == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
-			int len = is.available(), length, lenTotal = 0;
-			byte[] bytes = new byte[BUF_SIZE];
-			while ((length = is.read(bytes)) > -1) {
-				os.write(bytes, 0, length);
-				lenTotal += length;
-			}
-			os.flush();
-			if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
+		try (ParcelFileDescriptor ifd = context.getContentResolver().openFileDescriptor(tree ? df.getUri() : u, KEY_FD_RW);
+				ParcelFileDescriptor ofd = context.getContentResolver().openFileDescriptor(tree ? bdf.getUri() : Uri.fromFile(new File(mfd, bfn)), KEY_FD_RW);
+				FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+				FileChannel ic = is.getChannel();
+				FileChannel oc = os.getChannel()) {
+//		try (InputStream is = context.getContentResolver().openInputStream(tree ? df.getUri() : u);
+//				OutputStream os = context.getContentResolver().openOutputStream(tree ? bdf.getUri() : Uri.fromFile(new File(mfd, bfn)))) {
+			ic.transferTo(0, ic.size(), oc);
+			ic.force(true);
+//			if (is == null || os == null) throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
+//			int len = is.available(), length, lenTotal = 0;
+//			byte[] bytes = new byte[BUF_SIZE];
+//			while ((length = is.read(bytes)) > -1) {
+//				os.write(bytes, 0, length);
+//				lenTotal += length;
+//			}
+//			os.flush();
+//			if (lenTotal != len) throw new IOException(EXCEPTION_TRANSFER_CORRUPTED);
+		} catch (NullPointerException e) {
+			throw new IOException(e.getMessage());
 		}
 	}
 

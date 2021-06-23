@@ -1013,7 +1013,10 @@ public class TWEditorWV extends AppCompatActivity {
 		if (src == null || !src.isDirectory())
 			throw new IOException(MainActivity.EXCEPTION_TREE_NOT_A_DIRECTORY);
 		if (!pos.isDirectory()) pos.delete();
-		if (!pos.exists()) pos.mkdir();
+		if (!pos.exists()) {
+			pos.mkdir();
+			return;
+		}
 		MessageDigest messageDigest = null;
 		try {
 			messageDigest = MessageDigest.getInstance(KEY_ALG);
@@ -1028,7 +1031,7 @@ public class TWEditorWV extends AppCompatActivity {
 				try (InputStream is = getContentResolver().openInputStream(inner.getUri());
 						DigestInputStream dis = messageDigest != null ? new DigestInputStream(is, messageDigest) : null;
 						ByteArrayOutputStream bos = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
-					if (is == null) continue;
+					if (is == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
 					byte[] buf = new byte[MainActivity.BUF_SIZE];
 					int length;
 					if (dis != null) {
@@ -1041,6 +1044,9 @@ public class TWEditorWV extends AppCompatActivity {
 					} else while ((length = is.read(buf)) != -1) bos.write(buf, 0, length);
 					bos.flush();
 					ba = bos.toByteArray();
+				} catch (IOException e) {
+					e.printStackTrace();
+					continue;
 				}
 				try (ByteArrayInputStream bis = new ByteArrayInputStream(ba);
 						FileOutputStream os = new FileOutputStream(dest);
@@ -1060,6 +1066,8 @@ public class TWEditorWV extends AppCompatActivity {
 					}
 					files.add(dest.getPath());
 					hashes.put(dest.getPath(), dg);
+				} catch (IOException e) {
+					e.printStackTrace();
 				}
 			} else if (inner.isDirectory()) {
 				if (inner.getName() == null) continue;

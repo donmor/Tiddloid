@@ -1,3 +1,4 @@
 Update details:
 - Fixed a bug causing "Wiki already exists" pops up when opening a saved link.
 - Fixed a bug causing failure on accessing a website requiring HTTP authentication
+- Performance optimization
