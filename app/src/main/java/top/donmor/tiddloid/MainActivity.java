@@ -133,7 +133,9 @@ public class MainActivity extends AppCompatActivity {
 			SCH_HTTP = "http",
 			SCH_HTTPS = "https",
 			STR_EMPTY = "",
-			TYPE_HTML = "text/html";
+			TYPE_HTML = "text/html",
+			CLASS_MENU_BUILDER = "MenuBuilder",
+			METHOD_SET_OPTIONAL_ICONS_VISIBLE = "setOptionalIconsVisible";
 	private static final String
 			DB_FILE_NAME = "data.json",
 			DB_KEY_PATH = "path",
@@ -145,9 +147,7 @@ public class MainActivity extends AppCompatActivity {
 			KEY_URI_RATE = "market://details?id=",
 			SCH_PACKAGES = "package",
 			TEMPLATE_FILE_NAME = "template.html",
-			CLONING_FILE_NAME = "cloning.html",
-			CLASS_MENU_BUILDER = "MenuBuilder",
-			METHOD_SET_OPTIONAL_ICONS_VISIBLE = "setOptionalIconsVisible";
+			CLONING_FILE_NAME = "cloning.html";
 	static final boolean APIOver21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP,
 			APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
@@ -725,7 +725,7 @@ public class MainActivity extends AppCompatActivity {
 				Toast.makeText(this, R.string.file_deleted, Toast.LENGTH_SHORT).show();
 			}
 			wikiListAdapter.reload(db);
-		} catch (IOException | JSONException e) {
+		} catch (IOException | JSONException | UnsupportedOperationException e) {
 			e.printStackTrace();
 		}
 	}

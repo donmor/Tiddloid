@@ -30,7 +30,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
     The wiki list importing/exporting are hidden features since it's seldom used.
 
     * To import: Copy `data.json` to `INTERNAL/Android/data/top.donmor.tiddloid/files/` before running for the first time. If you have previously run the program, clear the data in `Settings/Apps` and copy the file.
-    * To export: Create a tiddler with: `<a href="javascript:window.twi.exportDB()">export</a>` and click the link. A `data.json` will be generated under `INTERNAL/Android/data/top.donmor.tiddloid/files/`.
+    * To export: Click `Export Data` in `Control Panel/Appearance/Tiddloid Tweaks`. A `data.json` will be generated under `INTERNAL/Android/data/top.donmor.tiddloid/files/`.
 
 * How to apply UI tweaks?
 
@@ -38,22 +38,27 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
     * Apply theme color: Check `Control Panel/Appearance/Tiddloid Tweaks/Apply theme color to system bars`.
     * Hide toolbar: Check `Control Panel/Appearance/Tiddloid Tweaks/Hide toolbar on loading complete`.
+    * Custom actions:  to create a config tiddler and edit it following the instructions.
+    
+* The file imported from Google Drive won't sync with other devices.
+
+    Try marking the file for "offline access" in Google Drive app. (Thanks to @tedric42's feedback)
 
 * I encountered a Javascript error followed by a white screen in newly created files.
 
-    * Check your Android version. TiddlyWiki 5.1.23 has critical bugs on Android 5.1 and below (WebView 39). A solution is to get a pre-release version of TiddlyWiki, which have had this bug fixed or, a previous version without this bug.
+    Check your Android version. TiddlyWiki 5.1.23 has critical bugs on Android 5.1 and below (WebView 39). A solution is to get a pre-release version of TiddlyWiki, which have had this bug fixed or, a previous version without this bug.
 
 * My wiki list change its order randomly every time.
 
-    * Check your Android version. One of the functions in the JSON library behaves differently below 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all of its features.
+    Check your Android version. One of the functions in the JSON library behaves differently below 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all of its features.
 
 * I upgraded from 1.4 and all of my TiddlyWikis added before no longer to work.
 
-    * Check if your system revoked local storage accessing permissions. If you're using Android R, a permission acquirement page will appear at the first time you use legacy stuffs. Otherwise, a pop-up window will appear if running on Android M and above.
+    Check if your system revoked local storage accessing permissions. If you're using Android R, a permission acquirement page will appear at the first time you use legacy stuffs. Otherwise, a pop-up window will appear if running on Android M and above.
 
 * I still want to add `Local (Legacy)` wikis.
 
-    * Install a file manager designed for old versions of Android that opening files by passing `file://`URIs, open a HTML file, and choose `Add to Tiddloid`.
+    Install a file manager designed for old versions of Android that opening files by passing `file://`URIs, open a HTML file, and choose `Add to Tiddloid`.
 
 * Why there's a Tiddloid Lite? What's the difference between the two versions?
 

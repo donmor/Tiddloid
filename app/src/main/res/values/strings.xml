@@ -111,7 +111,8 @@
             }
             var tl_fic = $tw.wiki.getTiddlerText(\"$:/favicon.ico\");
             var tl_favicon = tl_fic != null ? tl_fic : \"\";
-            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon]
+            var tl_ca = $tw.wiki.getTiddlerText(\"$:/config/Tiddloid/CustomActions.json\");
+            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon, tl_ca]
         })();
     </string>
     <string name="js_info_c" translatable="false">
@@ -120,7 +121,7 @@
             var tl_subtitle = store.getTiddlerText(\"SiteSubtitle\");
             var tl_fic = store.getTiddlerText(\"favicon.ico\");
             var tl_favicon = tl_fic != null ? tl_fic : \"\";
-            return [tl_title, tl_subtitle, \"no\", \"\", tl_favicon]
+            return [tl_title, tl_subtitle, \"no\", \"\", tl_favicon, \"\"]
         })();
     </string>
     <!--Misc-->

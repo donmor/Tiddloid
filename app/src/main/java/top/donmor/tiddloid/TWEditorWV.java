@@ -29,7 +29,9 @@ import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.provider.DocumentsContract;
 import android.text.InputType;
+import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.style.ForegroundColorSpan;
 import android.util.Base64;
 import android.view.Menu;
 import android.view.MenuItem;
@@ -76,6 +78,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
 import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
@@ -110,6 +114,8 @@ public class TWEditorWV extends AppCompatActivity {
 	private ActivityResultLauncher<Intent> getChooserDL, getChooserImport, getChooserClone;
 	ActivityResultLauncher<Intent> getPermissionRequest;
 	boolean acquiringStorage = false;
+	private JSONArray customActions = null;
+	private final HashMap<Integer, String> customActionsMap = new HashMap<>();
 
 
 	// CONSTANT
@@ -118,14 +124,17 @@ public class TWEditorWV extends AppCompatActivity {
 			MIME_ANY = "*/*",
 			MIME_TEXT = "text/plain",
 			REX_SP_CHR = "\\s",
+			KEY_ACTION = "action",
+			KEY_ALG = "MD5",
 			KEY_COL = ":",
 			KEY_ENC = "enc",
-			KEY_ALG = "MD5",
+			KEY_ICON = "icon",
 			KEY_YES = "yes",
 			SCH_ABOUT = "about",
 			SCH_TEL = "tel",
 			SCH_MAILTO = "mailto",
 			URL_BLANK = "about:blank";
+	private static final int CA_GRP_ID = 999;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -185,7 +194,7 @@ public class TWEditorWV extends AppCompatActivity {
 					int len = is.available();
 					int length;
 					int lengthTotal = 0;
-					byte[] bytes = new byte[4096];
+					byte[] bytes = new byte[MainActivity.BUF_SIZE];
 					while ((length = is.read(bytes)) > -1) {
 						os.write(bytes, 0, length);
 						lengthTotal += length;
@@ -240,7 +249,7 @@ public class TWEditorWV extends AppCompatActivity {
 					MainActivity.writeJson(this, db);
 					int len = is.available();
 					int length, lengthTotal = 0;
-					byte[] b = new byte[4096];
+					byte[] b = new byte[MainActivity.BUF_SIZE];
 					while ((length = is.read(b)) != -1) {
 						os.write(b, 0, length);
 						lengthTotal += length;
@@ -430,7 +439,7 @@ public class TWEditorWV extends AppCompatActivity {
 						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
 					int len = is.available();
 					int length, lengthTotal = 0;
-					byte[] b = new byte[4096];
+					byte[] b = new byte[MainActivity.BUF_SIZE];
 					while ((length = is.read(b)) != -1) {
 						os.write(b, 0, length);
 						lengthTotal += length;
@@ -649,7 +658,6 @@ public class TWEditorWV extends AppCompatActivity {
 					Color.colorToHSV(themeColor, l);
 				} else themeColor = null;
 				getDelegate().setLocalNightMode(themeColor == null ? AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM : l[2] > 0.75 ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES);   // 系统栏模式 根据主题色灰度/日夜模式
-				onConfigurationChanged(newConfig);
 				// 解取favicon
 				String fib64 = array.getString(4);
 				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
@@ -669,6 +677,9 @@ public class TWEditorWV extends AppCompatActivity {
 					optMenu.findItem(R.id.action_save_c).setVisible(wApp == null && uri != null);
 					optMenu.findItem(R.id.action_save).setVisible(wApp != null || uri == null);
 				}
+				String v = array.optString(5);
+				customActions = v.length() > 8 ? new JSONArray(v) : null;
+				onConfigurationChanged(newConfig);
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
@@ -681,6 +692,20 @@ public class TWEditorWV extends AppCompatActivity {
 		getMenuInflater().inflate(R.menu.menu_twi, menu);
 		optMenu = menu;
 		return true;
+	}
+
+	@Override
+	public boolean onPrepareOptionsMenu(Menu menu) {
+		if (menu != null) {
+			if (MainActivity.CLASS_MENU_BUILDER.equals(menu.getClass().getSimpleName())) try {
+				Method method = menu.getClass().getDeclaredMethod(MainActivity.METHOD_SET_OPTIONAL_ICONS_VISIBLE, Boolean.TYPE);
+				method.setAccessible(true);
+				method.invoke(menu, true);
+			} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
+				e.printStackTrace();
+			}
+		}
+		return super.onPrepareOptionsMenu(menu);
 	}
 
 	@Override
@@ -697,6 +722,10 @@ public class TWEditorWV extends AppCompatActivity {
 			case idSave:
 				wv.evaluateJavascript(getString(isClassic ? R.string.js_save_c : R.string.js_save), null);
 				break;
+			default:
+				if (item.getGroupId() == CA_GRP_ID) {
+					wv.evaluateJavascript(customActionsMap.get(item.getItemId()), null);
+				}
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -1187,10 +1216,40 @@ public class TWEditorWV extends AppCompatActivity {
 		toolbar.setSubtitleTextAppearance(this, R.style.TextAppearance_AppCompat_Small);
 		toolbar.setNavigationIcon(MainActivity.APIOver24 || lightBar ? R.drawable.ic_arrow_back : R.drawable.ic_arrow_back_d);
 		if (optMenu != null) {
+			try {
+				optMenu.removeGroup(CA_GRP_ID);
+				customActionsMap.clear();
+				if (customActions != null) {
+					for (int i = 0; i < customActions.length(); i++) {
+						JSONObject item = customActions.getJSONObject(i);
+						if (item == null) continue;
+						String vn = item.optString(MainActivity.KEY_NAME), vc = item.optString(KEY_ACTION);
+						if (vn.length() == 0 || vc.length() == 0) continue;
+						int id = CA_GRP_ID + i;
+						MenuItem si = optMenu.add(CA_GRP_ID, id, 0, vn);
+						si.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
+						String fib64 = item.optString(KEY_ICON);
+						if (fib64.length() > 0) {
+							byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
+							Bitmap icon = BitmapFactory.decodeByteArray(b, 0, b.length);
+							si.setIcon(cIcon(icon));
+						} else si.setIcon(MainActivity.APIOver24 ? R.drawable.ic_menu : lightBar ? R.drawable.ic_menu_l : R.drawable.ic_menu_d);
+						customActionsMap.put(id, vc);
+					}
+				}
+			} catch (JSONException e) {
+				e.printStackTrace();
+			}
 			optMenu.findItem(R.id.action_save_c).setIcon(MainActivity.APIOver24 ? R.drawable.ic_save : lightBar ? R.drawable.ic_save_l : R.drawable.ic_save_d);
 			optMenu.findItem(R.id.action_save_file).setIcon(MainActivity.APIOver24 ? R.drawable.ic_description : lightBar ? R.drawable.ic_description_l : R.drawable.ic_description_d);
 			optMenu.findItem(R.id.action_save_link).setIcon(MainActivity.APIOver24 ? R.drawable.ic_language : lightBar ? R.drawable.ic_language_l : R.drawable.ic_language_d);
 			optMenu.findItem(R.id.action_save).setIcon(optMenu.findItem(R.id.action_save_c).getIcon());
+			for (int i = 0; i < optMenu.size(); i++) {
+				MenuItem item = optMenu.getItem(i);
+				SpannableString s = new SpannableString(item.getTitle());
+				s.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.content_tint)), 0, s.length(), 0);
+				item.setTitle(s);
+			}
 		}
 	}
 

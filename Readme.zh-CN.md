@@ -30,7 +30,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
     Wiki列表导入/导出属于极少用到的隐藏功能。
 
     * 导入：在第一次运行前复制`data.json`到`内部存储/Android/data/top.donmor.tiddloid/files/`。如果已经运行过了，则需要清除应用数据。
-    * 导出：在Wiki内执行`window.twi.exportDB()`，比如创建一个Tiddler并输入以下内容：`<a href="javascript:window.twi.exportDB()">export</a>`然后点击生成的链接。生成的`data.json`可以在`内部存储/Android/data/top.donmor.tiddloid/files/`找到。
+    * 导出：在`Control Panel/Appearance/Tiddloid Tweaks`中点击`Export Data`。生成的`data.json`可以在`内部存储/Android/data/top.donmor.tiddloid/files/`找到。
 
 * 如何调整界面？
 
@@ -38,22 +38,27 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
     * 应用主题色：选中`Control Panel/Appearance/Tiddloid Tweaks/Apply theme color to system bars`。
     * 隐藏标题栏：选中`Control Panel/Appearance/Tiddloid Tweaks/Hide toolbar on loading complete`。
+    * 自定义菜单项：在`Control Panel/Appearance/Tiddloid Tweaks`中点击`Custom Actions`创建配置Tiddler，并按提示编辑。
+    
+* 从Google Drive导入的文件无法同步。
+
+    尝试在Google Drive应用中将文件标记为“可离线使用”。（感谢@tedric42的反馈）
 
 * 新建的Wiki出现Javascript错误弹框并白屏。
 
-    * 检查Android系统版本。TiddlyWiki 5.1.23版本在Android 5.1及以下(WebView 39)存在严重bug。一个解决方案是使用已经修复了此bug的pre-release版本，或者未出现此bug的旧版本。
+    检查Android系统版本。TiddlyWiki 5.1.23版本在Android 5.1及以下(WebView 39)存在严重bug。一个解决方案是使用已经修复了此bug的pre-release版本，或者未出现此bug的旧版本。
 
 * Wiki列表每次的顺序都在变化。
 
-    * 检查Android系统版本。JSON库的一个实现在Android 4.4以下有所差异，导致了Wiki列表乱序问题。推荐在Android 8.0以上系统运行以获得最佳体验。
+    检查Android系统版本。JSON库的一个实现在Android 4.4以下有所差异，导致了Wiki列表乱序问题。推荐在Android 8.0以上系统运行以获得最佳体验。
 
 * 从1.4升级后，之前添加的Wiki全部失效了。
 
-    * 检查系统权限设置页面处是否禁止了Tiddloid访问本地文件。在Android 11系统下，第一次使用旧模式时会出现一个请求全部文件读写权限的页面；Android 6 ~ 10则显示一个弹窗。
+    检查系统权限设置页面处是否禁止了Tiddloid访问本地文件。在Android 11系统下，第一次使用旧模式时会出现一个请求全部文件读写权限的页面；Android 6 ~ 10则显示一个弹窗。
 
 * 我仍然想用旧模式添加Wiki。
 
-    * 安装一个为旧版Android设计，仍使用`file://`URI的文件管理器，打开一个HTML文件，打开方式选择`Add to Tiddloid`。
+    安装一个为旧版Android设计，仍使用`file://`URI的文件管理器，打开一个HTML文件，打开方式选择`Add to Tiddloid`。
 
 * 为什么还有一个Tiddloid Lite？这两个版本有什么区别？
 

@@ -1,2 +1,5 @@
 Update details:
+- Now supports custom action buttons to the toolbar (configured per-wiki)
 - Fixed a bug causing favicons to be mistaken rendered
+- Fixed a bug causing crashes on deleting files from certain sources
+A new version of Tiddloid Tweaks plugin has been published. Get it from GitHub to enable new features.

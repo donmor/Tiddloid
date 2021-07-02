@@ -2,18 +2,22 @@
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
     android:layoutDirection="inherit"
-    tools:context="top.donmor.tiddloid.TWEditorWV">
+    tools:context="top.donmor.tiddloid.TWEditorWV"
+    tools:ignore="AlwaysShowAction">
     <item
         android:id="@+id/action_save_c"
         android:icon="@drawable/ic_save"
         android:title="@string/action_save_to"
         android:visible="false"
-        app:showAsAction="ifRoom|withText" >
+        android:orderInCategory="1"
+        app:showAsAction="always|withText">
         <menu>
-            <item android:id="@+id/action_save_file"
+            <item
+                android:id="@+id/action_save_file"
                 android:icon="@drawable/ic_description"
                 android:title="@string/action_save_to_file" />
-            <item android:id="@+id/action_save_link"
+            <item
+                android:id="@+id/action_save_link"
                 android:icon="@drawable/ic_language"
                 android:title="@string/action_save_to_link" />
         </menu>
@@ -23,5 +27,6 @@
         android:icon="@drawable/ic_save"
         android:title="@string/action_save"
         android:visible="false"
-        app:showAsAction="ifRoom|withText" />
+        android:orderInCategory="1"
+        app:showAsAction="always|withText" />
 </menu>
