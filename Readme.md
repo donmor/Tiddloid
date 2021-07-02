@@ -30,7 +30,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
     The wiki list importing/exporting are hidden features since it's seldom used.
 
     * To import: Copy `data.json` to `INTERNAL/Android/data/top.donmor.tiddloid/files/` before running for the first time. If you have previously run the program, clear the data in `Settings/Apps` and copy the file.
-    * To export: Click `Export Data` in `Control Panel/Appearance/Tiddloid Tweaks`. A `data.json` will be generated under `INTERNAL/Android/data/top.donmor.tiddloid/files/`.
+    * To export: Install the plugin provided along with the apk, then Click `Export Data` in `Control Panel/Appearance/Tiddloid Tweaks`. A `data.json` will be generated under `INTERNAL/Android/data/top.donmor.tiddloid/files/`.
 
 * How to apply UI tweaks?
 

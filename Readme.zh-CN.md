@@ -30,7 +30,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
     Wiki列表导入/导出属于极少用到的隐藏功能。
 
     * 导入：在第一次运行前复制`data.json`到`内部存储/Android/data/top.donmor.tiddloid/files/`。如果已经运行过了，则需要清除应用数据。
-    * 导出：在`Control Panel/Appearance/Tiddloid Tweaks`中点击`Export Data`。生成的`data.json`可以在`内部存储/Android/data/top.donmor.tiddloid/files/`找到。
+    * 导出：导入随apk提供的插件,然后在`Control Panel/Appearance/Tiddloid Tweaks`中点击`Export Data`。生成的`data.json`可以在`内部存储/Android/data/top.donmor.tiddloid/files/`找到。
 
 * 如何调整界面？
 
