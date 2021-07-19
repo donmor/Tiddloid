@@ -669,6 +669,7 @@ public class MainActivity extends AppCompatActivity {
 			JSONObject wl = db.getJSONObject(DB_KEY_WIKI);
 			JSONObject xw = (JSONObject) wl.remove(id);
 			writeJson(this, db);
+			purgeDir(new File(getCacheDir(), id));
 			if (del && xw != null) {
 				Uri u = Uri.parse(xw.optString(DB_KEY_URI));
 				boolean legacy = SCH_FILE.equals(u.getScheme()), tree = false;
@@ -728,6 +729,18 @@ public class MainActivity extends AppCompatActivity {
 		} catch (IOException | JSONException | UnsupportedOperationException e) {
 			e.printStackTrace();
 		}
+	}
+
+	private void purgeDir(File dir) {
+		if (dir == null || !dir.exists()) return;
+		if (dir.isDirectory()) {
+			File[] fl = dir.listFiles();
+			if (fl != null) for (File f : fl) {
+				if (f.isDirectory()) purgeDir(f);
+				else f.delete();
+			}
+		}
+		dir.delete();
 	}
 
 	@Override

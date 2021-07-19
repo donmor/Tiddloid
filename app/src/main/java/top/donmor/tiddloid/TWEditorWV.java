@@ -24,6 +24,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Environment;
 import android.os.Message;
+import android.os.ParcelFileDescriptor;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
@@ -81,9 +82,9 @@ import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.nio.ByteBuffer;
+import java.nio.channels.FileChannel;
 import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
-import java.security.DigestOutputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
@@ -448,7 +449,14 @@ public class TWEditorWV extends AppCompatActivity {
 					if (lengthTotal != len)
 						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 					failed = false;
-					runOnUiThread(() -> getInfo(wv));
+					runOnUiThread(() -> {
+						if (tree != null && treeIndex != null) try {
+							syncTree(tree, id, treeIndex);
+						} catch (IOException e) {
+							e.printStackTrace();
+						}
+						getInfo(wv);
+					});
 				} catch (IOException e) {
 					e.printStackTrace();
 					Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
@@ -667,11 +675,6 @@ public class TWEditorWV extends AppCompatActivity {
 					// 写Json
 					wApp.put(MainActivity.KEY_NAME, title).put(MainActivity.DB_KEY_SUBTITLE, subtitle).put(MainActivity.DB_KEY_COLOR, themeColor).put(MainActivity.KEY_FAVICON, fib64.length() > 0 ? fib64 : null);
 					MainActivity.writeJson(TWEditorWV.this, db);
-					if (tree != null && treeIndex != null) try {
-						syncTree(tree, id, treeIndex);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
 				}
 				if (optMenu != null) {
 					optMenu.findItem(R.id.action_save_c).setVisible(wApp == null && uri != null);
@@ -1015,7 +1018,6 @@ public class TWEditorWV extends AppCompatActivity {
 			MessageDigest messageDigest = null;
 			try {
 				messageDigest = MessageDigest.getInstance(KEY_ALG);
-				System.out.println(messageDigest);
 			} catch (NoSuchAlgorithmException e) {
 				e.printStackTrace();
 			}
@@ -1026,8 +1028,8 @@ public class TWEditorWV extends AppCompatActivity {
 						try (DigestInputStream dis = new DigestInputStream(new FileInputStream(child), messageDigest)) {
 							dis.on(true);
 							byte[] buf = new byte[MainActivity.BUF_SIZE];
-							//noinspection StatementWithEmptyBody
-							while (dis.read(buf, 0, MainActivity.BUF_SIZE) != -1) ;
+							int length;
+							do length = dis.read(buf, 0, MainActivity.BUF_SIZE); while (length != -1);
 							map.put(child.getPath(), dis.getMessageDigest().digest());
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -1056,43 +1058,33 @@ public class TWEditorWV extends AppCompatActivity {
 			if (inner.isFile()) {
 				if (inner.getName() == null) continue;
 				File dest = new File(pos, inner.getName());
-				byte[] ba, dg = null;
+				byte[] dg = null;
 				try (InputStream is = getContentResolver().openInputStream(inner.getUri());
-						DigestInputStream dis = messageDigest != null ? new DigestInputStream(is, messageDigest) : null;
-						ByteArrayOutputStream bos = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
+						DigestInputStream dis = messageDigest != null ? new DigestInputStream(is, messageDigest) : null
+				) {
 					if (is == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
 					byte[] buf = new byte[MainActivity.BUF_SIZE];
 					int length;
 					if (dis != null) {
 						dis.on(true);
-						while ((length = dis.read(buf)) != -1) bos.write(buf, 0, length);
+						do length = dis.read(buf); while (length != -1);
 						if (Arrays.equals(hashes.get(dest.getPath()), dg = dis.getMessageDigest().digest())) {
 							files.add(dest.getPath());
 							continue;
 						}
-					} else while ((length = is.read(buf)) != -1) bos.write(buf, 0, length);
-					bos.flush();
-					ba = bos.toByteArray();
+					}
 				} catch (IOException e) {
 					e.printStackTrace();
 					continue;
 				}
-				try (ByteArrayInputStream bis = new ByteArrayInputStream(ba);
+				try (ParcelFileDescriptor ifd = getContentResolver().openFileDescriptor(inner.getUri(), MainActivity.KEY_FD_RW);
+						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 						FileOutputStream os = new FileOutputStream(dest);
-						DigestOutputStream dos = messageDigest != null ? new DigestOutputStream(os, messageDigest) : null) {
-					byte[] buf = new byte[MainActivity.BUF_SIZE];
-					int length;
-					if (dos != null) {
-						dos.on(true);
-						while ((length = bis.read(buf)) != -1) dos.write(buf, 0, length);
-						dos.flush();
-						byte[] d1 = dos.getMessageDigest().digest();
-						if (!Arrays.equals(dg, d1))
-							throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-					} else {
-						while ((length = bis.read(buf)) != -1) os.write(buf, 0, length);
-						os.flush();
-					}
+						FileChannel ic = is.getChannel();
+						FileChannel oc = os.getChannel()
+				) {
+					ic.transferTo(0, ic.size(), oc);
+					ic.force(true);
 					files.add(dest.getPath());
 					hashes.put(dest.getPath(), dg);
 				} catch (IOException e) {
