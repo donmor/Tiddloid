@@ -25,18 +25,16 @@
         android:usesCleartextTraffic="true"
         tools:targetApi="m">
         <activity
-            android:name=".SplashActivity"
-            android:configChanges="uiMode">
+            android:name=".MainActivity"
+            android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
+            android:hardwareAccelerated="true"
+            android:label="@string/app_name"
+            android:theme="@style/AppTheme.NoActionBar">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
                 <category android:name="android.intent.category.LAUNCHER" />
             </intent-filter>
         </activity>
-        <activity
-            android:name=".MainActivity"
-            android:hardwareAccelerated="true"
-            android:label="@string/app_name"
-            android:theme="@style/AppTheme.NoActionBar" />
         <activity
             android:name=".TWEditorWV"
             android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
@@ -97,9 +95,5 @@
                 <data android:mimeType="text/plain" />
             </intent-filter>
         </activity>
-
-        <service
-            android:name="top.donmor.tiddloid.SplashActivity$OnClearFromRecentService"
-            android:stopWithTask="false" />
     </application>
 </manifest>

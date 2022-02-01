@@ -3,10 +3,17 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
-    android:orientation="vertical"
     android:layoutDirection="locale"
+    android:orientation="vertical"
     android:textDirection="locale"
+    android:animateLayoutChanges="true"
     tools:context=".MainActivity">
+
+    <include
+        android:id="@+id/splash_layout"
+        layout="@layout/splash"
+        android:layout_width="match_parent"
+        android:layout_height="match_parent" />
 
     <com.google.android.material.appbar.AppBarLayout
         android:layout_width="match_parent"
@@ -36,9 +43,9 @@
                 android:id="@+id/t_noWiki"
                 android:layout_width="match_parent"
                 android:layout_height="wrap_content"
-                android:padding="8dp"
-                android:gravity="center"
                 android:background="@color/design_default_color_primary"
+                android:gravity="center"
+                android:padding="8dp"
                 android:text="@string/no_wiki"
                 android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 

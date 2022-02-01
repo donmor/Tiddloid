@@ -41,7 +41,10 @@ import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.Window;
+import android.view.WindowManager;
 import android.widget.CheckBox;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -105,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
 	private WikiListAdapter wikiListAdapter;
 	private JSONObject db;
 	private ActivityResultLauncher<Intent> getChooserClone, getChooserCreate, getChooserImport, getChooserTree, getPermissionRequest;
-	private boolean acquiringStorage = false;
+	private boolean acquiringStorage = false, splashComplete = false;
 	private int dialogPadding;
 
 	// CONSTANT
@@ -168,11 +171,20 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
+		long time0 = System.nanoTime();
 		super.onCreate(savedInstanceState);
-		getWindow().setFormat(PixelFormat.RGBA_8888);
+		Window w = getWindow();
+		w.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+		new Thread(() -> {
+			//noinspection StatementWithEmptyBody
+			while (!splashComplete || (System.nanoTime() - time0) / 1000000 < 1000);
+			runOnUiThread(() -> onConfigurationChanged(getResources().getConfiguration()));
+		}).start();
+		w.setFormat(PixelFormat.RGBA_8888);
 		AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 		setContentView(R.layout.activity_main);
 		dialogPadding = (int) (getResources().getDisplayMetrics().density * 30);
+		w.getDecorView().setSystemUiVisibility(View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY);
 		try {    // 加载JSON数据
 			db = readJson(this);
 			if (!db.has(DB_KEY_WIKI)) throw new JSONException(EXCEPTION_JSON_DATA_ERROR);
@@ -190,7 +202,6 @@ public class MainActivity extends AppCompatActivity {
 		}
 		trimDB140(this, db);    // db格式转换
 		// 加载UI
-		onConfigurationChanged(getResources().getConfiguration());
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
 		noWiki = findViewById(R.id.t_noWiki);
@@ -358,7 +369,7 @@ public class MainActivity extends AppCompatActivity {
 				}
 				final Uri tu;
 				Uri tu1 = null;
-				DocumentFile mdf, df;
+				DocumentFile mdf, df = null;
 				if (APIOver21 && !legacy) try {
 					mdf = DocumentFile.fromTreeUri(MainActivity.this, u);
 					DocumentFile p;
@@ -384,7 +395,7 @@ public class MainActivity extends AppCompatActivity {
 					e.printStackTrace();
 					tu1 = Uri.parse(STR_EMPTY);
 				}
-				tu = tu1;
+				tu = tu1;    // 非null时为目录模式
 				// 构建dialog
 				final AlertDialog wikiConfigDialog = new AlertDialog.Builder(MainActivity.this)
 						.setTitle(name)
@@ -461,6 +472,7 @@ public class MainActivity extends AppCompatActivity {
 				wikiConfigDialog.setOnShowListener(dialog -> wikiConfigDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
 				// 备份系统
 				final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
+				DocumentFile finalDf = df;
 				backupListAdapter.setOnBtnClickListener((pos1, which) -> {
 					final File bf = tu == null ? backupListAdapter.getBackupFile(pos1) : null;
 					final DocumentFile bdf = tu != null ? backupListAdapter.getBackupDF(pos1) : null;
@@ -478,7 +490,7 @@ public class MainActivity extends AppCompatActivity {
 												e.printStackTrace();
 											}
 											try (ParcelFileDescriptor ifd = getContentResolver().openFileDescriptor(tu != null ? bdf.getUri() : Uri.fromFile(bf), KEY_FD_RW);
-													ParcelFileDescriptor ofd = getContentResolver().openFileDescriptor(tu != null ? bdf.getUri() : Uri.fromFile(bf), KEY_FD_RW);
+													ParcelFileDescriptor ofd = getContentResolver().openFileDescriptor(tu != null ? finalDf.getUri() : u, KEY_FD_RW);
 													FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 													FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 													FileChannel ic = is.getChannel();
@@ -554,6 +566,7 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 		noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
+		splashComplete = true;
 	}
 
 	private interface OnGetSrc {
@@ -786,7 +799,7 @@ public class MainActivity extends AppCompatActivity {
 				SpannableString spannableString = new SpannableString(getString(R.string.about));
 				Linkify.addLinks(spannableString, Linkify.ALL);
 				AlertDialog aboutDialog = new AlertDialog.Builder(this)
-						.setTitle(R.string.action_about)
+						.setTitle(getString(R.string.about_title, BuildConfig.VERSION_NAME))
 						.setMessage(spannableString)
 						.setPositiveButton(android.R.string.ok, null)
 						.setNeutralButton(R.string.market, (dialog, which) -> {
@@ -992,8 +1005,14 @@ public class MainActivity extends AppCompatActivity {
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
+		Window w = getWindow();
+		View splash = findViewById(R.id.splash_layout);
+		ViewParent parent;
+		if (splash != null && (parent = splash.getParent()) instanceof ViewGroup)
+			((ViewGroup) parent).removeView(splash);
+		w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
+
 		if (APIOver23) {
-			Window w = getWindow();
 			int color = getColor(R.color.design_default_color_primary);
 			w.setStatusBarColor(color);
 			if (APIOver26)

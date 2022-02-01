@@ -1,3 +1,4 @@
 Update details:
-- Fixed a bug causing crash on loading in dir mode if large files exist (Thanks to TowelSniffer's feedback)
-- Fixed a bug causing junk files left in the cache directory
+- Fixed a bug causing failure on rolling back a wiki
+- Optimized splash screen
+- Added version code to the about page

@@ -201,4 +201,5 @@
         \n
         For more details about this app, please visit the project page ( https://github.com/donmor/Tiddloid/ ) or my homepage ( https://donmor.top/ ).
     </string>
+    <string name="about_title" translatable="false">Tiddloid - %s</string>
 </resources>
