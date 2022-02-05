@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-fr/strings.xml <= [P|Tiddloid]
+  ~ Last modified: 16:07:41 2019/09/26
+  ~ Copyright (c) 2019 donmor
+  -->
+
 <resources>
 	<!--Misc-->
 	<string name="entry_name">Ajouter à Tiddloid</string>
@@ -8,13 +13,18 @@
 	<string name="action_new">Créer un nouveau fichier TiddlyWiki</string>
 	<string name="action_import">Importer un fichier TiddlyWiki</string>
 	<string name="action_dir">Ajouter un dossier TiddlyWiki</string>
+	<string name="action_dav">Connectez-vous à WebDAV</string>
 	<string name="action_about">À propos de Tiddloid</string>
 	<string name="action_save_to">Enregistrer dans Tiddloid</string>
 	<string name="action_save_to_file">Enregistrer en tant que nouveau fichier</string>
 	<string name="action_save_to_link">Enregistrer en tant que signet</string>
 	<string name="action_save">Sauvegarder les modifications</string>
+	<string name="dav_address">URL WebDAV</string>
+	<string name="dav_username">Nom d\'utilisateur</string>
+	<string name="dav_password">Mot de passe</string>
 	<string name="no_permission">Impossible d\'obtenir les autorisations du système de fichiers</string>
 	<string name="no_wiki">Il n\'y a rien ici</string>
+	<string name="no_file">Fichier ou dossier non trouvé</string>
 	<string name="provider">Pourvoyeur:&#160;</string>
 	<string name="pathDir">"Chemin:&#160;"</string>
 	<string name="internet">Internet</string>
@@ -27,7 +37,7 @@
 	<string name="shortcut_failed">Impossible de créer un raccourci</string>
 	<string name="clone_wiki">Cloner</string>
 	<string name="remove_wiki">Supprimer le wiki</string>
-	<string name="no_internet">Pas de connexion Internet</string>
+	<string name="server_error">Impossible de se connecter au serveur</string>
 	<string name="download_failed">Échec du téléchargement</string>
 	<string name="please_wait">S\'il vous plaît, attendez&#8230;</string>
 	<string name="failed">Échoué</string>
@@ -37,8 +47,8 @@
 	<string name="backup_failed">La sauvegarde a échoué</string>
 	<string name="delete_backups_as_well">Supprimer également les sauvegardes</string>
 	<string name="delete_the_html_file">Supprimer le fichier HTML (ne peut pas être annulé!)</string>
-	<string name="not_a_wiki">Le fichier sélectionné n\'est pas un TiddlyWiki</string>
-	<string name="not_a_wiki_page">La page n\'est pas un TiddlyWiki</string>
+<!--	<string name="not_a_wiki">Le fichier sélectionné n\'est pas un TiddlyWiki</string>-->
+	<string name="not_a_wiki_page">La page n\'est pas un TiddlyWiki.</string>
 	<string name="failed_creating_file">Échec de la création du fichier</string>
 	<string name="failed_deleting_file">Échec de la suppression du fichier</string>
 	<string name="failed_writing_file">Echec d\'écriture du fichier</string>

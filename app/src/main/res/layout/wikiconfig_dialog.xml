@@ -4,10 +4,10 @@
     android:layout_width="match_parent"
     android:layout_height="wrap_content"
     android:animateLayoutChanges="true"
+    android:layoutDirection="inherit"
     android:orientation="vertical"
     android:paddingStart="20dp"
-    android:paddingEnd="20dp"
-    android:layoutDirection="inherit">
+    android:paddingEnd="20dp">
 
     <TextView
         android:id="@+id/textWikiConfigPath"

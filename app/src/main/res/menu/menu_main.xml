@@ -3,11 +3,13 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layoutDirection="inherit"
     tools:context="top.donmor.tiddloid.MainActivity">
-    <item android:id="@+id/action_new"
+    <item
+        android:id="@+id/action_new"
         android:icon="@drawable/ic_note_add"
         android:title="@string/action_new"
         app:showAsAction="never" />
-    <item android:id="@+id/action_file_import"
+    <item
+        android:id="@+id/action_file_import"
         android:icon="@drawable/ic_folder_open"
         android:title="@string/action_import"
         app:showAsAction="never" />
@@ -15,6 +17,11 @@
         android:id="@+id/action_add_dir"
         android:icon="@drawable/ic_folder_add"
         android:title="@string/action_dir"
+        app:showAsAction="never" />
+    <item
+        android:id="@+id/action_add_dav"
+        android:icon="@drawable/ic_dav"
+        android:title="@string/action_dav"
         app:showAsAction="never" />
     <item
         android:id="@+id/action_about"

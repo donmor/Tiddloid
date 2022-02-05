@@ -14,7 +14,8 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * Creating new TiddlyWiki files with latest template
 * Importing existing TiddlyWiki files stored on a writable source
-* Adding a folder containing TiddlyWiki-based `index.htm(l)`
+* Adding a folder containing TiddlyWiki-based `index.htm(l)` (Android 5.0 and above)
+* Adding files or folders held on WebDAV servers (Android 5.0 and above)
 * Receiving a TiddlyWiki site URL shared from Browser and save as a new file or a bookmark
 * Opening an HTML file and adding to the list if it is a valid TiddlyWiki
 * Applying theme color to the UI with some in-wiki configurations, as well as other tweaks
@@ -46,15 +47,19 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * I encountered a Javascript error followed by a white screen in newly created files.
 
-    Check your Android version. TiddlyWiki 5.1.23 has critical bugs on Android 5.1 and below (WebView 39). A solution is to get a pre-release version of TiddlyWiki, which have had this bug fixed or, a previous version without this bug.
+    Check your Android version. TiddlyWiki 5.1.23 has critical bugs on Android 5.1 and below (WebView 39). A solution is to get a new version that had this bug fixed, or a previous version without this bug.
 
 * My wiki list change its order randomly every time.
 
     Check your Android version. One of the functions in the JSON library behaves differently below 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all of its features.
 
+* There are lags if WebDAV Wikis added.
+
+    Sometimes a slow connection to your server blocks the application. Sorry :(
+
 * I upgraded from 1.4 and all of my TiddlyWikis added before no longer to work.
 
-    Check if your system revoked local storage accessing permissions. If you're using Android R, a permission acquirement page will appear at the first time you use legacy stuffs. Otherwise, a pop-up window will appear if running on Android M and above.
+    Check if your system revoked local storage accessing permissions. `Local (Legacy)` mode (which directly accesses local files) disabled on new installations by default. To enable it, Open "About Tiddloid" and long-press the "OK" button.
 
 * I still want to add `Local (Legacy)` wikis.
 
@@ -74,6 +79,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
     | Downloader                                | Yes           | No                                                           | No                               |
     | Direct access to files in the same folder | Yes           | Partial (Legacy, or TiddlyWiki folders by caching all files) | No                               |
     | Cloud Service                             | No            | Yes (via SAF)                                                | Yes (via SAF)                    |
+    | WebDAV client                             | No            | Yes                                                          | No                               |
     | Template | Download on first startup      | Download on creating new wiki, and cached in case it is unable to access the Internet |Download on creating new wiki|
     | Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis |Supports latest Android versions best and supports most of TW5|
     | Recommended Android version | Android 4.4 ~ 9.0 | Android 4.4 and above, best for 8.0 and above |Android 4.4 and above, best for 8.0 and above|
@@ -95,12 +101,7 @@ is permitted UNDER THESE CONDITIONS:
 3. Disclose source under
 4. Same license.
 
-This app is made possible with the help of these open source projects:
-
-* Json - https://json.org/ ,
-* Jsoup - https://jsoup.org/ .
-
-License files provided in /lic.
+WebDAV function provided by `sardine-android` (https://github.com/thegrizzlylabs/sardine-android). License files provided in /lic.
 
 ### Localization
 

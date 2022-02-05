@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-ki/strings.xml <= [P|Tiddloid]
+  ~ Last modified: 16:07:41 2019/09/26
+  ~ Copyright (c) 2019 donmor
+  -->
+
 <resources>
 	<!--Misc-->
 	<string name="entry_name">Tiddloid에 추가</string>
@@ -8,13 +13,18 @@
 	<string name="action_new">새 TiddlyWiki 파일 생성</string>
 	<string name="action_import">TiddlyWiki 파일 가져 오기</string>
 	<string name="action_dir">TiddlyWiki 폴더 추가</string>
+	<string name="action_dav">WebDAV에 연결</string>
 	<string name="action_about">Tiddloid에 대하여</string>
 	<string name="action_save_to">Tiddloid에 저장</string>
 	<string name="action_save_to_file">새 파일로 저장</string>
 	<string name="action_save_to_link">북마크로 저장</string>
 	<string name="action_save">변경 사항을 저장하다</string>
+	<string name="dav_address">WebDAV URL</string>
+	<string name="dav_username">사용자 이름</string>
+	<string name="dav_password">비밀번호</string>
 	<string name="no_permission">파일 시스템 권한을 얻을 수 없습니다.</string>
 	<string name="no_wiki">여기에 아무것도 없다</string>
+	<string name="no_file">파일 또는 디렉터리를 찾을 수 없음</string>
 	<string name="provider">"근원:&#160;"</string>
 	<string name="pathDir">경로:&#160;</string>
 	<string name="internet">인터넷</string>
@@ -27,7 +37,7 @@
 	<string name="shortcut_failed">바로 가기를 만들지 못했습니다</string>
 	<string name="clone_wiki">사본 만들기</string>
 	<string name="remove_wiki">위키 삭제</string>
-	<string name="no_internet">인터넷에 연결되지 않음</string>
+	<string name="server_error">서버에 연결할 수 없습니다</string>
 	<string name="download_failed">다운로드 실패</string>
 	<string name="please_wait">기다려주세요&#8230;</string>
 	<string name="failed">실패한</string>
@@ -37,8 +47,8 @@
 	<string name="backup_failed">백업하지 못했습니다</string>
 	<string name="delete_backups_as_well">뿐만 아니라 백업 삭제</string>
 	<string name="delete_the_html_file">HTML 파일을 삭제 (취소 할 수 없습니다!)</string>
-	<string name="not_a_wiki">선택된 파일은 TiddlyWiki가 아닙니다</string>
-	<string name="not_a_wiki_page">이 페이지는 TiddlyWiki가 아닙니다</string>
+<!--	<string name="not_a_wiki">선택된 파일은 TiddlyWiki가 아닙니다</string>-->
+	<string name="not_a_wiki_page">이 페이지는 TiddlyWiki가 아닙니다.</string>
 	<string name="failed_creating_file">파일을 만들지 못했습니다</string>
 	<string name="failed_deleting_file">파일을 삭제하지 못했습니다</string>
 	<string name="failed_writing_file">파일을 쓰지 못했습니다</string>

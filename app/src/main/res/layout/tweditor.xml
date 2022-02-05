@@ -7,8 +7,8 @@
     android:layout_height="match_parent"
     android:background="@color/design_default_color_primary"
     android:configChanges="keyboardHidden|orientation|screenSize"
-    android:orientation="vertical"
     android:layoutDirection="locale"
+    android:orientation="vertical"
     android:textDirection="locale"
     tools:context=".TWEditorWV">
 
@@ -20,8 +20,8 @@
         android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
         <androidx.appcompat.widget.Toolbar
-            style="@style/NoSpaceActionBarTheme"
             android:id="@+id/wv_toolbar"
+            style="@style/NoSpaceActionBarTheme"
             android:layout_width="match_parent"
             android:layout_height="match_parent"
             app:navigationIcon="@drawable/ic_arrow_back"

@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-de/strings.xml <= [P|Tiddloid]
+  ~ Last modified: 16:07:41 2019/09/26
+  ~ Copyright (c) 2019 donmor
+  -->
+
 <resources>
 	<!--Misc-->
 	<string name="entry_name">Zu Tiddloid hinzufügen</string>
@@ -8,13 +13,18 @@
 	<string name="action_new">Erstellen Sie eine neue TiddlyWiki-Datei</string>
 	<string name="action_import">Importieren Sie eine TiddlyWiki-Datei</string>
 	<string name="action_dir">Einen TiddlyWiki-Ordner hinzufügen</string>
+	<string name="action_dav">WebDAV Verbindung</string>
 	<string name="action_about">Über Tiddloid</string>
 	<string name="action_save_to">Im Tiddloid speichern</string>
 	<string name="action_save_to_file">Speicher als neue Datei</string>
 	<string name="action_save_to_link">Als Lesezeichen speichern</string>
 	<string name="action_save">Änderungen speichern</string>
+	<string name="dav_address">WebDAV-URL</string>
+	<string name="dav_username">Nutzername</string>
+	<string name="dav_password">Passwort</string>
 	<string name="no_permission">Dateisystemberechtigungen können nicht abgerufen werden</string>
 	<string name="no_wiki">Hier ist nichts</string>
+	<string name="no_file">Datei oder Verzeichnis nicht gefunden</string>
 	<string name="provider">"Quelle:&#160;"</string>
 	<string name="pathDir">"Ordnerpfad:&#160;"</string>
 	<string name="internet">Internet</string>
@@ -27,7 +37,7 @@
 	<string name="shortcut_failed">Fehlgeschlagen Verknüpfung erstellen</string>
 	<string name="clone_wiki">Klonen</string>
 	<string name="remove_wiki">Wiki entfernen</string>
-	<string name="no_internet">Keine Internetverbindung</string>
+	<string name="server_error">Verbindung zum Server nicht möglich</string>
 	<string name="download_failed">Herunterladen fehlgeschlagen</string>
 	<string name="please_wait">Warten Sie mal&#8230;</string>
 	<string name="failed">Gescheitert</string>
@@ -37,8 +47,8 @@
 	<string name="backup_failed">Sicherung fehlgeschlagen</string>
 	<string name="delete_backups_as_well">Löschen Sie auch Backups</string>
 	<string name="delete_the_html_file">Löschen Sie die HTML-Datei (Kann nicht rückgängig gemacht werden!)</string>
-	<string name="not_a_wiki">Die ausgewählte Datei ist kein TiddlyWiki</string>
-	<string name="not_a_wiki_page">Die Seite ist kein TiddlyWiki</string>
+<!--	<string name="not_a_wiki">Die ausgewählte Datei ist kein TiddlyWiki</string>-->
+	<string name="not_a_wiki_page">Die Seite ist kein TiddlyWiki.</string>
 	<string name="failed_creating_file">Fehler beim Erstellen der Datei</string>
 	<string name="failed_deleting_file">Fehler beim Löschen der Datei</string>
 	<string name="failed_writing_file">Fehler beim Schreiben der Datei</string>

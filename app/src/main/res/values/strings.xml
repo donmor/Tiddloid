@@ -1,3 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values/strings.xml <= [P|Tiddloid]
+  ~ Last modified: 16:07:41 2019/09/26
+  ~ Copyright (c) 2019 donmor
+  -->
+
 <resources>
     <!--JS-->
     <string name="js_is_wiki" translatable="false">
@@ -131,6 +137,8 @@
     <string name="logo" translatable="false">logo</string>
     <string name="path" translatable="false">path</string>
     <string name="icon" translatable="false">icon</string>
+<!--    <string name="dav_pd" translatable="false">parent_dir</string>-->
+    <string name="dav_go" translatable="false">dav_enter</string>
     <string name="rollback" translatable="false">rollback</string>
     <string name="del_backup" translatable="false">del_backup</string>
     <!--JSON and Settings-->
@@ -139,16 +147,22 @@
     <string name="action_new">New TiddlyWiki file</string>
     <string name="action_import">Import a TiddlyWiki file</string>
     <string name="action_dir">Add a TiddlyWiki folder</string>
+    <string name="action_dav">Use WebDAV</string>
     <string name="action_about">About Tiddloid</string>
     <string name="action_save_to">Save to Tiddloid</string>
     <string name="action_save_to_file">Save as a new file</string>
     <string name="action_save_to_link">Save as a bookmark</string>
     <string name="action_save">Save changes</string>
+    <string name="dav_address">WebDAV address</string>
+    <string name="dav_username">Username</string>
+    <string name="dav_password">Password</string>
     <string name="no_permission">Unable to get filesystem permissions</string>
     <string name="no_wiki">There is nothing here</string>
+    <string name="no_file">No such file or directory</string>
     <string name="provider">Source:&#160;</string>
     <string name="pathDir">Path:&#160;</string>
     <string name="internet">Internet</string>
+    <string name="webdav" translatable="false">WebDAV</string>
     <string name="local_legacy">Local (Legacy)</string>
     <string name="unknown">Unknown</string>
     <string name="enable_backup">Enable backup</string>
@@ -158,7 +172,7 @@
     <string name="shortcut_failed">Failed to create shortcut</string>
     <string name="clone_wiki">Clone</string>
     <string name="remove_wiki">Remove</string>
-    <string name="no_internet">No Internet connection</string>
+    <string name="server_error">Unable to connect to the server</string>
     <string name="download_failed">Download failed</string>
     <string name="please_wait">Please wait&#8230;</string>
     <string name="failed">Failed</string>
@@ -168,8 +182,8 @@
     <string name="backup_failed">Backup failed</string>
     <string name="delete_backups_as_well">Delete backups as well</string>
     <string name="delete_the_html_file">Delete the HTML file (Can\'t be undone!)</string>
-    <string name="not_a_wiki">The file selected is not a TiddlyWiki</string>
-    <string name="not_a_wiki_page">"The page is not a TiddlyWiki"</string>
+<!--    <string name="not_a_wiki">The file selected is not a TiddlyWiki</string>-->
+    <string name="not_a_wiki_page">The page is not a TiddlyWiki.</string>
     <string name="failed_creating_file">Failed creating the file</string>
     <string name="failed_deleting_file">Failed deleting the file</string>
     <string name="failed_writing_file">Failed writing the file</string>

@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-ja/strings.xml <= [P|Tiddloid]
+  ~ Last modified: 16:07:41 2019/09/26
+  ~ Copyright (c) 2019 donmor
+  -->
+
 <resources>
 	<!--Misc-->
 	<string name="entry_name">Tiddloidに追加する</string>
@@ -8,13 +13,18 @@
     <string name="action_new">新しいTiddlyWikiファイルを作成します</string>
 	<string name="action_import">TiddlyWikiファイルをインポートする</string>
 	<string name="action_dir">TiddlyWikiフォルダーを追加します</string>
+	<string name="action_dav">WebDAVに接続する</string>
 	<string name="action_about">Tiddloidについて</string>
 	<string name="action_save_to">Tiddloidに保存</string>
 	<string name="action_save_to_file">新しいファイルとして保存</string>
 	<string name="action_save_to_link">ブックマークとして保存</string>
 	<string name="action_save">変更を保存</string>
+	<string name="dav_address">WebDAV URL</string>
+	<string name="dav_username">ユーザー名</string>
+	<string name="dav_password">パスワード</string>
 	<string name="no_permission">ファイルシステムのアクセス許可を取得できません</string>
 	<string name="no_wiki">ここには何もありません</string>
+	<string name="no_file">ファイルまたはディレクトリが見つかりません</string>
 	<string name="provider">"ソース:&#160;"</string>
 	<string name="pathDir">"パス:&#160;"</string>
 	<string name="internet">インターネット</string>
@@ -27,7 +37,7 @@
 	<string name="shortcut_failed">ショートカットを作成できませんでした</string>
 	<string name="clone_wiki">コピー作成</string>
 	<string name="remove_wiki">Wikiを削除する</string>
-	<string name="no_internet">インターネット接続がありません</string>
+	<string name="server_error">サーバーに接続できません</string>
 	<string name="download_failed">ダウンロード失敗</string>
 	<string name="please_wait">お待ちください…</string>
 	<string name="failed">失敗</string>
@@ -37,8 +47,8 @@
 	<string name="backup_failed">バックアップ失敗</string>
 	<string name="delete_backups_as_well">バックアップも削除する</string>
 	<string name="delete_the_html_file">HTMLファイルを削除します(元に戻せません!)。</string>
-	<string name="not_a_wiki">このファイルはTiddlyWikiではありません</string>
-	<string name="not_a_wiki_page">このページはTiddlyWikiではありません</string>
+<!--	<string name="not_a_wiki">このファイルはTiddlyWikiではありません</string>-->
+	<string name="not_a_wiki_page">このページはTiddlyWikiではありません。</string>
 	<string name="failed_creating_file">ファイルの作成に失敗しました</string>
 	<string name="failed_deleting_file">ファイルの削除に失敗しました</string>
 	<string name="failed_writing_file">ファイルの書き込みに失敗しました</string>

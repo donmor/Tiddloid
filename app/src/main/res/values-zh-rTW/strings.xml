@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-zh-rTW/strings.xml <= [P|Tiddloid]
+  ~ Last modified: 16:07:41 2019/09/26
+  ~ Copyright (c) 2019 donmor
+  -->
+
 <resources>
 	<!--Misc-->
 	<string name="entry_name">添加到 Tiddloid</string>
@@ -8,13 +13,18 @@
     <string name="action_new">創建一個新的 TiddlyWiki 文件</string>
 	<string name="action_import">導入現有TiddlyWiki文件</string>
 	<string name="action_dir">添加 TiddlyWiki 文件夾</string>
+	<string name="action_dav">連接到 WebDAV</string>
 	<string name="action_about">關於Tiddloid</string>
 	<string name="action_save_to">保存到 Tiddloid</string>
 	<string name="action_save_to_file">保存到新文件</string>
 	<string name="action_save_to_link">存為書籤</string>
 	<string name="action_save">保存更改</string>
+	<string name="dav_address">WebDAV 網址</string>
+	<string name="dav_username">用戶名</string>
+	<string name="dav_password">密碼</string>
 	<string name="no_permission">無法獲得文件系統權限</string>
 	<string name="no_wiki">這裡什麼都沒有</string>
+	<string name="no_file">無此文件或目錄</string>
 	<string name="provider">"來源:&#160;"</string>
 	<string name="pathDir">"路徑:&#160;"</string>
 	<string name="internet">網絡</string>
@@ -27,7 +37,7 @@
 	<string name="shortcut_failed">無法創建快捷方式</string>
 	<string name="clone_wiki">創建副本</string>
 	<string name="remove_wiki">刪除Wiki</string>
-	<string name="no_internet">沒有網絡連接</string>
+	<string name="server_error">無法連接到服務器</string>
 	<string name="download_failed">下載失敗</string>
 	<string name="please_wait">請耐心等待…</string>
 	<string name="failed">失敗</string>
@@ -37,8 +47,8 @@
 	<string name="backup_failed">備份失敗</string>
 	<string name="delete_backups_as_well">也刪除備份</string>
 	<string name="delete_the_html_file">刪除HTML文件(無法撤消!)</string>
-	<string name="not_a_wiki">所選文件不是TiddlyWiki</string>
-	<string name="not_a_wiki_page">該頁面不是 TiddlyWiki</string>
+<!--	<string name="not_a_wiki">所選文件不是TiddlyWiki</string>-->
+	<string name="not_a_wiki_page">該頁面不是 TiddlyWiki。</string>
 	<string name="failed_creating_file">創建文件失敗</string>
 	<string name="failed_deleting_file">刪除文件失敗</string>
 	<string name="failed_writing_file">寫文件失敗</string>

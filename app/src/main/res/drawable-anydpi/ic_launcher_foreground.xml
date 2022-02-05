@@ -4,7 +4,8 @@
     android:width="256dp"
     android:height="256dp"
     android:viewportWidth="256"
-    android:viewportHeight="256">
+    android:viewportHeight="256"
+    tools:ignore="VectorRaster">
     <path
         android:fillType="evenOdd"
         android:pathData="M73 113 99 139 102 159 199 256 256 256 256 164 185 93 170 110 91 111.5 71 91.5Z"

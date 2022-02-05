@@ -6,8 +6,8 @@
     android:layout_height="wrap_content"
     android:gravity="center"
     android:layoutDirection="inherit"
-    android:textDirection="inherit"
-    android:orientation="horizontal">
+    android:orientation="horizontal"
+    android:textDirection="inherit">
 
     <ImageView
         android:layout_width="wrap_content"
@@ -21,7 +21,7 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:textDirection="inherit"/>
+        android:textDirection="inherit" />
 
     <ImageButton
         android:id="@+id/btnRollBack"

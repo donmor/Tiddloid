@@ -15,6 +15,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 * 使用最新模板创建新的Wiki
 * 导入存储在可写来源的现有Wiki
 * 添加一个包含基于TiddlyWiki的`index.htm(l)`的文件夹
+* 添加托管在WebDAV服务器上的文件或文件夹
 * 接收从浏览器分享的TiddlyWiki站点URL并存为新文件或书签
 * 打开一个HTML文件，如果是TiddlyWiki则添加到列表
 * 通过Wiki内配置实现应用主题色到系统界面，以及其他调整选项
@@ -46,15 +47,19 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
 * 新建的Wiki出现Javascript错误弹框并白屏。
 
-    检查Android系统版本。TiddlyWiki 5.1.23版本在Android 5.1及以下(WebView 39)存在严重bug。一个解决方案是使用已经修复了此bug的pre-release版本，或者未出现此bug的旧版本。
+    检查Android系统版本。TiddlyWiki 5.1.23版本在Android 5.1及以下(WebView 39)存在严重bug。一个解决方案是使用已经修复了此bug的新版本，或者未出现此bug的旧版本。
 
 * Wiki列表每次的顺序都在变化。
 
     检查Android系统版本。JSON库的一个实现在Android 4.4以下有所差异，导致了Wiki列表乱序问题。推荐在Android 8.0以上系统运行以获得最佳体验。
 
+* 添加WebDAV项目后发生卡顿。
+
+    慢速的服务器有时会阻塞程序。抱歉 :(
+
 * 从1.4升级后，之前添加的Wiki全部失效了。
 
-    检查系统权限设置页面处是否禁止了Tiddloid访问本地文件。在Android 11系统下，第一次使用旧模式时会出现一个请求全部文件读写权限的页面；Android 6 ~ 10则显示一个弹窗。
+    检查系统权限设置页面处是否禁止了Tiddloid访问本地文件。旧模式（直接访问本地文件）默认不启用。要启用它，请打开“关于Tiddloid”并长按“确定”按钮。
 
 * 我仍然想用旧模式添加Wiki。
 
@@ -74,6 +79,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
     | 下载服务                           | 有          | 无                                                          | 无                              |
     | 直接访问同目录下的文件 | 支持         | 部分支持（旧版模式，文件夹模式通过缓存所有文件） | 不支持                            |
     | 云存储                          | 不支持         | 支持（通过SAF）                                          | 支持（通过SAF）           |
+    | WebDAV                          | 不支持         | 支持                                                     | 不支持                    |
     | 模板 | 首次使用时下载 | 创建新文件时下载，并缓存以备无网络时使用            |创建新文件时下载|
     | 兼容性 | 适配大多数Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5及Classic |适配新Android版本，支持TiddlyWiKi5|
     | 推荐的Android版本 | Android 4.4 ~ 9.0 | Android 4.4 及以上，8.0及以上最佳 |Android 4.4 及以上，8.0及以上最佳|
@@ -81,12 +87,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
 ### 许可
 
-本应用程序遵循GPLv2许可发布，其完成离不开这些开源项目的帮助：
-
-* Json - https://json.org/ ,
-* Jsoup - https://jsoup.org/ .
-
-许可证文件随源代码提供。
+本应用程序遵循GPLv2许可发布。WebDAV功能使用了`sardine-android` (https://github.com/thegrizzlylabs/sardine-android)，许可证文件随源代码提供。
 
 ### 多语言
 

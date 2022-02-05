@@ -3,10 +3,11 @@
     xmlns:tools="http://schemas.android.com/tools"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
+    android:animateLayoutChanges="true"
+    android:background="@color/design_default_color_primary"
     android:layoutDirection="locale"
     android:orientation="vertical"
     android:textDirection="locale"
-    android:animateLayoutChanges="true"
     tools:context=".MainActivity">
 
     <include

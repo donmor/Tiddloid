@@ -7,9 +7,9 @@
     <item
         android:id="@+id/action_save_c"
         android:icon="@drawable/ic_save"
+        android:orderInCategory="1"
         android:title="@string/action_save_to"
         android:visible="false"
-        android:orderInCategory="1"
         app:showAsAction="always|withText">
         <menu>
             <item
@@ -25,8 +25,8 @@
     <item
         android:id="@+id/action_save"
         android:icon="@drawable/ic_save"
+        android:orderInCategory="1"
         android:title="@string/action_save"
         android:visible="false"
-        android:orderInCategory="1"
         app:showAsAction="always|withText" />
 </menu>

@@ -18,11 +18,16 @@ import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.thegrizzlylabs.sardineandroid.DavResource;
+import com.thegrizzlylabs.sardineandroid.Sardine;
+
 import java.io.File;
+import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
@@ -31,6 +36,9 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	private final Context context;
 	private File[] bk;
 	private DocumentFile[] bkd;
+	private List<DavResource> bkv;
+	private Sardine davClient;
+	private String bkp;
 	private LoadListener mLoadListener;
 	private BtnClickListener mBtnClickListener;
 	private final LayoutInflater inflater;
@@ -65,7 +73,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	@Override
 	public void onBindViewHolder(@NonNull final BackupListHolder holder, int position) {
 		try {
-			String efn = tree ? bkd[position].getName() : bk[position].getName();
+			String efn = davClient != null ? bkv.get(position).getName() : tree ? bkd[position].getName() : bk[position].getName();
 			int efp1, efp2;
 			if (efn == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
 			efp1 = efn.lastIndexOf('.', (efp2 = efn.lastIndexOf('.')) - 1);
@@ -79,7 +87,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	@Override
 	public int getItemCount() {
-		return tree ? bkd.length : bk.length;
+		return bkv != null ? bkv.size() : tree ? bkd.length : bk != null ? bk.length : 0;
 	}
 
 
@@ -110,9 +118,64 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 		return position < getItemCount() ? !tree ? DocumentFile.fromFile(bk[position]) : bkd[position] : null;
 	}
 
-	void reload(Uri mainFile) throws IOException {
-		if (MainActivity.SCH_HTTP.equals(mainFile.getScheme()) || MainActivity.SCH_HTTPS.equals(mainFile.getScheme()))
+	String getBackupDavUri(int position) {
+		return davClient != null && position < getItemCount() ? bkp + MainActivity.KEY_SLASH + bkv.get(position).getName() : null;
+	}
+
+	void reload(Uri mainFile, Sardine davClient) throws IOException {
+		if (MainActivity.SCH_HTTP.equals(mainFile.getScheme()) || MainActivity.SCH_HTTPS.equals(mainFile.getScheme())) {    // WebDAV
+			if (davClient == null) return;
+			this.davClient = davClient;
+			Thread jt = new Thread(() -> {
+				try {
+					List<DavResource> root;
+					if (davClient.exists(mainFile.toString()) && (root = davClient.list(mainFile.toString())).get(0).isDirectory()) {
+						boolean haveIndex = false;
+						for (DavResource f : root) {
+							if (MainActivity.KEY_FN_INDEX.equals(f.getName()) || MainActivity.KEY_FN_INDEX2.equals(f.getName())) {
+								bkv = davClient.list(bkp = mainFile.getScheme() + MainActivity.KEY_URI_NOTCH + mainFile.getAuthority() + f.getHref() + MainActivity.BACKUP_POSTFIX);
+								bkv.remove(0);
+								haveIndex = true;
+								break;
+							}
+						}
+						if (!haveIndex) for (DavResource f : root) {
+							if ((f.getName().equals(MainActivity.KEY_FN_INDEX + MainActivity.BACKUP_POSTFIX) || f.getName().equals(MainActivity.KEY_FN_INDEX2 + MainActivity.BACKUP_POSTFIX)) && f.isDirectory()) {
+								bkv = davClient.list(bkp = mainFile.getScheme() + MainActivity.KEY_URI_NOTCH + mainFile.getAuthority() + f.getHref());
+								bkv.remove(0);
+								haveIndex = true;
+								break;
+							}
+						}
+						if (!haveIndex) throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
+					} else {
+//						boolean haveIndex = false;
+//						List<DavResource> r0 = davClient.list(mainFile.toString().substring(0, mainFile.toString().lastIndexOf("/") + 1));
+//						for (DavResource f : r0) {
+//							if (mainFile.getLastPathSegment().equals(f.getName())) {
+//								bkv = davClient.list(mainFile.getScheme() + MainActivity.KEY_URI_NOTCH + mainFile.getAuthority() + f.getHref());
+						bkv = davClient.list(bkp = mainFile.toString() + MainActivity.BACKUP_POSTFIX);
+						bkv.remove(0);
+//						haveIndex = true;
+//						break;
+//							}
+//						}
+//						if (!haveIndex) throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
+					}
+				} catch (IOException | IndexOutOfBoundsException e) {
+					e.printStackTrace();
+					bkv = null;
+				}
+			});
+			jt.start();
+			try {
+				jt.join();
+			} catch (InterruptedException e) {
+				e.printStackTrace();
+			}
+			mLoadListener.onLoad(getItemCount());
 			return;
+		}
 		DocumentFile df, bdf = null;
 		String vfn = null;
 		boolean legacy = MainActivity.SCH_FILE.equals(mainFile.getScheme());

@@ -1,4 +1,7 @@
 Update details:
+- Added WebDAV support (Requires Android 5.0+)
 - Fixed a bug causing failure on rolling back a wiki
 - Optimized splash screen
 - Added version code to the about page
+- Legacy mode now can be enabled by long-pressing OK button in the about page
+- Fixed a bug causing error on opening for the first time after added a directory

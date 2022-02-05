@@ -1,4 +1,9 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-es/strings.xml <= [P|Tiddloid]
+  ~ Last modified: 16:07:41 2019/09/26
+  ~ Copyright (c) 2019 donmor
+  -->
+
 <resources>
 	<!--Misc-->
 	<string name="entry_name">Agregar a Tiddloid</string>
@@ -8,13 +13,18 @@
 	<string name="action_new">Crea un nuevo archivo TiddlyWiki</string>
 	<string name="action_import">Importar un archivo TiddlyWiki</string>
 	<string name="action_dir">Agregar una carpeta TiddlyWiki</string>
+	<string name="action_dav">Conectarse a WebDAV</string>
 	<string name="action_about">Acerca de Tiddloid</string>
 	<string name="action_save_to">Guardar en Tiddloid</string>
 	<string name="action_save_to_file">Guardar como un archivo nuevo</string>
 	<string name="action_save_to_link">Guardar como marcador</string>
 	<string name="action_save">Guardar cambios</string>
+	<string name="dav_address">URL de WebDAV</string>
+	<string name="dav_username">Nombre de usuario</string>
+	<string name="dav_password">Contraseña</string>
 	<string name="no_permission">No se pueden obtener los permisos del sistema de archivos</string>
 	<string name="no_wiki">No hay nada aquí</string>
+	<string name="no_file">Archivo o directorio no encontrado</string>
 	<string name="provider">"Fuente:&#160;"</string>
 	<string name="pathDir">"Ruta:&#160;"</string>
 	<string name="internet">Internet</string>
@@ -27,7 +37,7 @@
 	<string name="shortcut_failed">Error al crear acceso directo</string>
 	<string name="clone_wiki">Clonar</string>
 	<string name="remove_wiki">Eliminar Wiki</string>
-	<string name="no_internet">Sin conexión a Internet</string>
+	<string name="server_error">No es posible conectarse al servidor</string>
 	<string name="download_failed">Descarga fracasó</string>
 	<string name="please_wait">Por favor espera&#8230;</string>
 	<string name="failed">Ha fallado</string>
@@ -37,8 +47,8 @@
 	<string name="backup_failed">Copia de seguridad fallida</string>
 	<string name="delete_backups_as_well">Eliminar copias de seguridad también</string>
 	<string name="delete_the_html_file">Eliminar el archivo HTML (no se puede deshacer!)</string>
-	<string name="not_a_wiki">El archivo seleccionado no es un TiddlyWiki</string>
-	<string name="not_a_wiki_page">La página no es un TiddlyWiki</string>
+<!--	<string name="not_a_wiki">El archivo seleccionado no es un TiddlyWiki</string>-->
+	<string name="not_a_wiki_page">La página no es un TiddlyWiki.</string>
 	<string name="failed_creating_file">Error al crear el archivo</string>
 	<string name="failed_deleting_file">Falló la eliminación del archivo</string>
 	<string name="failed_writing_file">Error al escribir el archivo</string>
