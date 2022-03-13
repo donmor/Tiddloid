@@ -7,6 +7,7 @@
 package top.donmor.tiddloid;
 
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
@@ -28,11 +29,14 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.provider.DocumentsContract;
+import android.text.Editable;
 import android.text.InputType;
 import android.text.SpannableString;
 import android.text.TextUtils;
+import android.text.TextWatcher;
 import android.text.style.ForegroundColorSpan;
 import android.util.Base64;
+import android.view.ActionMode;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -50,8 +54,10 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.EditText;
 import android.widget.FrameLayout;
+import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import androidx.activity.result.ActivityResultLauncher;
@@ -112,15 +118,14 @@ public class TWEditorWV extends AppCompatActivity {
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private Uri uri = null, cachedUri;
-	private boolean isClassic, hideAppbar = false, ready = false, failed = false;
+	private boolean isWiki, isClassic, hideAppbar = false, ready = false, failed = false;
 	private byte[] exData = null;
 	private Menu optMenu;
 	private String id;
+	private CharSequence extraContent;
 	private HashMap<String, byte[]> hashes = null;
 	private DocumentFile tree = null, treeIndex = null;
 	private ActivityResultLauncher<Intent> getChooserDL, getChooserImport, getChooserClone;
-//	ActivityResultLauncher<Intent> getPermissionRequest;
-//	boolean acquiringStorage = false;
 	private JSONArray customActions = null;
 	private final HashMap<Integer, String> customActionsMap = new HashMap<>();
 
@@ -135,6 +140,7 @@ public class TWEditorWV extends AppCompatActivity {
 			KEY_ALG = "MD5",
 			KEY_COL = ":",
 			KEY_ENC = "enc",
+			KEY_FIND_IND = "%1$d/%2$d",
 			KEY_ICON = "icon",
 			KEY_YES = "yes",
 			SCH_ABOUT = "about",
@@ -254,7 +260,6 @@ public class TWEditorWV extends AppCompatActivity {
 					}
 					os.flush();
 					if (lengthTotal != len)
-//					if (lengthTotal != len || !MainActivity.isWiki(this, u))
 						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 					Bundle bu = new Bundle();
 					bu.putString(MainActivity.KEY_ID, id);
@@ -274,11 +279,6 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 			exData = null;
 		});
-//		getPermissionRequest = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-//			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager())
-//				Toast.makeText(this, R.string.no_permission, Toast.LENGTH_SHORT).show();
-//			acquiringStorage = false;
-//		});
 		wcc = new WebChromeClient() {
 			// 进度条
 			@Override
@@ -454,7 +454,7 @@ public class TWEditorWV extends AppCompatActivity {
 					os.flush();
 					if (lengthTotal != len)
 						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-					if (cachedUri != null) {//	DAV
+					if (cachedUri != null) {    //	DAV
 						davClient = new OkHttpSardine();
 						davClient.setCredentials(auth, tok);
 						lt = davClient.lock(uri.toString());
@@ -551,7 +551,7 @@ public class TWEditorWV extends AppCompatActivity {
 			public void onPageFinished(final WebView view, String url) {
 				view.evaluateJavascript(getString(R.string.js_print), null);
 				view.evaluateJavascript(getString(R.string.js_is_wiki), value -> {
-					if (Boolean.parseBoolean(value))
+					if (isWiki = Boolean.parseBoolean(value))
 						view.evaluateJavascript(getString(R.string.js_is_classic), value1 -> {
 							isClassic = Boolean.parseBoolean(value1);
 							getInfo(view);
@@ -561,7 +561,9 @@ public class TWEditorWV extends AppCompatActivity {
 								view.evaluateJavascript(getString(R.string.js_settings_c), null);
 								if (MainActivity.SCH_CONTENT.equals(Uri.parse(view.getUrl()).getScheme()))
 									view.evaluateJavascript(getString(R.string.js_settings_c2), null);
-							}
+								if (extraContent != null) view.evaluateJavascript(getString(R.string.js_new_tiddler_c, extraContent), null);
+							} else if (extraContent != null) view.evaluateJavascript(getString(R.string.js_new_tiddler, extraContent), null);
+							extraContent = null;
 						});
 					else if (!URL_BLANK.equals(url)) {
 						if (wApp == null) notWikiConfirm();
@@ -572,40 +574,11 @@ public class TWEditorWV extends AppCompatActivity {
 								e.printStackTrace();
 							}
 						}
-//						Toast.makeText(TWEditorWV.this, R.string.not_a_wiki_page, Toast.LENGTH_SHORT).show();
-//						AlertDialog closeRemoveConfirm = new AlertDialog.Builder(TWEditorWV.this)
-//								.setTitle(android.R.string.dialog_alert_title)
-//								.setMessage(wApp == null ? R.string.not_a_wiki_page : R.string.confirm_to_auto_remove_wiki)
-//								.setOnDismissListener(dialog -> TWEditorWV.this.finish())
-//								.create();
-//
-//						if (wApp == null)
-//							closeRemoveConfirm.setButton(DialogInterface.BUTTON_POSITIVE, getString(android.R.string.ok), (DialogInterface.OnClickListener) null);
-//						else {
-//							closeRemoveConfirm.setButton(DialogInterface.BUTTON_NEGATIVE, getString(android.R.string.no), (DialogInterface.OnClickListener) null);
-//							closeRemoveConfirm.setButton(DialogInterface.BUTTON_POSITIVE, getString(android.R.string.yes), (dialog, which) -> {
-//								try {
-//									JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
-//									wl.remove(id);
-//									MainActivity.writeJson(TWEditorWV.this, db);
-//									if (MainActivity.APIOver26) {
-//										Uri u = Uri.parse(wApp.optString(MainActivity.DB_KEY_URI));
-//										if (u != null && MainActivity.SCH_CONTENT.equals(u.getScheme()))
-//											revokeUriPermission(getPackageName(), u, MainActivity.TAKE_FLAGS);
-//									}
-//								} catch (JSONException e) {
-//									e.printStackTrace();
-//								}
-//							});
-//						}
-//						closeRemoveConfirm.setOnShowListener(dialog -> closeRemoveConfirm.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-//						closeRemoveConfirm.show();
 					}
 				});
 				view.clearHistory();
 			}
 		});
-		toolbar.setNavigationOnClickListener(v -> onBackPressed());
 		// 初始化db
 		try {
 			db = MainActivity.readJson(this);
@@ -615,6 +588,38 @@ public class TWEditorWV extends AppCompatActivity {
 			finish();
 			return;
 		}
+		// 初始化页内查找
+		((EditText) findViewById(R.id.find_edit_find)).addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
+
+			@Override
+			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable editable) {
+				wv.findAllAsync(editable.toString());
+			}
+		});
+		ImageButton btnUp = findViewById(R.id.find_up), btnDn = findViewById(R.id.find_down);
+		btnUp.setOnClickListener(view -> wv.findNext(false));
+		btnDn.setOnClickListener(view -> wv.findNext(true));
+		btnUp.setEnabled(false);
+		btnDn.setEnabled(false);
+		findViewById(R.id.find_close).setOnClickListener(view -> {
+			findViewById(R.id.find_bar).setVisibility(View.GONE);
+			wv.clearMatches();
+		});
+		TextView indicator = findViewById(R.id.find_indicator);
+		indicator.setText(String.format(Locale.getDefault(), KEY_FIND_IND, 0, 0));
+		wv.setFindListener((i, i1, b) -> {
+			indicator.setText(String.format(Locale.getDefault(), KEY_FIND_IND, Math.min(i + 1, i1), i1));
+			btnUp.setEnabled(i1 != 0);
+			btnDn.setEnabled(i1 != 0);
+		});
+		// 加载数据
 		MainActivity.trimDB140(this, db);
 		nextWiki(getIntent());
 	}
@@ -629,19 +634,20 @@ public class TWEditorWV extends AppCompatActivity {
 		if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式添加文件
 			Uri u = intent.getData();
 			if (u == null) {
-//			if ((u = intent.getData()) == null || !MainActivity.isWiki(this, u)) {
 				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 				return;
 			}
-//			if (MainActivity.SCH_FILE.equals(u.getScheme())) MainActivity.checkPermission(this);
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
 		} else if (Intent.ACTION_SEND.equals(action)) {    // 分享链接克隆站点
 			if (!(MainActivity.TYPE_HTML.equals(intent.getType())) || !(MIME_TEXT.equals(intent.getType()) && intent.getStringExtra(Intent.EXTRA_TEXT).contains(MainActivity.SCH_HTTP))) {
-//			if (!(MainActivity.TYPE_HTML.equals(intent.getType()) && !MainActivity.isWiki(this, intent.getParcelableExtra(Intent.EXTRA_STREAM))) || !(MIME_TEXT.equals(intent.getType()) && intent.getStringExtra(Intent.EXTRA_TEXT).contains(MainActivity.SCH_HTTP))) {
 				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 				return;
 			}
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
+		} else if (Intent.ACTION_PROCESS_TEXT.equals(action)) {    // 摘录文本
+			CharSequence cs;
+			if (!MainActivity.APIOver23 || !isWiki || (cs = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)) == null || cs.length() == 0) return;
+			wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, cs), null);
 		} else {    // MA/Shortcut
 			if ((bu = intent.getExtras()) == null || (fid = bu.getString(MainActivity.KEY_ID)) == null)
 				return;
@@ -804,6 +810,47 @@ public class TWEditorWV extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	@Override
+	public void onActionModeStarted(ActionMode mode) {
+		Menu menu = mode.getMenu();
+		menu.add(R.string.context_save).setOnMenuItemClickListener(menuItem -> {
+			wv.evaluateJavascript(getString(isClassic ? R.string.js_save_c : R.string.js_save), null);
+			mode.finish();
+			return false;
+		});
+		menu.add(R.string.context_find).setOnMenuItemClickListener(menuItem -> {
+			findViewById(R.id.find_bar).setVisibility(View.VISIBLE);
+			wv.evaluateJavascript(getString(R.string.js_get_selected), s -> {
+				String s1 = s.substring(1, s.length() - 1);
+				EditText txtFind = findViewById(R.id.find_edit_find);
+				if (s1.length() > 0) txtFind.setText(s1);
+				else wv.findAllAsync(txtFind.getText().toString());
+			});
+			mode.finish();
+			return false;
+		});
+		MenuItem vi = null;
+		Intent vp;
+		ComponentName vc;
+		for (int i = 0; i < menu.size(); i++) {
+			if ((vi = menu.getItem(i)) != null && (vp = vi.getIntent()) != null && (vc = vp.getComponent()) != null && getPackageName().equals(vc.getPackageName())) {
+				vi.setTitle(R.string.context_new_tiddler);
+				vi.setOnMenuItemClickListener(menuItem -> {
+					wv.evaluateJavascript(getString(R.string.js_get_selected), s -> wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, s.subSequence(1, s.length() - 1)), null));
+					mode.finish();
+					return false;
+				});
+				break;
+			} else vi = null;
+		}
+		if (vi == null) menu.add(R.string.context_new_tiddler).setOnMenuItemClickListener(menuItem -> {
+			wv.evaluateJavascript(getString(R.string.js_get_selected), s -> wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, s.subSequence(1, s.length() - 1)), null));
+			mode.finish();
+			return false;
+		});
+		super.onActionModeStarted(mode);
+	}
+
 	// 保存提醒
 	private void confirmAndExit(boolean dirty, final Intent nextWikiIntent) {
 		if (failed || dirty) {
@@ -811,11 +858,15 @@ public class TWEditorWV extends AppCompatActivity {
 					.setTitle(android.R.string.dialog_alert_title)
 					.setMessage(R.string.confirm_to_exit_wiki)
 					.setPositiveButton(android.R.string.yes, (dialog, which) -> {
+								dialog.dismiss();
 								if (nextWikiIntent == null)
-									TWEditorWV.super.onBackPressed();
+//									new Handler().postDelayed(() -> {
+//										runOnUiThread(() -> {
+									TWEditorWV.super.finish();
+//										});
+//									},100);
 								else
 									nextWiki(nextWikiIntent);
-								dialog.dismiss();
 							}
 					)
 					.setNegativeButton(android.R.string.no, null)
@@ -825,7 +876,7 @@ public class TWEditorWV extends AppCompatActivity {
 			confirmExit.setCanceledOnTouchOutside(false);
 		} else {
 			if (nextWikiIntent == null)
-				super.onBackPressed();
+				finish();
 			else
 				nextWiki(nextWikiIntent);
 		}
@@ -838,26 +889,6 @@ public class TWEditorWV extends AppCompatActivity {
 				.setPositiveButton(android.R.string.ok, null)
 				.setOnDismissListener(dialog -> TWEditorWV.this.finish())
 				.create();
-
-//		if (wApp == null)
-//			closeRemoveConfirm.setButton(DialogInterface.BUTTON_POSITIVE, getString(android.R.string.ok), (DialogInterface.OnClickListener) null);
-//		else {
-//			closeRemoveConfirm.setButton(DialogInterface.BUTTON_NEGATIVE, getString(android.R.string.no), (DialogInterface.OnClickListener) null);
-//			closeRemoveConfirm.setButton(DialogInterface.BUTTON_POSITIVE, getString(android.R.string.yes), (dialog, which) -> {
-//				try {
-//					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
-//					wl.remove(id);
-//					MainActivity.writeJson(TWEditorWV.this, db);
-//					if (MainActivity.APIOver26) {
-//						Uri u = Uri.parse(wApp.optString(MainActivity.DB_KEY_URI));
-//						if (u != null && MainActivity.SCH_CONTENT.equals(u.getScheme()))
-//							revokeUriPermission(getPackageName(), u, MainActivity.TAKE_FLAGS);
-//					}
-//				} catch (JSONException e) {
-//					e.printStackTrace();
-//				}
-//			});
-//		}
 		closeRemoveConfirm.setOnShowListener(dialog -> closeRemoveConfirm.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
 		closeRemoveConfirm.show();
 	}
@@ -872,7 +903,6 @@ public class TWEditorWV extends AppCompatActivity {
 						wl.remove(id);
 						MainActivity.writeJson(TWEditorWV.this, db);
 						if (MainActivity.APIOver26) {
-//							Uri u = Uri.parse(wApp.optString(MainActivity.DB_KEY_URI));
 							if (u != null && MainActivity.SCH_CONTENT.equals(u.getScheme()))
 								revokeUriPermission(getPackageName(), u, MainActivity.TAKE_FLAGS);
 						}
@@ -895,18 +925,14 @@ public class TWEditorWV extends AppCompatActivity {
 			e.printStackTrace();
 			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
 			finish();
-//			notWikiConfirm();
 			return;
 		}
 		JSONObject wa;
-		Bundle bu;
 		final Uri u;
 		String nextWikiId = null;
 		final String action = nextWikiIntent.getAction();
 		if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式，scheme -> content/file/http(s)
 			if ((u = nextWikiIntent.getData()) == null) {
-//				Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
-//				finish();
 				notWikiConfirm();
 				return;
 			}
@@ -958,16 +984,35 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				u = u1;
 				if (u == null) {
-//					finish();
 					notWikiConfirm();
 					return;
 				}
 			} else {
-//				finish();
 				notWikiConfirm();
 				return;
 			}
+		} else if (Intent.ACTION_PROCESS_TEXT.equals(action)) {    // 接收摘录
+			if (!MainActivity.APIOver23) {
+				if (!isWiki) finish();
+				return;
+			}
+			CharSequence cs = nextWikiIntent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT);
+			if (isWiki) {
+				wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, cs), null);
+				return;
+			}
+			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+				Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
+				finish();
+				return;
+			}
+			if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null) {
+				autoRemoveConfirm(wl, nextWikiId, null);
+				return;
+			}
+			extraContent = cs;
 		} else {    // 从列表中打开
+			Bundle bu;
 			if ((bu = nextWikiIntent.getExtras()) == null
 					|| (nextWikiId = bu.getString(MainActivity.KEY_ID)) == null
 					|| nextWikiId.length() == 0
@@ -976,51 +1021,7 @@ public class TWEditorWV extends AppCompatActivity {
 				finish();
 				return;
 			}
-//			class availableSC {
-//				private boolean value = false;
-//
-//				availableSC(Context context, Uri u0) {
-//					try {
-//						DocumentFile mdf, p, df;
-//						mdf = DocumentFile.fromTreeUri(context, u0);
-//						if (mdf == null || !mdf.isDirectory())
-//							throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
-//						df = (p = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
-//						if (df == null || !df.isFile())
-//							throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
-//						value = MainActivity.isWiki(context, df.getUri());
-//					} catch (IllegalArgumentException ignored) {
-//						value = MainActivity.isWiki(context, u0);
-//					} catch (IOException | SecurityException e) {
-//						e.printStackTrace();
-//					}
-//				}
-//
-//				boolean get() {
-//					return value;
-//				}
-//			}
 			if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null) {
-//			if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null || bu.getBoolean(MainActivity.KEY_SHORTCUT) && !new availableSC(this, u).get()) {
-//				String finalNextWikiId = nextWikiId;
-//				AlertDialog confirmAutoRemove = new AlertDialog.Builder(this)
-//						.setTitle(android.R.string.dialog_alert_title)
-//						.setMessage(R.string.confirm_to_auto_remove_wiki)
-//						.setNegativeButton(android.R.string.no, null)
-//						.setPositiveButton(android.R.string.yes, (dialog, which) -> {
-//							try {
-//								wl.remove(finalNextWikiId);
-//								MainActivity.writeJson(TWEditorWV.this, db);
-////								if (MainActivity.APIOver26)
-////									if (u != null && MainActivity.SCH_CONTENT.equals(u.getScheme()))
-////										revokeUriPermission(getPackageName(), u, MainActivity.TAKE_FLAGS);
-//							} catch (JSONException e) {
-//								e.printStackTrace();
-//							}
-//						}).setOnDismissListener(dialogInterface -> TWEditorWV.this.finish())
-//						.create();
-//				confirmAutoRemove.setOnShowListener(dialog1 -> confirmAutoRemove.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-//				confirmAutoRemove.show();
 				autoRemoveConfirm(wl, nextWikiId, null);
 				return;
 			}
@@ -1071,8 +1072,6 @@ public class TWEditorWV extends AppCompatActivity {
 			} catch (IllegalArgumentException ignored) {
 			} catch (IOException | SecurityException e) {
 				e.printStackTrace();
-//				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
-//				finish();
 				autoRemoveConfirm(wl, id, u);
 				return;
 			}
@@ -1107,16 +1106,11 @@ public class TWEditorWV extends AppCompatActivity {
 		if (u == null || !MainActivity.APIOver21 && MainActivity.SCH_CONTENT.equals(u.getScheme()) && actualUri == uri) {
 			Uri u1 = null, ux;
 			if (u == null)
-//				u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM);
 				if ((u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM)) == null) {
-//				if (!MainActivity.isWiki(this, u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM))) {
-//					Toast.makeText(this, R.string.not_a_wiki, Toast.LENGTH_SHORT).show();
-//					finish();
 					notWikiConfirm();
 					return;
 				}
 			ux = u != null ? u : u1;
-//			if (MainActivity.SCH_FILE.equals(ux.getScheme())) MainActivity.checkPermission(this);
 			try (InputStream is0 = getContentResolver().openInputStream(ux);
 					BufferedInputStream is = is0 != null ? new BufferedInputStream(is0) : null;
 					ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {   //读全部数据
@@ -1298,7 +1292,6 @@ public class TWEditorWV extends AppCompatActivity {
 		if (!pos.isDirectory()) pos.delete();
 		if (!pos.exists()) {
 			pos.mkdir();
-//			return;
 		}
 		MessageDigest messageDigest = null;
 		try {
@@ -1448,12 +1441,10 @@ public class TWEditorWV extends AppCompatActivity {
 		boolean lightBar = themeColor != null ? l[2] > 0.75 : (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;    // 系统栏模式 根据主题色灰度/日夜模式
 		toolbar.setVisibility(wApp != null && (hideAppbar && ready) ? View.GONE : View.VISIBLE);
 		Window window = getWindow();
-//		if (MainActivity.APIOver23) {
-		if (MainActivity.APIOver21)
+		if (MainActivity.APIOver23)
 			window.setStatusBarColor(primColor);
 		if (MainActivity.APIOver26)
 			window.setNavigationBarColor(primColor);
-//		}
 		if (MainActivity.APIOver30) {
 			WindowInsetsControllerCompat wic = WindowInsetsControllerCompat.toWindowInsetsControllerCompat(window.getInsetsController());
 			wic.setAppearanceLightNavigationBars(lightBar);
@@ -1472,7 +1463,16 @@ public class TWEditorWV extends AppCompatActivity {
 		findViewById(R.id.wv_appbar).setBackgroundColor(primColor);
 		toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);// 刷新字色
 		toolbar.setSubtitleTextAppearance(this, R.style.TextAppearance_AppCompat_Small);
+		EditText txtFind = findViewById(R.id.find_edit_find);
+		txtFind.setTextColor(getResources().getColor(R.color.content));
+		txtFind.setHintTextColor(getResources().getColor(R.color.content_sub));
+		((TextView) findViewById(R.id.find_indicator)).setTextColor(getResources().getColor(R.color.content_sub));
 		toolbar.setNavigationIcon(MainActivity.APIOver24 || lightBar ? R.drawable.ic_arrow_back : R.drawable.ic_arrow_back_d);
+		((ImageButton) findViewById(R.id.find_up)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_up_d));
+		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_down : R.drawable.ic_arrow_down_d));
+		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_close : R.drawable.ic_close_d));
+//		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_down));
+//		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
 		if (optMenu != null) {
 			try {
 				optMenu.removeGroup(CA_GRP_ID);

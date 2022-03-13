@@ -42,6 +42,35 @@
             return (store.isDirty() || story.areAnyDirty());
         })();
     </string>
+    <string name="js_new_tiddler" translatable="false">
+        (function() {
+            $tw.rootWidget.invokeActionString(\'
+                &lt;$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\"&gt;
+                    &lt;$action-sendmessage $message=\"tm-new-tiddler\" text=\"%1$s\" /&gt;
+                &lt;/$navigator&gt;
+            \', $tw.rootWidget, null, {});
+        })();
+    </string>
+    <string name="js_new_tiddler_c" translatable="false">
+        (function() {
+            ({
+                fn: config.macros.newTiddler.onClickNewTiddler,
+                getAttribute: function(attr) {
+                    return this.sets[attr];
+                },
+                sets: {
+                    \"newTitle\": config.macros.newTiddler.title,
+                    \"newTemplate\": DEFAULT_EDIT_TEMPLATE,
+                    \"newText\": \"%1$s\",
+                },
+            }).fn();
+        })();
+    </string>
+    <string name="js_get_selected" translatable="false">
+        (function() {
+            return window.getSelection().toString();
+        })();
+    </string>
     <string name="js_pop" translatable="false">
         (function() {
             new $tw.Story().navigateTiddler(\"%1$s\");
@@ -137,7 +166,6 @@
     <string name="logo" translatable="false">logo</string>
     <string name="path" translatable="false">path</string>
     <string name="icon" translatable="false">icon</string>
-<!--    <string name="dav_pd" translatable="false">parent_dir</string>-->
     <string name="dav_go" translatable="false">dav_enter</string>
     <string name="rollback" translatable="false">rollback</string>
     <string name="del_backup" translatable="false">del_backup</string>
@@ -153,9 +181,16 @@
     <string name="action_save_to_file">Save as a new file</string>
     <string name="action_save_to_link">Save as a bookmark</string>
     <string name="action_save">Save changes</string>
+    <string name="context_new_tiddler">New Tiddler here</string>
+    <string name="context_find">Find</string>
+    <string name="context_save">Save</string>
     <string name="dav_address">WebDAV address</string>
     <string name="dav_username">Username</string>
     <string name="dav_password">Password</string>
+    <string name="find_find">Find</string>
+    <string name="find_close">Close</string>
+    <string name="find_down">Down</string>
+    <string name="find_up">Up</string>
     <string name="no_permission">Unable to get filesystem permissions</string>
     <string name="no_wiki">There is nothing here</string>
     <string name="no_file">No such file or directory</string>
@@ -165,6 +200,8 @@
     <string name="webdav" translatable="false">WebDAV</string>
     <string name="local_legacy">Local (Legacy)</string>
     <string name="unknown">Unknown</string>
+    <string name="default_wiki">Default Wiki</string>
+    <string name="default_wiki_needed">Please set a default Wiki</string>
     <string name="enable_backup">Enable backup</string>
     <string name="no_backups">No backups</string>
     <string name="create_shortcut">Create a shortcut</string>
@@ -182,7 +219,6 @@
     <string name="backup_failed">Backup failed</string>
     <string name="delete_backups_as_well">Delete backups as well</string>
     <string name="delete_the_html_file">Delete the HTML file (Can\'t be undone!)</string>
-<!--    <string name="not_a_wiki">The file selected is not a TiddlyWiki</string>-->
     <string name="not_a_wiki_page">The page is not a TiddlyWiki.</string>
     <string name="failed_creating_file">Failed creating the file</string>
     <string name="failed_deleting_file">Failed deleting the file</string>

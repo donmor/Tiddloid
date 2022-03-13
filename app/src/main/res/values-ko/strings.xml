@@ -19,9 +19,16 @@
 	<string name="action_save_to_file">새 파일로 저장</string>
 	<string name="action_save_to_link">북마크로 저장</string>
 	<string name="action_save">변경 사항을 저장하다</string>
+	<string name="context_new_tiddler">여기 새로운 Tiddler</string>
+	<string name="context_find">검색</string>
+	<string name="context_save">저장</string>
 	<string name="dav_address">WebDAV URL</string>
 	<string name="dav_username">사용자 이름</string>
 	<string name="dav_password">비밀번호</string>
+	<string name="find_find">검색</string>
+	<string name="find_close">닫기</string>
+	<string name="find_down">다음</string>
+	<string name="find_up">이전</string>
 	<string name="no_permission">파일 시스템 권한을 얻을 수 없습니다.</string>
 	<string name="no_wiki">여기에 아무것도 없다</string>
 	<string name="no_file">파일 또는 디렉터리를 찾을 수 없음</string>
@@ -30,6 +37,8 @@
 	<string name="internet">인터넷</string>
 	<string name="local_legacy">로컬 (레거시)</string>
 	<string name="unknown">불명</string>
+	<string name="default_wiki">기본 위키</string>
+	<string name="default_wiki_needed">기본 위키를 설정하세요</string>
 	<string name="enable_backup">백업 사용</string>
 	<string name="no_backups">백업 없음</string>
 	<string name="create_shortcut">바탕 화면에 바로 가기 만들기</string>
@@ -47,7 +56,6 @@
 	<string name="backup_failed">백업하지 못했습니다</string>
 	<string name="delete_backups_as_well">뿐만 아니라 백업 삭제</string>
 	<string name="delete_the_html_file">HTML 파일을 삭제 (취소 할 수 없습니다!)</string>
-<!--	<string name="not_a_wiki">선택된 파일은 TiddlyWiki가 아닙니다</string>-->
 	<string name="not_a_wiki_page">이 페이지는 TiddlyWiki가 아닙니다.</string>
 	<string name="failed_creating_file">파일을 만들지 못했습니다</string>
 	<string name="failed_deleting_file">파일을 삭제하지 못했습니다</string>

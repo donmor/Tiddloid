@@ -1,5 +1,7 @@
 Update details:
 - Added WebDAV support (Requires Android 5.0+)
+- Added Save and Find option to context menu
+- Added draft-from-selection feature
 - Fixed a bug causing failure on rolling back a wiki
 - Optimized splash screen
 - Added version code to the about page

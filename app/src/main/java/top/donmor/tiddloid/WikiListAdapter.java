@@ -49,7 +49,7 @@ import java.util.List;
 public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
 
 	private final Context context;
-	private JSONObject wl;
+	private JSONObject db, wl;
 	private ArrayList<String> ids;
 	private ItemClickListener mItemClickListener;
 	private ReloadListener mReloadListener;
@@ -62,11 +62,9 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	private static final String[] units = new String[]{"B", "KB", "MB"};
 
 	WikiListAdapter(Context context) {
-//	WikiListAdapter(Context context, JSONObject db) throws JSONException {
 		this.context = context;
 		scale = context.getResources().getDisplayMetrics().density;
 		vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-//		reload(db);
 		inflater = LayoutInflater.from(context);
 	}
 
@@ -179,6 +177,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					builder.append('\n');
 					builder.append(SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified()))).append(formatSize(f.length()));
 				}
+				if (id.equals(db.optString(MainActivity.DB_KEY_DEFAULT))) builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.default_wiki));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -216,6 +215,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	}
 
 	void reload(JSONObject db) throws JSONException {
+		this.db = db;
 		this.wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
 		Iterator<String> iterator = wl.keys();
 		ids = new ArrayList<>();

@@ -2,19 +2,19 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 特性
 - 使用最新模板创建新的Wiki
 - 导入存储在可写来源的现有Wiki
-- 添加一个包含基于TiddlyWiki的index.htm(l)的文件夹
+- 添加一个包含基于TiddlyWiki的index.htm(l)的文件夹（Android 5.0+）
+- 添加托管在WebDAV服务器上的文件或文件夹（Android 5.0+）
 - 接收从浏览器分享的TiddlyWiki站点URL并存为新文件或书签
 - 打开一个HTML文件，如果是TiddlyWiki则添加到列表
 - 通过Wiki内配置实现应用主题色到系统界面，以及其他调整选项
 - 点击保存按钮保存更改
+- 上下文菜单中的保存和查找选项
+- 随选随记功能
 - 历史版本备份功能
 - 便捷的管理功能如创建快捷方式, 创建副本和移除等
 - 导入/导出Wiki列表
 许可
-  本应用程序遵循GPLv2许可发布，其完成离不开这些开源项目的帮助：
-  - Json - https://json.org/,
-  - Jsoup - https://jsoup.org/.
-  许可证文件随源代码提供。
+  本应用程序遵循GPLv2许可发布。WebDAV功能使用了`sardine-android` (https://github.com/thegrizzlylabs/sardine-android)，许可证文件随源代码提供。
 多语言
   此应用的翻译目前由Google翻译提供。如果您有更好的版本，欢迎在GitHub/Gitee上发起Pull Request。
 有关本应用程序的更多详细信息，请访问项目页面（https://github.com/donmor/Tiddloid）或我的主页（https://donmor.top/）。

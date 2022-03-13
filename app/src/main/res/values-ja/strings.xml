@@ -19,9 +19,16 @@
 	<string name="action_save_to_file">新しいファイルとして保存</string>
 	<string name="action_save_to_link">ブックマークとして保存</string>
 	<string name="action_save">変更を保存</string>
+	<string name="context_new_tiddler">新しいTiddlerとして作成</string>
+	<string name="context_find">検索</string>
+	<string name="context_save">保存する</string>
 	<string name="dav_address">WebDAV URL</string>
 	<string name="dav_username">ユーザー名</string>
 	<string name="dav_password">パスワード</string>
+	<string name="find_find">検索</string>
+	<string name="find_close">閉じる</string>
+	<string name="find_down">次へ</string>
+	<string name="find_up">前へ</string>
 	<string name="no_permission">ファイルシステムのアクセス許可を取得できません</string>
 	<string name="no_wiki">ここには何もありません</string>
 	<string name="no_file">ファイルまたはディレクトリが見つかりません</string>
@@ -30,6 +37,8 @@
 	<string name="internet">インターネット</string>
 	<string name="local_legacy">ローカル（レガシー）</string>
 	<string name="unknown">不明</string>
+	<string name="default_wiki">デフォルト</string>
+	<string name="default_wiki_needed">デフォルトのWikiを設定してください</string>
 	<string name="enable_backup">バックアップを有効にする</string>
 	<string name="no_backups">バックアップなし</string>
 	<string name="create_shortcut">デスクトップにショートカットを作成する</string>
@@ -47,7 +56,6 @@
 	<string name="backup_failed">バックアップ失敗</string>
 	<string name="delete_backups_as_well">バックアップも削除する</string>
 	<string name="delete_the_html_file">HTMLファイルを削除します(元に戻せません!)。</string>
-<!--	<string name="not_a_wiki">このファイルはTiddlyWikiではありません</string>-->
 	<string name="not_a_wiki_page">このページはTiddlyWikiではありません。</string>
 	<string name="failed_creating_file">ファイルの作成に失敗しました</string>
 	<string name="failed_deleting_file">ファイルの削除に失敗しました</string>

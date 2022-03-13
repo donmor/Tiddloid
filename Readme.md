@@ -20,6 +20,8 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 * Opening an HTML file and adding to the list if it is a valid TiddlyWiki
 * Applying theme color to the UI with some in-wiki configurations, as well as other tweaks
 * Saving changes by clicking the Save button
+* Save and Find option in context menu
+* Draft from any selected text
 * A Backup system that preserves your previous versions in case of misoperations
 * Convenient operations like `Create shortcut`, `Clone` and `Delete`
 * Importing or exporting wiki list data

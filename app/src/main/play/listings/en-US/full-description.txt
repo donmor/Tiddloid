@@ -2,17 +2,17 @@ Tiddloid Lite, a lightweight version of Tiddloid, is an app to work with locally
 Features
 - Creating new TiddlyWiki files with latest template
 - Importing existing TiddlyWiki files stored on a writable source
-- Adding a folder containing TiddlyWiki-based index.htm(l)
+- Adding a folder containing TiddlyWiki-based `index.htm(l)` (Android 5.0 and above)
+- Adding files or folders held on WebDAV servers (Android 5.0 and above)
 - Receiving a TiddlyWiki site URL shared from Browser and save as a new file or a bookmark
 - Opening an HTML file and adding to the list if it is a valid TiddlyWiki
 - Applying theme color to the UI with some in-wiki configurations, as well as other tweaks
 - Saving changes by clicking the Save button
+- Save and Find option in context menu
+- Draft from any selected text
 - A Backup system that preserves your previous versions in case of misoperations
 - Convenient operations like Create shortcut, Clone and Delete
 - Importing or exporting wiki list data
-This app is released under GPL v2 license　with the help of these open source projects:
-  Json - https://json.org/ ,
-  Jsoup - https://jsoup.org/ ,
-License files provided with source codes.
+WebDAV function provided by `sardine-android` (https://github.com/thegrizzlylabs/sardine-android). License files provided in /lic.
 
 For more details about this app, please visit the project page ( https://github.com/donmor/Tiddloid/ ) or my homepage ( https://donmor.top/ ).

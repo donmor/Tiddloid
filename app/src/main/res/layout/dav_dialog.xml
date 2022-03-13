@@ -24,13 +24,6 @@
             android:orientation="horizontal"
             app:layout_constraintBottom_toTopOf="@+id/rvDavDir">
 
-            <!--            <ImageButton-->
-            <!--                android:id="@+id/btnDavPD"-->
-            <!--                android:layout_width="wrap_content"-->
-            <!--                android:layout_height="match_parent"-->
-            <!--                android:contentDescription="@string/dav_pd"-->
-            <!--                app:srcCompat="@drawable/ic_arrow_up" />-->
-
             <EditText
                 android:id="@+id/editTextDavAddress"
                 android:layout_width="0dp"

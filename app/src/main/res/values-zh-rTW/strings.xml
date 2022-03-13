@@ -19,9 +19,16 @@
 	<string name="action_save_to_file">保存到新文件</string>
 	<string name="action_save_to_link">存為書籤</string>
 	<string name="action_save">保存更改</string>
+	<string name="context_new_tiddler">創建為新的 Tiddler</string>
+	<string name="context_find">搜尋</string>
+	<string name="context_save">保存</string>
 	<string name="dav_address">WebDAV 網址</string>
 	<string name="dav_username">用戶名</string>
 	<string name="dav_password">密碼</string>
+	<string name="find_find">搜尋</string>
+	<string name="find_close">關閉</string>
+	<string name="find_down">向下</string>
+	<string name="find_up">向上</string>
 	<string name="no_permission">無法獲得文件系統權限</string>
 	<string name="no_wiki">這裡什麼都沒有</string>
 	<string name="no_file">無此文件或目錄</string>
@@ -30,6 +37,8 @@
 	<string name="internet">網絡</string>
 	<string name="local_legacy">本地（傳統）</string>
 	<string name="unknown">不明</string>
+	<string name="default_wiki">默認維基</string>
+	<string name="default_wiki_needed">請設置默認維基</string>
 	<string name="enable_backup">啟用備份</string>
 	<string name="no_backups">沒有備份</string>
 	<string name="create_shortcut">在桌面上創建快捷方式</string>
@@ -47,7 +56,6 @@
 	<string name="backup_failed">備份失敗</string>
 	<string name="delete_backups_as_well">也刪除備份</string>
 	<string name="delete_the_html_file">刪除HTML文件(無法撤消!)</string>
-<!--	<string name="not_a_wiki">所選文件不是TiddlyWiki</string>-->
 	<string name="not_a_wiki_page">該頁面不是 TiddlyWiki。</string>
 	<string name="failed_creating_file">創建文件失敗</string>
 	<string name="failed_deleting_file">刪除文件失敗</string>

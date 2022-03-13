@@ -19,9 +19,16 @@
 	<string name="action_save_to_file">Speicher als neue Datei</string>
 	<string name="action_save_to_link">Als Lesezeichen speichern</string>
 	<string name="action_save">Änderungen speichern</string>
+	<string name="context_new_tiddler">Erstellen Sie hier einen neuen Tiddler</string>
+	<string name="context_find">Suche</string>
+	<string name="context_save">Sparen</string>
 	<string name="dav_address">WebDAV-URL</string>
 	<string name="dav_username">Nutzername</string>
 	<string name="dav_password">Passwort</string>
+	<string name="find_find">Suche</string>
+	<string name="find_close">Schließen</string>
+	<string name="find_down">Nächste</string>
+	<string name="find_up">Vorherige</string>
 	<string name="no_permission">Dateisystemberechtigungen können nicht abgerufen werden</string>
 	<string name="no_wiki">Hier ist nichts</string>
 	<string name="no_file">Datei oder Verzeichnis nicht gefunden</string>
@@ -30,6 +37,8 @@
 	<string name="internet">Internet</string>
 	<string name="local_legacy">Local (Vermächtnis)</string>
 	<string name="unknown">Unbekannt</string>
+	<string name="default_wiki">Standard-Wiki</string>
+	<string name="default_wiki_needed">Bitte legen Sie ein Standard-Wiki fest</string>
 	<string name="enable_backup">Backup aktivieren</string>
 	<string name="no_backups">Keine Backups</string>
 	<string name="create_shortcut">Erstellen Sie eine Verknüpfung auf dem Desktop</string>
@@ -47,7 +56,6 @@
 	<string name="backup_failed">Sicherung fehlgeschlagen</string>
 	<string name="delete_backups_as_well">Löschen Sie auch Backups</string>
 	<string name="delete_the_html_file">Löschen Sie die HTML-Datei (Kann nicht rückgängig gemacht werden!)</string>
-<!--	<string name="not_a_wiki">Die ausgewählte Datei ist kein TiddlyWiki</string>-->
 	<string name="not_a_wiki_page">Die Seite ist kein TiddlyWiki.</string>
 	<string name="failed_creating_file">Fehler beim Erstellen der Datei</string>
 	<string name="failed_deleting_file">Fehler beim Löschen der Datei</string>

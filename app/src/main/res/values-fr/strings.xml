@@ -19,9 +19,16 @@
 	<string name="action_save_to_file">Enregistrer en tant que nouveau fichier</string>
 	<string name="action_save_to_link">Enregistrer en tant que signet</string>
 	<string name="action_save">Sauvegarder les modifications</string>
+	<string name="context_new_tiddler">Créez un nouveau Tiddler ici</string>
+	<string name="context_find">Chercher</string>
+	<string name="context_save">Sauver</string>
 	<string name="dav_address">URL WebDAV</string>
 	<string name="dav_username">Nom d\'utilisateur</string>
 	<string name="dav_password">Mot de passe</string>
+	<string name="find_find">Rechercher</string>
+	<string name="find_close">Fermer</string>
+	<string name="find_down">Prochain</string>
+	<string name="find_up">Précédent</string>
 	<string name="no_permission">Impossible d\'obtenir les autorisations du système de fichiers</string>
 	<string name="no_wiki">Il n\'y a rien ici</string>
 	<string name="no_file">Fichier ou dossier non trouvé</string>
@@ -30,6 +37,8 @@
 	<string name="internet">Internet</string>
 	<string name="local_legacy">Local (Héritage)</string>
 	<string name="unknown">Inconnu</string>
+	<string name="default_wiki">Wiki par défaut</string>
+	<string name="default_wiki_needed">Veuillez définir un wiki par défaut</string>
 	<string name="enable_backup">Activer la sauvegarde</string>
 	<string name="no_backups">Aucune sauvegarde</string>
 	<string name="create_shortcut">Créer un raccourci sur le bureau</string>
@@ -47,7 +56,6 @@
 	<string name="backup_failed">La sauvegarde a échoué</string>
 	<string name="delete_backups_as_well">Supprimer également les sauvegardes</string>
 	<string name="delete_the_html_file">Supprimer le fichier HTML (ne peut pas être annulé!)</string>
-<!--	<string name="not_a_wiki">Le fichier sélectionné n\'est pas un TiddlyWiki</string>-->
 	<string name="not_a_wiki_page">La page n\'est pas un TiddlyWiki.</string>
 	<string name="failed_creating_file">Échec de la création du fichier</string>
 	<string name="failed_deleting_file">Échec de la suppression du fichier</string>
