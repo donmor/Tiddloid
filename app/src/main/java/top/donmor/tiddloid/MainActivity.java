@@ -153,6 +153,7 @@ public class MainActivity extends AppCompatActivity {
 			SCH_HTTP = "http",
 			SCH_HTTPS = "https",
 			STR_EMPTY = "",
+			TYPE_HTA = "application/hta",
 			TYPE_HTML = "text/html",
 			CLASS_MENU_BUILDER = "MenuBuilder",
 			METHOD_SET_OPTIONAL_ICONS_VISIBLE = "setOptionalIconsVisible";
@@ -184,6 +185,7 @@ public class MainActivity extends AppCompatActivity {
 			EXCEPTION_SHORTCUT_NOT_SUPPORTED = "Invoking a function that is not supported by the current system",
 			EXCEPTION_NO_INTERNET = "No Internet connection",
 			EXCEPTION_INTERRUPTED = "Interrupted by user";
+	private static final String[] TYPE_FILTERS = {TYPE_HTA, TYPE_HTML};
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -989,7 +991,7 @@ public class MainActivity extends AppCompatActivity {
 				getChooserCreate.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
 				break;
 			case idImport:
-				getChooserImport.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
+				getChooserImport.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML).putExtra(Intent.EXTRA_MIME_TYPES, TYPE_FILTERS));
 				break;
 			case idDir:
 				if (APIOver21)

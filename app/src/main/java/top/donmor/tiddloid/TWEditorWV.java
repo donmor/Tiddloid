@@ -133,6 +133,7 @@ public class TWEditorWV extends AppCompatActivity {
 	// CONSTANT
 	private static final String
 			JSI = "twi",
+			EXT_HTA = ".hta",
 			MIME_ANY = "*/*",
 			MIME_TEXT = "text/plain",
 			REX_SP_CHR = "\\s",
@@ -159,8 +160,8 @@ public class TWEditorWV extends AppCompatActivity {
 		dialogPadding = (int) (getResources().getDisplayMetrics().density * 20);
 		// 初始化顶栏
 		toolbar = findViewById(R.id.wv_toolbar);
-		toolbar.setNavigationOnClickListener(v -> onBackPressed());
 		setSupportActionBar(toolbar);
+		toolbar.setNavigationOnClickListener(v -> TWEditorWV.this.onBackPressed());
 		this.setTitle(R.string.app_name);
 		onConfigurationChanged(getResources().getConfiguration());
 		wvProgress = findViewById(R.id.progressBar);
@@ -1100,10 +1101,10 @@ public class TWEditorWV extends AppCompatActivity {
 		wv.getSettings().setJavaScriptEnabled(true);
 		if (u != null && MainActivity.SCH_CONTENT.equals(u.getScheme())) try {
 			getContentResolver().takePersistableUriPermission(u, MainActivity.TAKE_FLAGS);  //保持读写权限
-		} catch (RuntimeException e) {
+		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
-		if (u == null || !MainActivity.APIOver21 && MainActivity.SCH_CONTENT.equals(u.getScheme()) && actualUri == uri) {
+		if (u == null || !MainActivity.APIOver21 && MainActivity.SCH_CONTENT.equals(u.getScheme()) && actualUri == uri || actualUri != null && (MainActivity.TYPE_HTA.equals(getContentResolver().getType(actualUri)) || actualUri.getLastPathSegment().endsWith(EXT_HTA))) {
 			Uri u1 = null, ux;
 			if (u == null)
 				if ((u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM)) == null) {
@@ -1127,8 +1128,9 @@ public class TWEditorWV extends AppCompatActivity {
 					throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 				String data = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(os.toByteArray())).toString();
 				wv.loadDataWithBaseURL(ux.toString(), data, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
-			} catch (IOException e) {
+			} catch (IOException | SecurityException e) {
 				e.printStackTrace();
+				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 			}
 		} else wv.loadUrl(actualUri != null ? actualUri.toString() : URL_BLANK);
 	}
