@@ -32,7 +32,7 @@ android {
         applicationId "top.donmor.tiddloid"
         minSdkVersion 19
         targetSdkVersion 31
-        versionCode 40
+        versionCode 41
         versionName "2.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
