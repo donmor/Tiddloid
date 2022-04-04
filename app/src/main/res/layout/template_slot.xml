@@ -1,0 +1,53 @@
+<?xml version="1.0" encoding="utf-8"?><!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/layout/template_slot.xml <= [P|Tiddloid]
+  ~ Last modified: 09:20:01 2022/03/26
+  ~ Copyright (c) 2022 donmor
+  -->
+
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/template_item"
+    android:layout_width="match_parent"
+    android:layout_height="wrap_content"
+    android:orientation="vertical"
+    tools:ignore="UnusedResources"><!--TODO： Remove this-->
+
+        <LinearLayout
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content">
+
+    <Button
+        android:id="@+id/template_new"
+        style="@style/Widget.AppCompat.Button.Borderless"
+        android:layout_width="0dp"
+        android:layout_height="match_parent"
+        android:layout_weight="1"
+        android:drawableStart="@drawable/ic_description"
+        android:gravity="start|center_vertical"
+        android:layoutDirection="inherit"
+        android:text="@string/tiddlywiki"
+        android:textAppearance="@style/TextAppearance.AppCompat.Menu" />
+
+    <LinearLayout
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:orientation="vertical">
+
+        <ImageButton
+            xmlns:app="http://schemas.android.com/apk/res-auto"
+            android:id="@+id/template_site"
+            style="@style/Widget.AppCompat.ActionButton"
+            android:layout_width="match_parent"
+            android:layout_height="match_parent"
+            android:contentDescription="@string/site"
+            app:srcCompat="@drawable/ic_language" />
+    </LinearLayout>
+        </LinearLayout>
+
+        <TextView
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:background="@color/tint_background"
+            android:visibility="gone" />
+
+</LinearLayout>

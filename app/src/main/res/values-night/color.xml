@@ -11,4 +11,5 @@
     <color name="design_default_color_primary">@color/cardview_dark_background</color>
     <color name="design_default_color_primary_dark">@android:color/darker_gray</color>
     <color name="design_default_color_accent">#72CEED</color>
+    <color name="tint_background">#1AFFFFFF</color>
 </resources>

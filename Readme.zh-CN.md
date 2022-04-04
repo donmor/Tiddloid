@@ -95,10 +95,18 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
 此应用的翻译目前由Google翻译提供。如果您有更好的版本，欢迎在GitHub/Gitee上发起Pull Request。
 
+### 隐私
+
+本应用程序使用互联网连接获取模板数据和显示HTTP方式添加的页面，在此过程中不会传输您的数据。另外，您在问题反馈过程中提供的任何信息将被妥善用于解决问题且仅用于此用途。
+
+注意：任何发布在GitHub/Gitty Issues的信息将对所有人可见。
+
 ### 关于我们
 
 感谢您尝试我们的产品。如果您愿意支持，我们将不胜感激，并不遗余力地加以改进。
 
 &ensp;&ensp;<a href="https://liberapay.com/donmor3000/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg" height="30" /></a>&ensp;&ensp;<a href="https://donmor.top/#DonationQrCode"><img alt="Donate using Alipay and Wechat Pay" src="https://donmor.top/img/aliwechat.svg" height="30" /></a>
 
-如果您感兴趣，欢迎访问[我的主页](https://donmor.top/).
+如果您感兴趣，欢迎访问[我的主页](https://donmor.top/)。
+
+您还可以访问[太记的项目页面](https://github.com/tiddly-gittly/TidGi-Desktop)，了解有关中文版桌面应用程序的更多信息。

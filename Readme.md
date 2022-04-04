@@ -109,6 +109,12 @@ WebDAV function provided by `sardine-android` (https://github.com/thegrizzlylabs
 
 The localization of this app is currently provided by Google Translation. Pull requests are welcomed if you have better translations.
 
+### Privacy
+
+This app uses internet connections to fetch templates and show pages added as HTTP links, none of your data will be transferred. Moreover, any of the information you provided during feedbacks will be used only for troubleshooting.
+
+Note: Any information posted on GitHub Issues will be available to everyone.
+
 ### About us
 
 Thank you for trying donmor's productions. I'd really appreciate it if you kindly support us via the buttons below, and take more effect to improve our productions.

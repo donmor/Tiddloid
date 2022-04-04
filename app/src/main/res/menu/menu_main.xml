@@ -23,6 +23,11 @@
         android:icon="@drawable/ic_dav"
         android:title="@string/action_dav"
         app:showAsAction="never" />
+<!--    <item-->
+<!--        android:id="@+id/action_template"-->
+<!--        android:icon="@drawable/ic_language"-->
+<!--        android:title="TODO:TEMPLATE"-->
+<!--        app:showAsAction="never" />-->
     <item
         android:id="@+id/action_about"
         android:icon="@drawable/ic_info_outline"
