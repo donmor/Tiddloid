@@ -988,7 +988,6 @@ public class MainActivity extends AppCompatActivity {
 				menu.getItem(3).setEnabled(false);
 			}
 //			if (!(Locale.SIMPLIFIED_CHINESE.getCountry().equals(Locale.getDefault().getCountry()))) menu.getItem(4).setVisible(false);    // 目前仅在大陆可用
-			menu.getItem(4).setVisible(false);	// 尚未实装
 		}
 		return super.onPrepareOptionsMenu(menu);
 	}
