@@ -13,7 +13,7 @@
     <string name="action_new">创建新的 TiddlyWiki 文件</string>
 	<string name="action_import">导入已有TiddlyWiki文件</string>
 	<string name="action_dir">添加 TiddlyWiki 文件夹</string>
-	<string name="action_dav">连接到 WebDAV</string>
+	<string name="action_dav">WebDAV / 本地（旧版）</string>
 	<string name="action_about">关于Tiddloid</string>
 	<string name="action_save_to">保存到 Tiddloid</string>
 	<string name="action_save_to_file">保存到新文件</string>
@@ -87,6 +87,6 @@
 		许可证文件随源代码提供。\n
 		\n
 		有关本应用程序的更多详细信息，请访问项目页面（ https://github.com/donmor/Tiddloid/ ）或我的主页（ https://donmor.top/ ）。\n
-		您还可以访问太记的项目页面（ https://github.com/tiddly-gittly/TidGi-Desktop ），了解有关中文版桌面应用程序的更多信息。
+			您还可以访问太记的项目页面（ https://github.com/tiddly-gittly/TidGi-Desktop ），了解有关中文版桌面应用程序的更多信息。
 	</string>
 </resources>

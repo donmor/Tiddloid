@@ -13,7 +13,7 @@
 	<string name="action_new">새 TiddlyWiki 파일 생성</string>
 	<string name="action_import">TiddlyWiki 파일 가져 오기</string>
 	<string name="action_dir">TiddlyWiki 폴더 추가</string>
-	<string name="action_dav">WebDAV에 연결</string>
+	<string name="action_dav">WebDAV / 로컬 (레거시)</string>
 	<string name="action_about">Tiddloid에 대하여</string>
 	<string name="action_save_to">Tiddloid에 저장</string>
 	<string name="action_save_to_file">새 파일로 저장</string>

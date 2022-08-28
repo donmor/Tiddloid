@@ -13,7 +13,7 @@
     <string name="action_new">創建一個新的 TiddlyWiki 文件</string>
 	<string name="action_import">導入現有TiddlyWiki文件</string>
 	<string name="action_dir">添加 TiddlyWiki 文件夾</string>
-	<string name="action_dav">連接到 WebDAV</string>
+	<string name="action_dav">WebDAV / 本地（傳統）</string>
 	<string name="action_about">關於Tiddloid</string>
 	<string name="action_save_to">保存到 Tiddloid</string>
 	<string name="action_save_to_file">保存到新文件</string>

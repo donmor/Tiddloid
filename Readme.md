@@ -61,11 +61,13 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * I upgraded from 1.4 and all of my TiddlyWikis added before no longer to work.
 
-    Check if your system revoked local storage accessing permissions. `Local (Legacy)` mode (which directly accesses local files) disabled on new installations by default. To enable it, Open "About Tiddloid" and long-press the "OK" button.
+    Check if your system revoked local storage accessing permissions. `Local (Legacy)` mode (which directly accesses local files) disabled on new installations by default. To enable it, Open "WebDAV / Local (Legacy)" and press the button on the top-left corner.
 
 * I still want to add `Local (Legacy)` wikis.
 
-    Install a file manager designed for old versions of Android that opening files by passing `file://`URIs, open a HTML file, and choose `Add to Tiddloid`.
+    * Open "WebDAV / Local (Legacy)" and press the button on the top-left corner.
+    * Or Install a file manager designed for old versions of Android that opening files by passing `file://`URIs, open a HTML file, and choose `Add to Tiddloid`.
+    * Or select some text containing `file://`URI, press `Share`->`Add to Tiddloid`.
 
 * Why there's a Tiddloid Lite? What's the difference between the two versions?
 
@@ -82,9 +84,9 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
     | Direct access to files in the same folder | Yes           | Partial (Legacy, or TiddlyWiki folders by caching all files) | No                               |
     | Cloud Service                             | No            | Yes (via SAF)                                                | Yes (via SAF)                    |
     | WebDAV client                             | No            | Yes                                                          | No                               |
-    | Template | Download on first startup      | Download on creating new wiki, and cached in case it is unable to access the Internet |Download on creating new wiki|
-    | Compatibility | Supports most of Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis |Supports latest Android versions best and supports most of TW5|
-    | Recommended Android version | Android 4.4 ~ 9.0 | Android 4.4 and above, best for 8.0 and above |Android 4.4 and above, best for 8.0 and above|
+    | Template                                  | Download on first startup, manually updated      | Download on creating new wiki, and cached in case it is unable to access the Internet |Download on creating new wiki|
+    | Compatibility                             | Supports most of Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis |Supports latest Android versions best and supports most of TW5|
+    | Recommended Android version               | Android 4.4 ~ 9.0 | Android 4.4 and above, best for 8.0 and above |Android 4.4 and above, best for 8.0 and above|
 
 
 ### License

@@ -1,10 +1,22 @@
 Update details:
-- Added WebDAV support (Requires Android 5.0+)
-- Added support for HTA files
-- Added Save and Find option to context menu
-- Added draft-from-selection feature
-- Fixed a bug causing failure on rolling back a wiki
-- Optimized splash screen
-- Added version code to the about page
-- Legacy mode now can be enabled by long-pressing OK button in the about page
-- Fixed a bug causing error on opening for the first time after added a directory
+#- Added internal template list
+#- Refactored content receiver:
+  - If any wiki opened:
+    - Any selected text sent here will be append to opened wiki as a draft tiddler
+    - Any other file sent here will get prepared for import and stacked in $:/Import
+  - If no wiki opened:
+    - Any selected text will be parsed, and open the link inside if possible; otherwise the default wiki will be opened and the text will be append there as a draft tiddler
+    - Any HTML file sent here will be opened as a template
+    - Any files will let the default wiki be opened and imported here
+- Now allows plugins to make use of the camera
+- Now allows receiving links with file:// scheme
+- Merged WebDAV and Legacy mode
+    - Now asks for storage permission when "Local (Legacy)" opened for the first time
+- Now will transfer data only if the remote template file updated
+- Added WebView debugging (for debug build only)
+- Added support to UTF-16-encoded files
+#- Now shows source of files in wiki list
+#- Fixed the problem that Nextcloud's WebDAV server cannot be accessed
+- Fixed a bug causing failure on picking text with certain characters
+- Fixed a bug causing crash on importing files from file manager apps if is a fresh installation
+- Applied a temporary fix to the problem that random code appended to files on Android 11 and above

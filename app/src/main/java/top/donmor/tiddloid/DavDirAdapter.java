@@ -74,7 +74,7 @@ public class DavDirAdapter extends RecyclerView.Adapter<DavDirAdapter.DavDirHold
 		holder.btnDavItem.setCompoundDrawablesRelativeWithIntrinsicBounds(res.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_description, 0, 0, 0);
 		holder.btnDavItem.setOnClickListener(v -> mItemClickListener.onItemClick(host + res.getHref()));
 		holder.btnDavItem.setText(res.getName());
-		holder.btnDavItem.setEnabled(res.isDirectory() || MainActivity.TYPE_HTML.equals(res.getContentType()));
+		holder.btnDavItem.setEnabled(res.isDirectory() || MainActivity.TYPE_HTML.equals(res.getContentType()) || MainActivity.TYPE_HTA.equals(res.getContentType()));
 		holder.btnDavItem.setVisibility(View.VISIBLE);
 	}
 

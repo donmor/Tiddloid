@@ -6,12 +6,17 @@
 
 package top.donmor.tiddloid;
 
+import android.Manifest;
+import android.annotation.TargetApi;
+import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ActivityInfo;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -46,6 +51,7 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.webkit.HttpAuthHandler;
 import android.webkit.JavascriptInterface;
+import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
 import android.webkit.WebResourceRequest;
@@ -68,6 +74,8 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
+import androidx.core.app.ActivityCompat;
+import androidx.core.content.ContextCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.documentfile.provider.DocumentFile;
@@ -76,6 +84,7 @@ import com.thegrizzlylabs.sardineandroid.DavResource;
 import com.thegrizzlylabs.sardineandroid.Sardine;
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -92,18 +101,20 @@ import java.io.InputStream;
 import java.io.OutputStream;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
+import java.util.Map;
 
 public class TWEditorWV extends AppCompatActivity {
 	private JSONObject db, wApp;
@@ -119,6 +130,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private ProgressBar wvProgress;
 	private Uri uri = null, cachedUri;
 	private boolean isWiki, isClassic, hideAppbar = false, ready = false, failed = false;
+	private Charset overrodeCharset = null;
 	private byte[] exData = null;
 	private Menu optMenu;
 	private String id;
@@ -126,7 +138,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private HashMap<String, byte[]> hashes = null;
 	private DocumentFile tree = null, treeIndex = null;
 	private ActivityResultLauncher<Intent> getChooserDL, getChooserImport, getChooserClone;
-	private JSONArray customActions = null;
+	private JSONArray customActions, extraContent2 = null;
 	private final HashMap<Integer, String> customActionsMap = new HashMap<>();
 
 
@@ -135,20 +147,107 @@ public class TWEditorWV extends AppCompatActivity {
 			JSI = "twi",
 			EXT_HTA = ".hta",
 			MIME_ANY = "*/*",
+			MIME_BINARY = "application/octet-stream",
 			MIME_TEXT = "text/plain",
 			REX_SP_CHR = "\\s",
 			KEY_ACTION = "action",
 			KEY_ALG = "MD5",
 			KEY_COL = ":",
 			KEY_ENC = "enc",
+			KEY_ENCODING = "encoding",
+			KEY_EXTENSION = "extension",
 			KEY_FIND_IND = "%1$d/%2$d",
 			KEY_ICON = "icon",
 			KEY_YES = "yes",
+			KEY_TEXT = "text",
+			KEY_TITLE = "title",
+			KEY_TYPE = "type",
 			SCH_ABOUT = "about",
 			SCH_TEL = "tel",
 			SCH_MAILTO = "mailto",
 			URL_BLANK = "about:blank";
+	private static final String KEY_PATCH1 = "</html>\n";    // APIOver30 bug workaround
 	private static final int CA_GRP_ID = 999;
+	private static final byte[]
+			HEADER_U16BE_BOM = "\n<!doctype html".getBytes(StandardCharsets.UTF_16),
+			HEADER_U16LE_BOM = new byte[]{(byte) 0xFF, (byte) 0xFE, '\n', 0, '<', 0, '!', 0, 'd', 0, 'o', 0, 'c', 0, 't', 0, 'y', 0, 'p', 0, 'e', 0, ' ', 0, 'h', 0, 't', 0, 'm', 0, 'l', 0},
+			HEADER_U16BE = "\n<!doctype html>".getBytes(StandardCharsets.UTF_16BE),
+			HEADER_U16LE = "\n<!doctype html>".getBytes(StandardCharsets.UTF_16LE);
+
+	private enum TW_CONTENT_ENCODING {
+		UTF8, UTF16LE, BASE64
+	}
+
+	private static final Map<String, TW_CONTENT_ENCODING> TW_TYPE_MAP = new HashMap<String, TW_CONTENT_ENCODING>() {
+		private static final long serialVersionUID = 5978131546666849058L;
+
+		{
+			put("utf8", TW_CONTENT_ENCODING.UTF8);
+			put("utf16le", TW_CONTENT_ENCODING.UTF16LE);
+			put("base64", TW_CONTENT_ENCODING.BASE64);
+		}
+	};
+	private static final Map<String, TW_CONTENT_ENCODING> TW_TYPES = new HashMap<String, TW_CONTENT_ENCODING>() {
+		private static final long serialVersionUID = 5978131546666849058L;
+
+		{
+			put("application/hta", TW_CONTENT_ENCODING.UTF16LE);
+			put("application/javascript", TW_CONTENT_ENCODING.UTF8);
+			put("application/json", TW_CONTENT_ENCODING.UTF8);
+			put("application/octet-stream", TW_CONTENT_ENCODING.BASE64);
+			put("application/pdf", TW_CONTENT_ENCODING.BASE64);
+			put("application/x-tiddler", TW_CONTENT_ENCODING.UTF8);
+			put("application/x-tiddlers", TW_CONTENT_ENCODING.UTF8);
+			put("application/zip", TW_CONTENT_ENCODING.BASE64);
+			put("audio/mp3", TW_CONTENT_ENCODING.BASE64);
+			put("audio/mp4", TW_CONTENT_ENCODING.BASE64);
+			put("audio/ogg", TW_CONTENT_ENCODING.BASE64);
+			put("image/gif", TW_CONTENT_ENCODING.BASE64);
+			put("image/jpeg", TW_CONTENT_ENCODING.BASE64);
+			put("image/png", TW_CONTENT_ENCODING.BASE64);
+			put("image/svg+xml", TW_CONTENT_ENCODING.UTF8);
+			put("image/webp", TW_CONTENT_ENCODING.BASE64);
+			put("image/x-icon", TW_CONTENT_ENCODING.BASE64);
+			put("text/css", TW_CONTENT_ENCODING.UTF8);
+			put("text/html", TW_CONTENT_ENCODING.UTF8);
+			put("text/markdown", TW_CONTENT_ENCODING.UTF8);
+			put("text/plain", TW_CONTENT_ENCODING.UTF8);
+			put("text/vnd.tiddlywiki", TW_CONTENT_ENCODING.UTF8);
+			put("text/x-markdown", TW_CONTENT_ENCODING.UTF8);
+			put("video/mp4", TW_CONTENT_ENCODING.BASE64);
+			put("video/ogg", TW_CONTENT_ENCODING.BASE64);
+			put("video/webm", TW_CONTENT_ENCODING.BASE64);
+		}
+	};
+	private static final Map<String, String> TW_TYPE_EXT = new HashMap<String, String>() {
+		private static final long serialVersionUID = 5978131546666849058L;
+
+		{
+			put(".hta", "application/hta");
+			put(".js", "application/javascript");
+			put(".json", "application/json");
+			put(".octet-stream", "application/octet-stream");
+			put(".pdf", "application/pdf");
+			put(".multids", "application/x-tiddlers");
+			put(".zip", "application/zip");
+			put(".mp3", "audio/mp3");
+			put(".gif", "image/gif");
+			put(".jpg", "image/jpeg");
+			put(".png", "image/png");
+			put(".svg", "image/svg+xml");
+			put(".webp", "image/webp");
+			put(".ico", "image/x-icon");
+			put(".css", "text/css");
+			put(".html", "text/html");
+			put(".txt", "text/plain");
+			put(".tid", "text/vnd.tiddlywiki");
+			put(".md", "text/x-markdown");
+			put(".mp4", "video/mp4");
+			put(".ogg", "video/ogg");
+			put(".webm", "video/webm");
+		}
+	};
+	private PermissionRequest mPermissionRequest;
 
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
@@ -185,6 +284,7 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setSupportMultipleWindows(true);
 		wvs.setMediaPlaybackRequiresUserGesture(false);
 		scale = getResources().getDisplayMetrics().density;
+		if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) WebView.setWebContentsDebuggingEnabled(true);    // 在debug环境启用调试
 		// 注册SAF回调
 		getChooserDL = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 			if (exData == null) return;
@@ -378,6 +478,17 @@ public class TWEditorWV extends AppCompatActivity {
 				return true;
 			}
 
+			@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+			@Override
+			public void onPermissionRequest(PermissionRequest request) {
+//				try {
+				for (String r : request.getResources())
+					if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r))
+						openCamera(TWEditorWV.this, request);
+//				} catch (Exception e) {
+//					e.printStackTrace();
+//				}
+			}
 		};
 		wv.setWebChromeClient(wcc);
 		wv.addJavascriptInterface(new Object() {
@@ -441,7 +552,7 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				Uri ux = cachedUri != null ? cachedUri : uri;
 				String lt = null;
-				try (ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(StandardCharsets.UTF_8));
+				try (ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(overrodeCharset != null ? overrodeCharset : StandardCharsets.UTF_8));
 						OutputStream os = getContentResolver().openOutputStream(ux)) {
 					if (os == null)
 						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
@@ -563,8 +674,12 @@ public class TWEditorWV extends AppCompatActivity {
 								if (MainActivity.SCH_CONTENT.equals(Uri.parse(view.getUrl()).getScheme()))
 									view.evaluateJavascript(getString(R.string.js_settings_c2), null);
 								if (extraContent != null) view.evaluateJavascript(getString(R.string.js_new_tiddler_c, extraContent), null);
-							} else if (extraContent != null) view.evaluateJavascript(getString(R.string.js_new_tiddler, extraContent), null);
+							} else if (extraContent != null)
+								view.evaluateJavascript(getString(R.string.js_new_tiddler, extraContent), null);// TODO: Import any type here
+							else if (extraContent2 != null)
+								view.evaluateJavascript(getString(R.string.js_import, extraContent2.toString()), null);// TODO: Import any type here
 							extraContent = null;
+							extraContent2 = null;
 						});
 					else if (!URL_BLANK.equals(url)) {
 						if (wApp == null) notWikiConfirm();
@@ -583,12 +698,20 @@ public class TWEditorWV extends AppCompatActivity {
 		// 初始化db
 		try {
 			db = MainActivity.readJson(this);
+			if (!db.has(MainActivity.DB_KEY_WIKI)) throw new JSONException(MainActivity.EXCEPTION_JSON_DATA_ERROR);
 		} catch (JSONException e) {
 			e.printStackTrace();
-			Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
-			finish();
-			return;
+			try {
+				db = MainActivity.initJson(TWEditorWV.this);    // 初始化JSON数据，如果加载失败
+				MainActivity.writeJson(TWEditorWV.this, db);
+			} catch (JSONException e1) {
+				e1.printStackTrace();
+				Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+				finish();
+				return;
+			}
 		}
+		MainActivity.trimDB140(TWEditorWV.this, db);    // db格式转换
 		// 初始化页内查找
 		((EditText) findViewById(R.id.find_edit_find)).addTextChangedListener(new TextWatcher() {
 			@Override
@@ -639,12 +762,81 @@ public class TWEditorWV extends AppCompatActivity {
 				return;
 			}
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
-		} else if (Intent.ACTION_SEND.equals(action)) {    // 分享链接克隆站点
-			if (!(MainActivity.TYPE_HTML.equals(intent.getType())) || !(MIME_TEXT.equals(intent.getType()) && intent.getStringExtra(Intent.EXTRA_TEXT).contains(MainActivity.SCH_HTTP))) {
-				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
+		} else if (Intent.ACTION_SEND.equals(action)) {    // 分享链接克隆站点		TODO: Accept any type; *Check if is plain text
+//			if (!(MainActivity.TYPE_HTML.equals(intent.getType())) || !(MIME_TEXT.equals(intent.getType()) && intent.getStringExtra(Intent.EXTRA_TEXT).contains(MainActivity.SCH_HTTP))) {
+//				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
+//				return;
+//			}
+			String cs = null;
+			boolean bin = !MIME_TEXT.equals(intent.getType()) || (cs = intent.getStringExtra(Intent.EXTRA_TEXT)) == null;
+			if (isClassic && bin) {
+				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 				return;
 			}
-			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
+			Uri uri;
+			if (bin) try (InputStream is = getContentResolver().openInputStream(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM));
+					ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
+				int length;
+				byte[] b = new byte[MainActivity.BUF_SIZE];
+				while ((length = is.read(b)) != -1) os.write(b, 0, length);
+				os.flush();
+				String path = Uri.decode(uri.toString()), type = intent.getType();
+				if (!TW_TYPES.containsKey(type) && TW_TYPE_EXT.containsKey(path.substring(path.lastIndexOf('.'))))
+					type = TW_TYPE_EXT.get(path.substring(path.lastIndexOf('.')));
+				if (!TW_TYPES.containsKey(type)) type = MIME_BINARY;
+				int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
+				TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
+				JSONArray array = new JSONArray().put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
+						.put(KEY_TYPE, type)
+						.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
+								? Base64.encodeToString(os.toByteArray(), Base64.NO_WRAP)
+								: enc == TW_CONTENT_ENCODING.UTF16LE
+								? new String(os.toByteArray(), StandardCharsets.UTF_16)
+								: new String(os.toByteArray())));
+				cs = array.toString();
+			} catch (IOException | JSONException e) {
+				e.printStackTrace();
+			}
+			if (cs == null) {
+				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
+				return;
+			}
+			wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : bin ? R.string.js_import : R.string.js_new_tiddler, cs), null);
+//			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
+		} else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {    // 分享链接克隆站点		TODO: Accept multi files
+			String cs;
+			if (isClassic) {
+				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
+				return;
+			}
+			JSONArray array = new JSONArray();
+			ArrayList<Uri> files = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+			for (Uri uri : files)
+				try (InputStream is = getContentResolver().openInputStream(uri);
+						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
+					int length;
+					byte[] b = new byte[MainActivity.BUF_SIZE];
+					while ((length = is.read(b)) != -1) os.write(b, 0, length);
+					String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
+					if (type == null) type = MIME_TEXT;
+					if (!TW_TYPES.containsKey(type) && TW_TYPE_EXT.containsKey(path.substring(path.lastIndexOf('.'))))
+						type = TW_TYPE_EXT.get(path.substring(path.lastIndexOf('.')));
+					if (!TW_TYPES.containsKey(type)) type = MIME_BINARY;
+					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
+					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
+					array.put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
+							.put(KEY_TYPE, type)
+							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
+									? Base64.encodeToString(os.toByteArray(), Base64.NO_WRAP)
+									: enc == TW_CONTENT_ENCODING.UTF16LE
+									? new String(os.toByteArray(), StandardCharsets.UTF_16)
+									: new String(os.toByteArray())));
+					os.flush();
+				} catch (IOException | JSONException e) {
+					e.printStackTrace();
+				}
+			cs = array.toString();
+			wv.evaluateJavascript(getString(R.string.js_import, cs), null);
 		} else if (Intent.ACTION_PROCESS_TEXT.equals(action)) {    // 摘录文本
 			CharSequence cs;
 			if (!MainActivity.APIOver23 || !isWiki || (cs = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)) == null || cs.length() == 0) return;
@@ -659,6 +851,25 @@ public class TWEditorWV extends AppCompatActivity {
 			if (wa == wApp) return;
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
 		}
+	}
+
+	@TargetApi(23)
+	private void openCamera(Context context, PermissionRequest request) {
+		if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
+			mPermissionRequest = request;
+			ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.CAMERA}, 1);
+		} else
+			request.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+	}
+
+	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
+	@Override
+	public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
+		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
+		if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED && mPermissionRequest != null) {
+			mPermissionRequest.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
+		}
+		mPermissionRequest = null;
 	}
 
 	// 处理跳转App
@@ -760,6 +971,13 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				String v = array.optString(5);
 				customActions = v.length() > 8 ? new JSONArray(v) : null;
+				JSONObject mt = array.optJSONObject(6);
+				final Iterator<String> keys = mt.keys();
+				while (keys.hasNext()) {
+					String i = keys.next();
+					TW_TYPES.put(i, TW_TYPE_MAP.get(mt.getJSONObject(i).getString(KEY_ENCODING)));
+					TW_TYPE_EXT.put(mt.getJSONObject(i).getString(KEY_EXTENSION), i);
+				}
 				onConfigurationChanged(newConfig);
 			} catch (JSONException e) {
 				e.printStackTrace();
@@ -970,28 +1188,162 @@ public class TWEditorWV extends AppCompatActivity {
 					wa = null;
 				}
 			} else wa = null;
-		} else if (Intent.ACTION_SEND.equals(action)) {    // 接收分享文件
+		} else if (Intent.ACTION_SEND.equals(action)) {    // 接收分享文件	TODO: Any type -> b64 -> extraContent2
 			wa = null;
 			String data;
 			if (MainActivity.TYPE_HTML.equals(nextWikiIntent.getType())) {    // 接收html文件
 				u = null;
-			} else if (MIME_TEXT.equals(nextWikiIntent.getType()) && (data = nextWikiIntent.getStringExtra(Intent.EXTRA_TEXT)) != null && data.contains(MainActivity.SCH_HTTP)) {    // 接收包含url的string
-				Uri u1 = null;
-				for (String s : data.split(REX_SP_CHR)) {
-					if (s.contains(MainActivity.SCH_HTTP)) {
-						u1 = Uri.parse(s.substring(s.indexOf(MainActivity.SCH_HTTP)));
-						u1 = Uri.parse(u1.getScheme() + KEY_COL + u1.getSchemeSpecificPart());
+			} else if (MIME_TEXT.equals(nextWikiIntent.getType()) && (data = nextWikiIntent.getStringExtra(Intent.EXTRA_TEXT)) != null) {    // 接收纯文本
+				if (data.contains(MainActivity.SCH_HTTP)) {    // 接收包含url的string
+					Uri u1 = null;
+					for (String s : data.split(REX_SP_CHR)) {
+						if (s.contains(MainActivity.SCH_HTTP)) {
+							u1 = Uri.parse(s.substring(s.indexOf(MainActivity.SCH_HTTP)));
+							u1 = Uri.parse(u1.getScheme() + KEY_COL + u1.getSchemeSpecificPart());
+						}
 					}
-				}
-				u = u1;
-				if (u == null) {
-					notWikiConfirm();
-					return;
+					if (u1 == null) {
+						if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+							Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
+							finish();
+							return;
+						}
+						if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null) {
+							autoRemoveConfirm(wl, nextWikiId, null);
+							return;
+						}
+						extraContent = data;
+					} else
+						u = u1;
+				} else if (data.contains(MainActivity.SCH_FILE)) {    // 接收包含url的string
+					Uri u1 = null;
+					for (String s : data.split(REX_SP_CHR)) {
+						if (s.contains(MainActivity.SCH_FILE)) {
+							u1 = Uri.parse(s.substring(s.indexOf(MainActivity.SCH_FILE)));
+							u1 = Uri.parse(u1.getScheme() + KEY_COL + u1.getSchemeSpecificPart());
+						}
+					}
+					if (u1 == null) {
+						if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+							Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
+							finish();
+							return;
+						}
+						if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null) {
+							autoRemoveConfirm(wl, nextWikiId, null);
+							return;
+						}
+						extraContent = data;
+					} else {
+						u = u1;
+						try {
+							wa = null;
+							boolean exist = false;
+							Iterator<String> iterator = wl.keys();
+							while (iterator.hasNext()) {
+								if ((wa = wl.optJSONObject(id = iterator.next())) == null || wa.has(MainActivity.DB_KEY_DAV_AUTH)) continue;
+								exist = u.toString().equals(wa.optString(MainActivity.DB_KEY_URI));
+								if (exist) break;
+							}
+							if (exist) {    // 列表中已存在
+								Toast.makeText(this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
+							} else {    // 添加到列表
+								wa = new JSONObject();
+								nextWikiId = MainActivity.genId();
+								wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
+								wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
+								wa.put(MainActivity.DB_KEY_URI, u.toString());
+								wa.put(MainActivity.DB_KEY_BACKUP, false);
+								wl.put(nextWikiId, wa);
+							}
+							MainActivity.writeJson(this, db);
+						} catch (JSONException e) {
+							e.printStackTrace();
+							Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
+							wa = null;
+						}
+					}
+				} else {
+					if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+						Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
+						finish();
+						return;
+					}
+					if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null) {
+						autoRemoveConfirm(wl, nextWikiId, null);
+						return;
+					}
+					extraContent = data;
 				}
 			} else {
-				notWikiConfirm();
+				if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+					Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
+					finish();
+					return;
+				}
+				if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null) {
+					autoRemoveConfirm(wl, nextWikiId, null);
+					return;
+				}
+				try (InputStream is = getContentResolver().openInputStream(uri = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM));
+						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
+					int length;
+					byte[] b = new byte[MainActivity.BUF_SIZE];
+					while ((length = is.read(b)) != -1) os.write(b, 0, length);
+					os.flush();
+					String path = Uri.decode(uri.toString()), type = nextWikiIntent.getType();
+					if (!TW_TYPES.containsKey(type) && TW_TYPE_EXT.containsKey(path.substring(path.lastIndexOf('.'))))
+						type = TW_TYPE_EXT.get(path.substring(path.lastIndexOf('.')));
+					if (!TW_TYPES.containsKey(type)) type = MIME_BINARY;
+					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
+					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
+					extraContent2 = new JSONArray().put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
+							.put(KEY_TYPE, type)
+							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
+									? Base64.encodeToString(os.toByteArray(), Base64.NO_WRAP)
+									: enc == TW_CONTENT_ENCODING.UTF16LE
+									? new String(os.toByteArray(), StandardCharsets.UTF_16)
+									: new String(os.toByteArray())));
+				} catch (IOException | JSONException e) {
+					e.printStackTrace();
+				}
+			}
+		} else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {    // 分享链接克隆站点		TODO: Accept multi files
+			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+				Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
+				finish();
 				return;
 			}
+			if ((u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI))) == null) {
+				autoRemoveConfirm(wl, nextWikiId, null);
+				return;
+			}
+			extraContent2 = new JSONArray();
+			ArrayList<Uri> files = nextWikiIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+			for (Uri uri : files)
+				try (InputStream is = getContentResolver().openInputStream(uri);
+						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
+					int length;
+					byte[] b = new byte[MainActivity.BUF_SIZE];
+					while ((length = is.read(b)) != -1) os.write(b, 0, length);
+					String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
+					if (type == null) type = MIME_TEXT;
+					if (!TW_TYPES.containsKey(type) && TW_TYPE_EXT.containsKey(path.substring(path.lastIndexOf('.'))))
+						type = TW_TYPE_EXT.get(path.substring(path.lastIndexOf('.')));
+					if (!TW_TYPES.containsKey(type)) type = MIME_BINARY;
+					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
+					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
+					extraContent2.put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
+							.put(KEY_TYPE, type)
+							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
+									? Base64.encodeToString(os.toByteArray(), Base64.NO_WRAP)
+									: enc == TW_CONTENT_ENCODING.UTF16LE
+									? new String(os.toByteArray(), StandardCharsets.UTF_16)
+									: new String(os.toByteArray())));
+					os.flush();
+				} catch (IOException | JSONException e) {
+					e.printStackTrace();
+				}
 		} else if (Intent.ACTION_PROCESS_TEXT.equals(action)) {    // 接收摘录
 			if (!MainActivity.APIOver23) {
 				if (!isWiki) finish();
@@ -1104,14 +1456,19 @@ public class TWEditorWV extends AppCompatActivity {
 		} catch (SecurityException e) {
 			e.printStackTrace();
 		}
-		if (u == null || !MainActivity.APIOver21 && MainActivity.SCH_CONTENT.equals(u.getScheme()) && actualUri == uri || actualUri != null && (MainActivity.TYPE_HTA.equals(getContentResolver().getType(actualUri)) || actualUri.getLastPathSegment().endsWith(EXT_HTA))) {
+		String ufn;
+		if (uri == null
+				|| MainActivity.APIOver30 && MainActivity.SCH_CONTENT.equals(uri.getScheme())
+				|| !MainActivity.APIOver21 && MainActivity.SCH_CONTENT.equals(uri.getScheme()) && actualUri == uri
+				|| actualUri != null && (MainActivity.TYPE_HTA.equals(getContentResolver().getType(actualUri))
+				|| (ufn = actualUri.getLastPathSegment()) != null && ufn.endsWith(EXT_HTA))) {
 			Uri u1 = null, ux;
-			if (u == null)
+			if (uri == null)
 				if ((u1 = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM)) == null) {
 					notWikiConfirm();
 					return;
 				}
-			ux = u != null ? u : u1;
+			ux = actualUri != null ? actualUri : u1;
 			try (InputStream is0 = getContentResolver().openInputStream(ux);
 					BufferedInputStream is = is0 != null ? new BufferedInputStream(is0) : null;
 					ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {   //读全部数据
@@ -1126,7 +1483,26 @@ public class TWEditorWV extends AppCompatActivity {
 				os.flush();
 				if (lenTotal != len)
 					throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-				String data = StandardCharsets.UTF_8.decode(ByteBuffer.wrap(os.toByteArray())).toString();
+				String data = null;
+				byte[] bytes = os.toByteArray(), hdr = new byte[32];
+				System.arraycopy(bytes, 0, hdr, 0, 32);
+				if (Arrays.equals(hdr, HEADER_U16BE_BOM) || Arrays.equals(hdr, HEADER_U16LE_BOM)) {
+					data = new String(bytes, StandardCharsets.UTF_16);    // UTF-16 + BOM
+					overrodeCharset = StandardCharsets.UTF_16;
+				}
+				if (data == null && Arrays.equals(hdr, HEADER_U16BE)) {
+					data = new String(bytes, StandardCharsets.UTF_16BE);    // UTF-16BE
+					overrodeCharset = StandardCharsets.UTF_16BE;
+				}
+				if (data == null && Arrays.equals(hdr, HEADER_U16LE)) {
+					data = new String(bytes, StandardCharsets.UTF_16LE);    // UTF-16LE
+					overrodeCharset = StandardCharsets.UTF_16LE;
+				}
+				if (data == null)
+					data = new String(bytes, StandardCharsets.UTF_8);    // UTF-8 / Fallback
+				int sk;
+				if (MainActivity.APIOver30 && (sk = data.indexOf(KEY_PATCH1)) > 0 && sk + KEY_PATCH1.length() < data.length())
+					data = data.substring(0, sk + KEY_PATCH1.length());    // APIOver30 bug workaround
 				wv.loadDataWithBaseURL(ux.toString(), data, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
 			} catch (IOException | SecurityException e) {
 				e.printStackTrace();

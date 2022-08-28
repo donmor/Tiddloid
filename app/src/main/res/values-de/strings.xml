@@ -13,7 +13,7 @@
 	<string name="action_new">Erstellen Sie eine neue TiddlyWiki-Datei</string>
 	<string name="action_import">Importieren Sie eine TiddlyWiki-Datei</string>
 	<string name="action_dir">Einen TiddlyWiki-Ordner hinzufügen</string>
-	<string name="action_dav">WebDAV Verbindung</string>
+	<string name="action_dav">WebDAV / Local (Vermächtnis)</string>
 	<string name="action_about">Über Tiddloid</string>
 	<string name="action_save_to">Im Tiddloid speichern</string>
 	<string name="action_save_to_file">Speicher als neue Datei</string>

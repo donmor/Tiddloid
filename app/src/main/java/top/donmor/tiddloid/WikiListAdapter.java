@@ -6,7 +6,10 @@
 
 package top.donmor.tiddloid;
 
+import android.annotation.SuppressLint;
 import android.content.Context;
+import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageManager;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -84,6 +87,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		return new WikiListHolder(inflater.inflate(R.layout.wiki_slot, parent, false));
 	}
 
+	@SuppressLint("QueryPermissionsNeeded")
 	@Override
 	public void onBindViewHolder(@NonNull final WikiListHolder holder, int position) {
 		try {
@@ -169,13 +173,26 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					if (vf[0] != null) {
 						builder.append('\n');
 						builder.append(SimpleDateFormat.getDateTimeInstance().format(vf[0].getModified())).append(formatSize(vf[0].getContentLength()));
+						builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.webdav));
 					}
 				} else if (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme())) {
 					builder.append('\n');
 					builder.append(u.toString());
+					builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.internet));
 				} else if ((f = legacy ? DocumentFile.fromFile(new File(u.getPath())) : df != null ? df : DocumentFile.fromSingleUri(context, u)) != null && f.exists()) {
 					builder.append('\n');
 					builder.append(SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified()))).append(formatSize(f.length()));
+					if (legacy) builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.local_legacy));
+					else {
+						// 获取来源名
+						PackageManager pm = context.getPackageManager();
+						String v;
+						for (ApplicationInfo info : pm.getInstalledApplications(PackageManager.GET_META_DATA))
+							if ((v = u.getAuthority()) != null && v.startsWith(info.packageName)) {
+								builder.append(c160).append(c160).append(c160).append(c160).append(pm.getApplicationLabel(info).toString());
+								break;
+							}
+					}
 				}
 				if (id.equals(db.optString(MainActivity.DB_KEY_DEFAULT))) builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.default_wiki));
 			} catch (IOException e) {

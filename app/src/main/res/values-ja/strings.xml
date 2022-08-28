@@ -13,7 +13,7 @@
     <string name="action_new">新しいTiddlyWikiファイルを作成します</string>
 	<string name="action_import">TiddlyWikiファイルをインポートする</string>
 	<string name="action_dir">TiddlyWikiフォルダーを追加します</string>
-	<string name="action_dav">WebDAVに接続する</string>
+	<string name="action_dav">WebDAV / ローカル（レガシー）</string>
 	<string name="action_about">Tiddloidについて</string>
 	<string name="action_save_to">Tiddloidに保存</string>
 	<string name="action_save_to_file">新しいファイルとして保存</string>

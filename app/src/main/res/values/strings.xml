@@ -42,13 +42,22 @@
             return (store.isDirty() || story.areAnyDirty());
         })();
     </string>
+    <string name="js_import" translatable="false">
+        (function() {
+            var w0 = $tw.wiki.makeWidget($tw.wiki.parseText(\'text/vnd.tiddlywiki\', \'
+                &lt;$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\" /&gt;
+                \', {parentWidget: $tw.rootWidget, document: document}), {parentWidget: $tw.rootWidget, document: document, variables: {}});
+            w0.render(document.createElement(\'div\'),null);
+            w0.children[0].children[0].dispatchEvent({type: \'tm-import-tiddlers\', param: \'%1$s\'});
+        })();
+    </string>
     <string name="js_new_tiddler" translatable="false">
         (function() {
-            $tw.rootWidget.invokeActionString(\'
-                &lt;$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\"&gt;
-                    &lt;$action-sendmessage $message=\"tm-new-tiddler\" text=\"%1$s\" /&gt;
-                &lt;/$navigator&gt;
-            \', $tw.rootWidget, null, {});
+            var w0 = $tw.wiki.makeWidget($tw.wiki.parseText(\'text/vnd.tiddlywiki\', \'
+                &lt;$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\" /&gt;
+                \', {parentWidget: $tw.rootWidget, document: document}), {parentWidget: $tw.rootWidget, document: document, variables: {}});
+            w0.render(document.createElement(\'div\'),null);
+            w0.children[0].children[0].dispatchEvent({type: \'tm-new-tiddler\', param: {text: \'%1$s\'}});
         })();
     </string>
     <string name="js_new_tiddler_c" translatable="false">
@@ -147,7 +156,8 @@
             var tl_fic = $tw.wiki.getTiddlerText(\"$:/favicon.ico\");
             var tl_favicon = tl_fic != null ? tl_fic : \"\";
             var tl_ca = $tw.wiki.getTiddlerText(\"$:/config/Tiddloid/CustomActions.json\");
-            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon, tl_ca]
+            var tl_mt = $tw.config.contentTypeInfo;
+            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon, tl_ca, tl_mt]
         })();
     </string>
     <string name="js_info_c" translatable="false">
@@ -169,6 +179,7 @@
     <string name="site" translatable="false">site</string>
     <string name="icon" translatable="false">icon</string>
     <string name="dav_go" translatable="false">dav_enter</string>
+    <string name="dav_legacy" translatable="false">dav_local</string>
     <string name="rollback" translatable="false">rollback</string>
     <string name="del_backup" translatable="false">del_backup</string>
     <!--JSON and Settings-->
@@ -177,7 +188,7 @@
     <string name="action_new">New TiddlyWiki file</string>
     <string name="action_import">Import a TiddlyWiki file</string>
     <string name="action_dir">Add a TiddlyWiki folder</string>
-    <string name="action_dav">Use WebDAV</string>
+    <string name="action_dav">WebDAV / Local (Legacy)</string>
     <string name="action_about">About Tiddloid</string>
     <string name="action_save_to">Save to Tiddloid</string>
     <string name="action_save_to_file">Save as a new file</string>
