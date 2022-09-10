@@ -48,7 +48,13 @@
                 &lt;$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\" /&gt;
                 \', {parentWidget: $tw.rootWidget, document: document}), {parentWidget: $tw.rootWidget, document: document, variables: {}});
             w0.render(document.createElement(\'div\'),null);
-            w0.children[0].children[0].dispatchEvent({type: \'tm-import-tiddlers\', param: \'%1$s\'});
+            var blocks = %1$s, nBlocks = [];
+            blocks.forEach(function(b) {
+                $tw.wiki.deserializeTiddlers(b.type, b.text, {title: b.title}).forEach(function(m) {
+                    nBlocks.push(m);
+                });
+            });
+            w0.children[0].children[0].dispatchEvent({type: \'tm-import-tiddlers\', param: JSON.stringify(nBlocks)});
         })();
     </string>
     <string name="js_new_tiddler" translatable="false">
@@ -57,11 +63,13 @@
                 &lt;$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\" /&gt;
                 \', {parentWidget: $tw.rootWidget, document: document}), {parentWidget: $tw.rootWidget, document: document, variables: {}});
             w0.render(document.createElement(\'div\'),null);
-            w0.children[0].children[0].dispatchEvent({type: \'tm-new-tiddler\', param: {text: \'%1$s\'}});
+            var block = %1$s;
+            w0.children[0].children[0].dispatchEvent({type: \'tm-new-tiddler\', param: {text: block.text}});
         })();
     </string>
     <string name="js_new_tiddler_c" translatable="false">
         (function() {
+            var block = %1$s;
             ({
                 fn: config.macros.newTiddler.onClickNewTiddler,
                 getAttribute: function(attr) {
@@ -70,7 +78,7 @@
                 sets: {
                     \"newTitle\": config.macros.newTiddler.title,
                     \"newTemplate\": DEFAULT_EDIT_TEMPLATE,
-                    \"newText\": \"%1$s\",
+                    \"newText\": block.text,
                 },
             }).fn();
         })();
@@ -157,7 +165,8 @@
             var tl_favicon = tl_fic != null ? tl_fic : \"\";
             var tl_ca = $tw.wiki.getTiddlerText(\"$:/config/Tiddloid/CustomActions.json\");
             var tl_mt = $tw.config.contentTypeInfo;
-            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon, tl_ca, tl_mt]
+            var tl_dt = Object.keys($tw.Wiki.tiddlerDeserializerModules);
+            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon, tl_ca, tl_mt, tl_dt];
         })();
     </string>
     <string name="js_info_c" translatable="false">

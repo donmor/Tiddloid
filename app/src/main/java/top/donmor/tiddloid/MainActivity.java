@@ -43,19 +43,16 @@ import android.view.Gravity;
 import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuItem;
-import android.view.SubMenu;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
-import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
-import android.widget.PopupMenu;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -72,6 +69,7 @@ import androidx.core.content.ContextCompat;
 import androidx.core.content.pm.ShortcutInfoCompat;
 import androidx.core.content.pm.ShortcutManagerCompat;
 import androidx.core.graphics.drawable.IconCompat;
+import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.documentfile.provider.DocumentFile;
@@ -85,6 +83,7 @@ import com.thegrizzlylabs.sardineandroid.Sardine;
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
 import com.thegrizzlylabs.sardineandroid.impl.SardineException;
 
+import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -108,9 +107,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Calendar;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
@@ -162,10 +159,10 @@ public class MainActivity extends AppCompatActivity {
 			SCH_HTTP = "http",
 			SCH_HTTPS = "https",
 			STR_EMPTY = "",
-			TPL_KEY_DESC = "desc",
-			TPL_KEY_LU = "lastUpdate",
-			TPL_KEY_SIZE = "size",
-			TPL_KEY_VER = "version",
+//			TPL_KEY_DESC = "desc",
+//			TPL_KEY_LU = "lastUpdate",
+//			TPL_KEY_SIZE = "size",
+//			TPL_KEY_VER = "version",
 			TYPE_HTA = "application/hta",
 			TYPE_HTML = "text/html",
 			CLASS_MENU_BUILDER = "MenuBuilder",
@@ -177,21 +174,22 @@ public class MainActivity extends AppCompatActivity {
 			KEY_URI_RATE = "market://details?id=",
 			SCH_PACKAGES = "package",
 			TEMPLATE_FILE_NAME = "template.html",
-			TPL_KEY_ALIAS = "alias",
-			TPL_KEY_LOC = "locale",
-			TPL_KEY_LOC_SET = "locales",
-			TPL_KEY_TPL_SET = "templates",
-			TPL_KEY_VALID = "valid",
-			TPL_KEY_VER_SET = "versions",
-			TPL_REX_DOT = "\\.",
-			TPL_REX_MI = "-",
-			TPL_REX_ANY = "*",
+//			TPL_KEY_ALIAS = "alias",
+//			TPL_KEY_LOC = "locale",
+//			TPL_KEY_LOC_SET = "locales",
+//			TPL_KEY_TPL_SET = "templates",
+//			TPL_KEY_VALID = "valid",
+//			TPL_KEY_VER_SET = "versions",
+//			TPL_REX_DOT = "\\.",
+//			TPL_REX_MI = "-",
+//			TPL_REX_ANY = "*",
 			CLONING_FILE_NAME = "cloning.html";
 	static final boolean APIOver21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP,
 			APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
 			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
-			APIOver30 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R;
+			APIOver28 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
+//			APIOver30 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R;
 	static final String
 			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
 			EXCEPTION_DOCUMENT_IO_ERROR = "Document IO Error",
@@ -722,7 +720,8 @@ public class MainActivity extends AppCompatActivity {
 		void run(File file);
 	}
 
-	private void fetchInThread(OnGetSrc cb, AlertDialog progressDialog, Uri uri, File destAlt) {
+//	private void fetchInThread(OnGetSrc cb, AlertDialog progressDialog, Uri uri, File destAlt) {
+	private void fetchInThread(OnGetSrc cb, AlertDialog progressDialog) {
 		boolean interrupted = false;
 		class UriFileInfo {
 			private long lastModified = 0L;
@@ -752,10 +751,12 @@ public class MainActivity extends AppCompatActivity {
 				return is;
 			}
 		}
-		File cache = new File(getCacheDir(), genId()), dest = destAlt != null ? destAlt : new File(getCacheDir(), TEMPLATE_FILE_NAME);
+		File cache = new File(getCacheDir(), genId()), dest = new File(getCacheDir(), TEMPLATE_FILE_NAME);
+//		File cache = new File(getCacheDir(), genId()), dest = destAlt != null ? destAlt : new File(getCacheDir(), TEMPLATE_FILE_NAME);
 		long pModified = dest.lastModified();
 		UriFileInfo infoWrapper = new UriFileInfo();
-		try (InputStream isw = new AdaptiveUriInputStream(uri != null ? uri : Uri.parse(getString(R.string.template_repo)), infoWrapper).get();
+//		try (InputStream isw = new AdaptiveUriInputStream(uri != null ? uri : Uri.parse(getString(R.string.template_repo)), infoWrapper).get();
+		try (InputStream isw = new AdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo)), infoWrapper).get();
 				FileOutputStream osw = new FileOutputStream(cache);
 				FileInputStream is = new FileInputStream(cache);
 				FileOutputStream os = new FileOutputStream(dest);
@@ -796,7 +797,8 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	private void getSrcFromUri(OnGetSrc cb, Uri uri, File destAlt) {
+//	private void getSrcFromUri(OnGetSrc cb, Uri uri, File destAlt) {
+	private void getSrcFromUri(OnGetSrc cb) {
 		// 对话框等待
 		LinearLayout layout = new LinearLayout(this);
 		layout.setPaddingRelative(dialogPadding, dialogPadding, dialogPadding, 0);
@@ -814,7 +816,8 @@ public class MainActivity extends AppCompatActivity {
 				.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
 				.create();
 		progressDialog.setCanceledOnTouchOutside(false);
-		final Thread thread = new Thread(() -> fetchInThread(file -> runOnUiThread(() -> cb.run(file)), progressDialog, uri, destAlt));
+		final Thread thread = new Thread(() -> fetchInThread(file -> runOnUiThread(() -> cb.run(file)), progressDialog));
+//		final Thread thread = new Thread(() -> fetchInThread(file -> runOnUiThread(() -> cb.run(file)), progressDialog, uri, destAlt));
 		progressDialog.setOnShowListener(dialog -> thread.start());
 		progressDialog.setOnCancelListener(dialogInterface -> thread.interrupt());
 		progressDialog.show();
@@ -992,27 +995,27 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	@Override
-	public boolean onCreateOptionsMenu(Menu menu) {
+	public boolean onCreateOptionsMenu(@NotNull Menu menu) {
 		getMenuInflater().inflate(R.menu.menu_main, menu);
 		return true;
 	}
 
 	@Override
-	public boolean onPrepareOptionsMenu(Menu menu) {
-		if (menu != null) {
-			if (CLASS_MENU_BUILDER.equals(menu.getClass().getSimpleName())) try {
-				Method method = menu.getClass().getDeclaredMethod(METHOD_SET_OPTIONAL_ICONS_VISIBLE, Boolean.TYPE);
-				method.setAccessible(true);
-				method.invoke(menu, true);
-			} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
-				e.printStackTrace();
-			}
-			if (!APIOver21) {
-				menu.getItem(2).setEnabled(false);
-				menu.getItem(3).setEnabled(false);
-			}
-//			if (!(Locale.SIMPLIFIED_CHINESE.getCountry().equals(Locale.getDefault().getCountry()))) menu.getItem(4).setVisible(false);    // 目前仅在大陆可用
+	public boolean onPrepareOptionsMenu(@NotNull Menu menu) {
+		if (CLASS_MENU_BUILDER.equals(menu.getClass().getSimpleName())) try {
+			Method method = menu.getClass().getDeclaredMethod(METHOD_SET_OPTIONAL_ICONS_VISIBLE, Boolean.TYPE);
+			method.setAccessible(true);
+			method.invoke(menu, true);
+		} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
+			e.printStackTrace();
 		}
+		if (!APIOver21) {
+			menu.getItem(2).setEnabled(false);
+			menu.getItem(3).setTitle(R.string.local_legacy);	// API19暂不支持WebDAV
+			menu.getItem(3).setIcon(R.drawable.ic_storage);
+//			menu.getItem(3).setEnabled(false);
+		}
+//			if (!(Locale.SIMPLIFIED_CHINESE.getCountry().equals(Locale.getDefault().getCountry()))) menu.getItem(4).setVisible(false);    // 目前仅在大陆可用
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -1023,7 +1026,7 @@ public class MainActivity extends AppCompatActivity {
 				idImport = R.id.action_file_import,
 				idDir = R.id.action_add_dir,
 				idDav = R.id.action_add_dav,
-				idTemplate = R.id.action_template,
+//				idTemplate = R.id.action_template,
 				idAbout = R.id.action_about;
 		switch (id) {
 			case idNew:
@@ -1039,9 +1042,9 @@ public class MainActivity extends AppCompatActivity {
 			case idDav:
 				browseDav();
 				break;
-			case idTemplate:
-				browseTemplates();
-				break;
+//			case idTemplate:
+//				browseTemplates();
+//				break;
 			case idAbout:
 				SpannableString spannableString = new SpannableString(getString(R.string.about));
 				Linkify.addLinks(spannableString, Linkify.ALL);
@@ -1068,370 +1071,374 @@ public class MainActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
-	private void browseTemplates() {
-		String TEMPLATE_JSON = "{\n" +
-				"    \"locales\":{\n" +
-				"        \"zh-Hans\":{\n" +
-				"            \"name\":\"中文 (中国)\",\n" +
-				"            \"alias\":[\n" +
-				"                \"zh-rCN\",\n" +
-				"                \"zh-CN\",\n" +
-				"                \"zh-CN.UTF-8\"\n" +
-				"            ]\n" +
-				"        },\n" +
-				"        \"en-US\":{\n" +
-				"            \"name\":\"English (US)\",\n" +
-				"            \"alias\":[\n" +
-				"                \"C\",\n" +
-				"                \"en_US\",\n" +
-				"                \"en-US.UTF-8\"\n" +
-				"            ]\n" +
-				"        }\n" +
-				"    },\n" +
-				"    \"versions\":[" +
-				"        \"5.1.21\"," +
-				"        \"5.1.22\"" +
-				"    ]," +
-				"    \"templates\":[\n" +
-				"        {\n" +
-				"            \"name\":\"TiddlyWiki\",\n" +
-				"            \"locale\":[\n" +
-				"                \"*-*\"\n" +
-				"            ],\n" +
-				"            \"desc\":\"Official release\",\n" +
-				"            \"icon\":\"uri/base64\",\n" +
-				"            \"uri\":\"https://tiddlywiki.com/empty.html\",\n" +
-				"            \"lastUpdate\":1234567890123,\n" +
-				"            \"version\":\"5.1.22\",\n" +
-				"            \"size\":3000000,\n" +
-				"            \"valid\":true\n" +
-				"        },\n" +
-				"        {\n" +
-				"            \"name\":\"TiddlyWiki C\",\n" +
-				"            \"locale\":[\n" +
-				"                \"zh-Hans\"\n" +
-				"            ],\n" +
-				"            \"desc\":\"Official release\",\n" +
-				"            \"icon\":\"uri/base64\",\n" +
-				"            \"uri\":\"https://tiddlywiki.com/languages/zh-Hans/empty.html\",\n" +
-				"            \"lastUpdate\":1634567890123,\n" +
-				"            \"version\":\"5.1.22\",\n" +
-				"            \"size\":3000000,\n" +
-				"            \"valid\":true\n" +
-				"        },\n" +
-				"        {\n" +
-				"            \"name\":\"TiddlyWiki E\",\n" +
-				"            \"locale\":[\n" +
-				"                \"en-US\"\n" +
-				"            ],\n" +
-				"            \"desc\":\"Official release\",\n" +
-				"            \"icon\":\"uri/base64\",\n" +
-				"            \"uri\":\"https://tiddlywiki.com/empty.html\",\n" +
-				"            \"lastUpdate\":1834567890123,\n" +
-				"            \"version\":\"5.1.22\",\n" +
-				"            \"size\":3000000,\n" +
-				"            \"valid\":true\n" +
-				"        }\n" +
-				"    ]\n" +
-				"}";    // TODO: 临时
-		View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.template_dialog, null);
-		new AlertDialog.Builder(this)
-				.setTitle("TODO: TEMPLATE_LIST")
-				.setView(view)
-				.setNegativeButton(R.string.find_close, null)
-				.show();
-		ImageButton btnFilter = view.findViewById(R.id.template_filter);
-		LinearLayout scrFiltersList = view.findViewById(R.id.template_filters_list);
-		RecyclerView rvTemplates = view.findViewById(R.id.template_list);
-		rvTemplates.setLayoutManager(new LinearLayoutManager(this));
-		rvTemplates.setItemAnimator(new DefaultItemAnimator());
-		TemplateListAdapter templateListAdapter = new TemplateListAdapter(MainActivity.this);
-		rvTemplates.setAdapter(templateListAdapter);
-		class TemplateFilter {
-			private static final int CAT_KW = 0,
-					CAT_VER = 1,
-					CAT_LANG = 2,
-					CAT_DATE = 3,
-					CAT_SIZE = 4;
-			private final int[] icons = new int[]{0, R.drawable.ic_info_outline, R.drawable.ic_language, 0, 0};
-			private final String val;
-			private final long vl;
-			private final int cat, vl1, vl2;
-			private final Button btn;
-
-			private TemplateFilter(int val, int val2, String title) {
-				cat = CAT_SIZE;
-				vl1 = val;
-				vl2 = val2;
-				vl = 0;
-				this.val = STR_EMPTY;
-				btn = new Button(MainActivity.this);
-				btn.setCompoundDrawablesRelativeWithIntrinsicBounds(icons[cat], 0, 0, 0);
-				btn.setText(title);
-				scrFiltersList.addView(btn);
-			}
-
-			private TemplateFilter(long val, String title) {
-				cat = CAT_DATE;
-				vl = val;
-				vl1 = 0;
-				vl2 = 0;
-				this.val = STR_EMPTY;
-				btn = new Button(MainActivity.this);
-				btn.setCompoundDrawablesRelativeWithIntrinsicBounds(icons[cat], 0, 0, 0);
-				btn.setText(title);
-				scrFiltersList.addView(btn);
-			}
-
-			private TemplateFilter(int cat, String val, String title) {
-				this.cat = cat;
-				this.val = val;
-				vl = 0;
-				vl1 = 0;
-				vl2 = 0;
-				btn = new Button(MainActivity.this);
-				btn.setCompoundDrawablesRelativeWithIntrinsicBounds(icons[cat], 0, 0, 0);
-				btn.setText(title);
-				scrFiltersList.addView(btn);
-			}
-
-			boolean granted(JSONObject o) {
-				int s;
-				switch (cat) {
-					case CAT_KW:
-						return o.optString(KEY_NAME).contains(val) || o.optString(TPL_KEY_DESC).contains(val);
-					case CAT_VER:
-						String e = o.optString(TPL_KEY_VER);
-						String[] es = e.split(TPL_REX_DOT), et = val.split(TPL_REX_DOT);
-						if (es.length != et.length) return false;
-						for (int i = 0; i < es.length; i++) if (!es[i].equals(et[i])) return false;
-						return true;
-					case CAT_LANG: {
-						JSONArray locales = o.optJSONArray(TPL_KEY_LOC);
-						if (locales == null || locales.length() == 0) return true;
-						for (int i = 0; i < locales.length(); i++) {
-							String lc0 = locales.optString(i);
-							String[] l0 = lc0.split(TPL_REX_MI, 2);
-							String[] l1 = val.split(TPL_REX_MI, 2);
-							if (l0.length < 2) l0 = new String[]{l0[0], TPL_REX_ANY};
-							if ((TPL_REX_ANY.equals(l0[0]) || l0[0].equals(l1[0])) && (TPL_REX_ANY.equals(l0[1]) || l0[1].equals(l1[1]))) return true;
-						}
-						return false;
-					}
-					case CAT_DATE:
-						return o.optLong(TPL_KEY_LU) >= vl;
-					case CAT_SIZE:
-						s = o.optInt(TPL_KEY_SIZE);
-						return s >= vl1 && (vl1 > vl2 || s <= vl2);
-				}
-				return false;
-			}
-
-			private void addDisposer(View.OnClickListener listener) {
-				btn.setOnClickListener(listener);
-			}
-		}
-		ArrayList<TemplateFilter> filters = new ArrayList<>();
-		PopupMenu mnuFilters = new PopupMenu(MainActivity.this, btnFilter);
-		Menu filtersRootMenu = mnuFilters.getMenu();
-		filtersRootMenu.add("TODO: KW").setOnMenuItemClickListener(menuItem -> {
-			mnuFilters.dismiss();
-			EditText et0 = new EditText(MainActivity.this);
-			et0.setOnEditorActionListener((textView, i, keyEvent) -> {
-				scrFiltersList.removeView(textView);
-				if (et0.getText().length() == 0) return true;
-				for (TemplateFilter f0 : filters) if (f0.cat == TemplateFilter.CAT_KW && f0.val.equals(et0.getText().toString())) return false;
-				TemplateFilter tf = new TemplateFilter(TemplateFilter.CAT_KW, et0.getText().toString(), et0.getText().toString());
-				tf.addDisposer(view13 -> {
-					scrFiltersList.removeView(view13);
-					filters.remove(tf);
-					templateListAdapter.reload();
-					if (APIOver21) templateListAdapter.notifyDataSetChanged();
-					else rvTemplates.setAdapter(templateListAdapter);
-				});
-				filters.add(tf);
-				templateListAdapter.reload();
-				if (APIOver21) templateListAdapter.notifyDataSetChanged();
-				else rvTemplates.setAdapter(templateListAdapter);
-				return true;
-			});
-			scrFiltersList.addView(et0);
-			et0.requestFocus();
-			return false;
-		});
-		SubMenu mnuDate = filtersRootMenu.addSubMenu("TODO: DATE");
-		HashMap<String, Integer> m0 = new HashMap<>();
-		m0.put("TODAY", Calendar.DAY_OF_MONTH);    // TODO
-		m0.put("THIS_WEEK", Calendar.WEEK_OF_MONTH);    // TODO
-		m0.put("THIS_MONTH", Calendar.MONTH);    // TODO
-		m0.put("THIS_YEAR", Calendar.YEAR);    // TODO
-		for (String k : m0.keySet()) {
-			Integer e = m0.get(k);
-			if (e != null) {
-				int ve = e;
-				mnuDate.add(k).setOnMenuItemClickListener(menuItem -> {
-					mnuFilters.dismiss();
-					Calendar calendar = Calendar.getInstance();
-					calendar.add(ve, -1);
-					TemplateFilter[] disposing = new TemplateFilter[filters.size()];
-					for (TemplateFilter f0 : filters) disposing[filters.indexOf(f0)] = f0.cat == TemplateFilter.CAT_DATE ? f0 : null;
-					for (TemplateFilter fx : disposing)
-						if (fx != null) {
-							scrFiltersList.removeView(fx.btn);
-							filters.remove(fx);
-						}
-					TemplateFilter tf = new TemplateFilter(calendar.getTimeInMillis(), k);
-					tf.addDisposer(view1 -> {
-						scrFiltersList.removeView(view1);
-						filters.remove(tf);
-						templateListAdapter.reload();
-						if (APIOver21) templateListAdapter.notifyDataSetChanged();
-						else rvTemplates.setAdapter(templateListAdapter);
-					});
-					filters.add(tf);
-					templateListAdapter.reload();
-					if (APIOver21) templateListAdapter.notifyDataSetChanged();
-					else rvTemplates.setAdapter(templateListAdapter);
-					return false;
-				});
-			}
-		}
-		SubMenu mnuSize = filtersRootMenu.addSubMenu("TODO: SIZE");
-		HashMap<String, int[]> m1 = new HashMap<>();
-		m1.put("<1M", new int[]{0, 1048576});    // TODO
-		m1.put("1M-10M", new int[]{1048576, 10485760});    // TODO
-		m1.put("10M-100M", new int[]{10485760, 104857600});    // TODO
-		m1.put(">100M", new int[]{104857600, 0});    // TODO
-		for (String k : m1.keySet()) {
-			int[] v = m1.get(k);
-			if (v != null) mnuSize.add(k).setOnMenuItemClickListener(menuItem -> {
-				mnuFilters.dismiss();
-				TemplateFilter[] disposing = new TemplateFilter[filters.size()];
-				for (TemplateFilter f0 : filters) disposing[filters.indexOf(f0)] = f0.cat == TemplateFilter.CAT_SIZE ? f0 : null;
-				for (TemplateFilter fx : disposing)
-					if (fx != null) {
-						scrFiltersList.removeView(fx.btn);
-						filters.remove(fx);
-					}
-				TemplateFilter tf = new TemplateFilter(v[0], v[1], k);
-				tf.addDisposer(view1 -> {
-					scrFiltersList.removeView(view1);
-					filters.remove(tf);
-					templateListAdapter.reload();
-					if (APIOver21) templateListAdapter.notifyDataSetChanged();
-					else rvTemplates.setAdapter(templateListAdapter);
-				});
-				filters.add(tf);
-				templateListAdapter.reload();
-				if (APIOver21) templateListAdapter.notifyDataSetChanged();
-				else rvTemplates.setAdapter(templateListAdapter);
-				return false;
-			});
-		}
-		SubMenu mnuVer = filtersRootMenu.addSubMenu("TODO: VER"), mnuLoc = filtersRootMenu.addSubMenu("TODO: LOC");
-		btnFilter.setEnabled(false);
-		btnFilter.setOnClickListener(view1 -> {
-			PopupMenu menu = new PopupMenu(MainActivity.this, view1);
-			menu.getMenu();
-		});
-		new Thread(() -> {
-			try {
-				JSONObject templateDB = new JSONObject(TEMPLATE_JSON), allLocales = templateDB.getJSONObject(TPL_KEY_LOC_SET);
-				JSONArray allVersions = templateDB.getJSONArray(TPL_KEY_VER_SET), allTemplates = templateDB.getJSONArray(TPL_KEY_TPL_SET);
-				runOnUiThread(() -> {
-					for (int i = 0; i < allVersions.length(); i++) {
-						String k = allVersions.optString(i);
-						if (k.length() > 0) mnuVer.add(k).setOnMenuItemClickListener(menuItem -> {
-							mnuFilters.dismiss();
-							for (TemplateFilter f0 : filters) if (f0.cat == TemplateFilter.CAT_VER && f0.val.equals(k)) return false;
-							TemplateFilter tf = new TemplateFilter(TemplateFilter.CAT_VER, k, k);
-							tf.addDisposer(view1 -> {
-								scrFiltersList.removeView(view1);
-								filters.remove(tf);
-								templateListAdapter.reload();
-								if (APIOver21) templateListAdapter.notifyDataSetChanged();
-								else rvTemplates.setAdapter(templateListAdapter);
-							});
-							filters.add(tf);
-							templateListAdapter.reload();
-							if (APIOver21) templateListAdapter.notifyDataSetChanged();
-							else rvTemplates.setAdapter(templateListAdapter);
-							return false;
-						});
-					}
-					Iterator<String> it = allLocales.keys();
-					Locale ll = Locale.getDefault();
-					String mLocale = ll.getLanguage() + TPL_REX_MI + ll.getCountry();
-					while (it.hasNext()) {
-						String k = it.next();
-						JSONObject v = allLocales.optJSONObject(k);
-						if (v != null) mnuLoc.add(v.optString(KEY_NAME)).setOnMenuItemClickListener(menuItem -> {
-							mnuFilters.dismiss();
-							for (TemplateFilter f0 : filters) if (f0.cat == TemplateFilter.CAT_LANG && k.equals(f0.val)) return false;
-							TemplateFilter tf = new TemplateFilter(TemplateFilter.CAT_LANG, k, v.optString(KEY_NAME));
-							tf.addDisposer(view1 -> {
-								scrFiltersList.removeView(view1);
-								filters.remove(tf);
-								templateListAdapter.reload();
-								if (APIOver21) templateListAdapter.notifyDataSetChanged();
-								else rvTemplates.setAdapter(templateListAdapter);
-							});
-							filters.add(tf);
-							templateListAdapter.reload();
-							if (APIOver21) templateListAdapter.notifyDataSetChanged();
-							else rvTemplates.setAdapter(templateListAdapter);
-							return false;
-						});
-						JSONArray al;
-						if (v != null && (al = v.optJSONArray(TPL_KEY_ALIAS)) != null)
-							for (int i = 0; i < al.length(); i++)
-								if (k.equals(mLocale) || al.optString(i).equals(mLocale)) {
-									TemplateFilter tf = new TemplateFilter(TemplateFilter.CAT_LANG, k, v.optString(KEY_NAME));
-									tf.addDisposer(view1 -> {
-										scrFiltersList.removeView(view1);
-										filters.remove(tf);
-										templateListAdapter.reload();
-										if (APIOver21) templateListAdapter.notifyDataSetChanged();
-										else rvTemplates.setAdapter(templateListAdapter);
-									});
-									filters.add(tf);
-									break;
-								}
-					}
-					btnFilter.setOnClickListener(view1 -> mnuFilters.show());
-					btnFilter.setEnabled(true);
-					templateListAdapter.setTemplateInterface(new TemplateListAdapter.TemplateInterface() {
-						@Override
-						public void newWiki(String uri) {
-						}
-
-						@Override
-						public void nav(String uri) {
-						}
-
-						@Override
-						public boolean isGranted(JSONObject o) {
-							if (!o.optBoolean(TPL_KEY_VALID)) return false;
-							int[] params = new int[]{0, 0, 0, 0, 0};
-							for (TemplateFilter tf : filters) {
-								params[tf.cat] = params[tf.cat] | (tf.granted(o) ? 0b11 : 0b01);
-							}
-							return params[0] >> 1 == (params[0] & 0b01) &&
-									params[1] >> 1 == (params[1] & 0b01) &&
-									params[2] >> 1 == (params[2] & 0b01) &&
-									params[3] >> 1 == (params[3] & 0b01) &&
-									params[4] >> 1 == (params[4] & 0b01);
-						}
-					});
-					templateListAdapter.init(allTemplates);
-				});
-			} catch (JSONException e) {
-				e.printStackTrace();
-			}
-		}).start();
-	}
-
+	//	private void browseTemplates() {
+//		String TEMPLATE_JSON = "{\n" +
+//				"    \"locales\":{\n" +
+//				"        \"zh-Hans\":{\n" +
+//				"            \"name\":\"中文 (中国)\",\n" +
+//				"            \"alias\":[\n" +
+//				"                \"zh-rCN\",\n" +
+//				"                \"zh-CN\",\n" +
+//				"                \"zh-CN.UTF-8\"\n" +
+//				"            ]\n" +
+//				"        },\n" +
+//				"        \"en-US\":{\n" +
+//				"            \"name\":\"English (US)\",\n" +
+//				"            \"alias\":[\n" +
+//				"                \"C\",\n" +
+//				"                \"en_US\",\n" +
+//				"                \"en-US.UTF-8\"\n" +
+//				"            ]\n" +
+//				"        }\n" +
+//				"    },\n" +
+//				"    \"versions\":[" +
+//				"        \"5.1.21\"," +
+//				"        \"5.1.22\"" +
+//				"    ]," +
+//				"    \"templates\":[\n" +
+//				"        {\n" +
+//				"            \"name\":\"TiddlyWiki\",\n" +
+//				"            \"locale\":[\n" +
+//				"                \"*-*\"\n" +
+//				"            ],\n" +
+//				"            \"desc\":\"Official release\",\n" +
+//				"            \"icon\":\"uri/base64\",\n" +
+//				"            \"uri\":\"https://tiddlywiki.com/empty.html\",\n" +
+//				"            \"lastUpdate\":1234567890123,\n" +
+//				"            \"version\":\"5.1.22\",\n" +
+//				"            \"size\":3000000,\n" +
+//				"            \"valid\":true\n" +
+//				"        },\n" +
+//				"        {\n" +
+//				"            \"name\":\"TiddlyWiki C\",\n" +
+//				"            \"locale\":[\n" +
+//				"                \"zh-Hans\"\n" +
+//				"            ],\n" +
+//				"            \"desc\":\"Official release\",\n" +
+//				"            \"icon\":\"uri/base64\",\n" +
+//				"            \"uri\":\"https://tiddlywiki.com/languages/zh-Hans/empty.html\",\n" +
+//				"            \"lastUpdate\":1634567890123,\n" +
+//				"            \"version\":\"5.1.22\",\n" +
+//				"            \"size\":3000000,\n" +
+//				"            \"valid\":true\n" +
+//				"        },\n" +
+//				"        {\n" +
+//				"            \"name\":\"TiddlyWiki E\",\n" +
+//				"            \"locale\":[\n" +
+//				"                \"en-US\"\n" +
+//				"            ],\n" +
+//				"            \"desc\":\"Official release\",\n" +
+//				"            \"icon\":\"uri/base64\",\n" +
+//				"            \"uri\":\"https://tiddlywiki.com/empty.html\",\n" +
+//				"            \"lastUpdate\":1834567890123,\n" +
+//				"            \"version\":\"5.1.22\",\n" +
+//				"            \"size\":3000000,\n" +
+//				"            \"valid\":true\n" +
+//				"        }\n" +
+//				"    ]\n" +
+//				"}";    // TODO: 临时
+//		View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.template_dialog, null);
+//		new AlertDialog.Builder(this)
+//				.setTitle("TODO: TEMPLATE_LIST")
+//				.setView(view)
+//				.setNegativeButton(R.string.find_close, null)
+//				.show();
+//		ImageButton btnFilter = view.findViewById(R.id.template_filter);
+//		LinearLayout scrFiltersList = view.findViewById(R.id.template_filters_list);
+//		RecyclerView rvTemplates = view.findViewById(R.id.template_list);
+//		rvTemplates.setLayoutManager(new LinearLayoutManager(this));
+//		rvTemplates.setItemAnimator(new DefaultItemAnimator());
+//		TemplateListAdapter templateListAdapter = new TemplateListAdapter(MainActivity.this);
+//		rvTemplates.setAdapter(templateListAdapter);
+//		class TemplateFilter {
+//			private static final int CAT_KW = 0,
+//					CAT_VER = 1,
+//					CAT_LANG = 2,
+//					CAT_DATE = 3,
+//					CAT_SIZE = 4;
+//			private final int[] icons = new int[]{0, R.drawable.ic_info_outline, R.drawable.ic_language, 0, 0};
+//			private final String val;
+//			private final long vl;
+//			private final int cat, vl1, vl2;
+//			private final Button btn;
+//
+//			private TemplateFilter(int val, int val2, String title) {
+//				cat = CAT_SIZE;
+//				vl1 = val;
+//				vl2 = val2;
+//				vl = 0;
+//				this.val = STR_EMPTY;
+//				btn = new Button(MainActivity.this);
+//				btn.setCompoundDrawablesRelativeWithIntrinsicBounds(icons[cat], 0, 0, 0);
+//				btn.setText(title);
+//				scrFiltersList.addView(btn);
+//			}
+//
+//			private TemplateFilter(long val, String title) {
+//				cat = CAT_DATE;
+//				vl = val;
+//				vl1 = 0;
+//				vl2 = 0;
+//				this.val = STR_EMPTY;
+//				btn = new Button(MainActivity.this);
+//				btn.setCompoundDrawablesRelativeWithIntrinsicBounds(icons[cat], 0, 0, 0);
+//				btn.setText(title);
+//				scrFiltersList.addView(btn);
+//			}
+//
+//			private TemplateFilter(int cat, String val, String title) {
+//				this.cat = cat;
+//				this.val = val;
+//				vl = 0;
+//				vl1 = 0;
+//				vl2 = 0;
+//				btn = new Button(MainActivity.this);
+//				btn.setCompoundDrawablesRelativeWithIntrinsicBounds(icons[cat], 0, 0, 0);
+//				btn.setText(title);
+//				scrFiltersList.addView(btn);
+//			}
+//
+//			boolean granted(JSONObject o) {
+//				int s;
+//				switch (cat) {
+//					case CAT_KW:
+//						return o.optString(KEY_NAME).contains(val) || o.optString(TPL_KEY_DESC).contains(val);
+//					case CAT_VER:
+//						String e = o.optString(TPL_KEY_VER);
+//						String[] es = e.split(TPL_REX_DOT), et = val.split(TPL_REX_DOT);
+//						if (es.length != et.length) return false;
+//						for (int i = 0; i < es.length; i++) if (!es[i].equals(et[i])) return false;
+//						return true;
+//					case CAT_LANG: {
+//						JSONArray locales = o.optJSONArray(TPL_KEY_LOC);
+//						if (locales == null || locales.length() == 0) return true;
+//						for (int i = 0; i < locales.length(); i++) {
+//							String lc0 = locales.optString(i);
+//							String[] l0 = lc0.split(TPL_REX_MI, 2);
+//							String[] l1 = val.split(TPL_REX_MI, 2);
+//							if (l0.length < 2) l0 = new String[]{l0[0], TPL_REX_ANY};
+//							if ((TPL_REX_ANY.equals(l0[0]) || l0[0].equals(l1[0])) && (TPL_REX_ANY.equals(l0[1]) || l0[1].equals(l1[1]))) return true;
+//						}
+//						return false;
+//					}
+//					case CAT_DATE:
+//						return o.optLong(TPL_KEY_LU) >= vl;
+//					case CAT_SIZE:
+//						s = o.optInt(TPL_KEY_SIZE);
+//						return s >= vl1 && (vl1 > vl2 || s <= vl2);
+//				}
+//				return false;
+//			}
+//
+//			private void addDisposer(View.OnClickListener listener) {
+//				btn.setOnClickListener(listener);
+//			}
+//		}
+//		ArrayList<TemplateFilter> filters = new ArrayList<>();
+//		PopupMenu mnuFilters = new PopupMenu(MainActivity.this, btnFilter);
+//		Menu filtersRootMenu = mnuFilters.getMenu();
+//		filtersRootMenu.add("TODO: KW").setOnMenuItemClickListener(menuItem -> {
+//			mnuFilters.dismiss();
+//			EditText et0 = new EditText(MainActivity.this);
+//			et0.setOnEditorActionListener((textView, i, keyEvent) -> {
+//				scrFiltersList.removeView(textView);
+//				if (et0.getText().length() == 0) return true;
+//				for (TemplateFilter f0 : filters) if (f0.cat == TemplateFilter.CAT_KW && f0.val.equals(et0.getText().toString())) return false;
+//				TemplateFilter tf = new TemplateFilter(TemplateFilter.CAT_KW, et0.getText().toString(), et0.getText().toString());
+//				tf.addDisposer(view13 -> {
+//					scrFiltersList.removeView(view13);
+//					filters.remove(tf);
+//					templateListAdapter.reload();
+//					if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//					else rvTemplates.setAdapter(templateListAdapter);
+//				});
+//				filters.add(tf);
+//				templateListAdapter.reload();
+//				if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//				else rvTemplates.setAdapter(templateListAdapter);
+//				return true;
+//			});
+//			scrFiltersList.addView(et0);
+//			et0.requestFocus();
+//			return false;
+//		});
+//		SubMenu mnuDate = filtersRootMenu.addSubMenu("TODO: DATE");
+//		HashMap<String, Integer> m0 = new HashMap<>();
+//		m0.put("TODAY", Calendar.DAY_OF_MONTH);    // TODO
+//		m0.put("THIS_WEEK", Calendar.WEEK_OF_MONTH);    // TODO
+//		m0.put("THIS_MONTH", Calendar.MONTH);    // TODO
+//		m0.put("THIS_YEAR", Calendar.YEAR);    // TODO
+//		for (String k : m0.keySet()) {
+//			Integer e = m0.get(k);
+//			if (e != null) {
+//				int ve = e;
+//				mnuDate.add(k).setOnMenuItemClickListener(menuItem -> {
+//					mnuFilters.dismiss();
+//					Calendar calendar = Calendar.getInstance();
+//					calendar.add(ve, -1);
+//					TemplateFilter[] disposing = new TemplateFilter[filters.size()];
+//					for (TemplateFilter f0 : filters) disposing[filters.indexOf(f0)] = f0.cat == TemplateFilter.CAT_DATE ? f0 : null;
+//					for (TemplateFilter fx : disposing)
+//						if (fx != null) {
+//							scrFiltersList.removeView(fx.btn);
+//							filters.remove(fx);
+//						}
+//					TemplateFilter tf = new TemplateFilter(calendar.getTimeInMillis(), k);
+//					tf.addDisposer(view1 -> {
+//						scrFiltersList.removeView(view1);
+//						filters.remove(tf);
+//						templateListAdapter.reload();
+//						if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//						else rvTemplates.setAdapter(templateListAdapter);
+//					});
+//					filters.add(tf);
+//					templateListAdapter.reload();
+//					if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//					else rvTemplates.setAdapter(templateListAdapter);
+//					return false;
+//				});
+//			}
+//		}
+//		SubMenu mnuSize = filtersRootMenu.addSubMenu("TODO: SIZE");
+//		HashMap<String, int[]> m1 = new HashMap<>();
+//		m1.put("<1M", new int[]{0, 1048576});    // TODO
+//		m1.put("1M-10M", new int[]{1048576, 10485760});    // TODO
+//		m1.put("10M-100M", new int[]{10485760, 104857600});    // TODO
+//		m1.put(">100M", new int[]{104857600, 0});    // TODO
+//		for (String k : m1.keySet()) {
+//			int[] v = m1.get(k);
+//			if (v != null) mnuSize.add(k).setOnMenuItemClickListener(menuItem -> {
+//				mnuFilters.dismiss();
+//				TemplateFilter[] disposing = new TemplateFilter[filters.size()];
+//				for (TemplateFilter f0 : filters) disposing[filters.indexOf(f0)] = f0.cat == TemplateFilter.CAT_SIZE ? f0 : null;
+//				for (TemplateFilter fx : disposing)
+//					if (fx != null) {
+//						scrFiltersList.removeView(fx.btn);
+//						filters.remove(fx);
+//					}
+//				TemplateFilter tf = new TemplateFilter(v[0], v[1], k);
+//				tf.addDisposer(view1 -> {
+//					scrFiltersList.removeView(view1);
+//					filters.remove(tf);
+//					templateListAdapter.reload();
+//					if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//					else rvTemplates.setAdapter(templateListAdapter);
+//				});
+//				filters.add(tf);
+//				templateListAdapter.reload();
+//				if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//				else rvTemplates.setAdapter(templateListAdapter);
+//				return false;
+//			});
+//		}
+//		SubMenu mnuVer = filtersRootMenu.addSubMenu("TODO: VER"), mnuLoc = filtersRootMenu.addSubMenu("TODO: LOC");
+//		btnFilter.setEnabled(false);
+//		btnFilter.setOnClickListener(view1 -> {
+//			PopupMenu menu = new PopupMenu(MainActivity.this, view1);
+//			menu.getMenu();
+//		});
+//		new Thread(() -> {
+//			try {
+//				JSONObject templateDB = new JSONObject(TEMPLATE_JSON), allLocales = templateDB.getJSONObject(TPL_KEY_LOC_SET);
+//				JSONArray allVersions = templateDB.getJSONArray(TPL_KEY_VER_SET), allTemplates = templateDB.getJSONArray(TPL_KEY_TPL_SET);
+//				runOnUiThread(() -> {
+//					for (int i = 0; i < allVersions.length(); i++) {
+//						String k = allVersions.optString(i);
+//						if (k.length() > 0) mnuVer.add(k).setOnMenuItemClickListener(menuItem -> {
+//							mnuFilters.dismiss();
+//							for (TemplateFilter f0 : filters) if (f0.cat == TemplateFilter.CAT_VER && f0.val.equals(k)) return false;
+//							TemplateFilter tf = new TemplateFilter(TemplateFilter.CAT_VER, k, k);
+//							tf.addDisposer(view1 -> {
+//								scrFiltersList.removeView(view1);
+//								filters.remove(tf);
+//								templateListAdapter.reload();
+//								if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//								else rvTemplates.setAdapter(templateListAdapter);
+//							});
+//							filters.add(tf);
+//							templateListAdapter.reload();
+//							if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//							else rvTemplates.setAdapter(templateListAdapter);
+//							return false;
+//						});
+//					}
+//					Iterator<String> it = allLocales.keys();
+//					Locale ll = Locale.getDefault();
+//					String mLocale = ll.getLanguage() + TPL_REX_MI + ll.getCountry();
+//					while (it.hasNext()) {
+//						String k = it.next();
+//						JSONObject v = allLocales.optJSONObject(k);
+//						if (v != null) mnuLoc.add(v.optString(KEY_NAME)).setOnMenuItemClickListener(menuItem -> {
+//							mnuFilters.dismiss();
+//							for (TemplateFilter f0 : filters) if (f0.cat == TemplateFilter.CAT_LANG && k.equals(f0.val)) return false;
+//							TemplateFilter tf = new TemplateFilter(TemplateFilter.CAT_LANG, k, v.optString(KEY_NAME));
+//							tf.addDisposer(view1 -> {
+//								scrFiltersList.removeView(view1);
+//								filters.remove(tf);
+//								templateListAdapter.reload();
+//								if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//								else rvTemplates.setAdapter(templateListAdapter);
+//							});
+//							filters.add(tf);
+//							templateListAdapter.reload();
+//							if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//							else rvTemplates.setAdapter(templateListAdapter);
+//							return false;
+//						});
+//						JSONArray al;
+//						if (v != null && (al = v.optJSONArray(TPL_KEY_ALIAS)) != null)
+//							for (int i = 0; i < al.length(); i++)
+//								if (k.equals(mLocale) || al.optString(i).equals(mLocale)) {
+//									TemplateFilter tf = new TemplateFilter(TemplateFilter.CAT_LANG, k, v.optString(KEY_NAME));
+//									tf.addDisposer(view1 -> {
+//										scrFiltersList.removeView(view1);
+//										filters.remove(tf);
+//										templateListAdapter.reload();
+//										if (APIOver21) templateListAdapter.notifyDataSetChanged();
+//										else rvTemplates.setAdapter(templateListAdapter);
+//									});
+//									filters.add(tf);
+//									break;
+//								}
+//					}
+//					btnFilter.setOnClickListener(view1 -> mnuFilters.show());
+//					btnFilter.setEnabled(true);
+//					templateListAdapter.setTemplateInterface(new TemplateListAdapter.TemplateInterface() {
+//						@Override
+//						public void newWiki(String uri) {
+//						}
+//
+//						@Override
+//						public void nav(String uri) {
+//						}
+//
+//						@Override
+//						public boolean isGranted(JSONObject o) {
+//							if (!o.optBoolean(TPL_KEY_VALID)) return false;
+//							int[] params = new int[]{0, 0, 0, 0, 0};
+//							for (TemplateFilter tf : filters) {
+//								params[tf.cat] = params[tf.cat] | (tf.granted(o) ? 0b11 : 0b01);
+//							}
+//							return params[0] >> 1 == (params[0] & 0b01) &&
+//									params[1] >> 1 == (params[1] & 0b01) &&
+//									params[2] >> 1 == (params[2] & 0b01) &&
+//									params[3] >> 1 == (params[3] & 0b01) &&
+//									params[4] >> 1 == (params[4] & 0b01);
+//						}
+//					});
+//					templateListAdapter.init(allTemplates);
+//				});
+//			} catch (JSONException e) {
+//				e.printStackTrace();
+//			}
+//		}).start();
+//	}
+//
 	private void browseDav() {    // TODO: Legacy mode integration, or parallel interface; Permission check integration
+		if (!APIOver21) {    // API19暂不支持WebDAV
+			browseLocal();
+			return;
+		}
 		@SuppressLint("InflateParams") View davView = LayoutInflater.from(MainActivity.this).inflate(R.layout.dav_dialog, null);
 		ImageButton btnDavGo = davView.findViewById(R.id.btnDavGo),
 				btnDavLegacy = davView.findViewById(R.id.btnDavLegacy);
@@ -1583,7 +1590,8 @@ public class MainActivity extends AppCompatActivity {
 					wa.put(DB_KEY_DAV_TOKEN, tok);
 					if (!davClient.exists(ux)) {
 						final File[] f0 = new File[1];
-						fetchInThread(file -> f0[0] = file, null, null, null);
+						fetchInThread(file -> f0[0] = file, null);
+//						fetchInThread(file -> f0[0] = file, null, null, null);
 						if (f0[0].exists()) {
 							lt = davClient.lock(uf = ux);
 							davClient.put(uf, f0[0], TYPE_HTML);
@@ -1601,7 +1609,8 @@ public class MainActivity extends AppCompatActivity {
 						}
 						if (!haveIndex) {
 							final File[] f0 = new File[1];
-							fetchInThread(file -> f0[0] = file, null, null, null);
+							fetchInThread(file -> f0[0] = file, null);
+//							fetchInThread(file -> f0[0] = file, null, null, null);
 							if (f0[0].exists()) {
 								@SuppressWarnings("StringBufferMayBeStringBuilder") StringBuffer buffer = new StringBuffer(ux);
 								if (buffer.charAt(buffer.length() - 1) != '/') buffer.append('/');
@@ -1758,10 +1767,12 @@ public class MainActivity extends AppCompatActivity {
 		});
 		localDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(false);
 		btnLocalGo.setEnabled(false);
-		btnLocalDav.setOnClickListener(view -> {
-			localDialog.getButton(DialogInterface.BUTTON_NEGATIVE).callOnClick();
-			browseDav();
-		});
+		if (APIOver21)	// API19暂不支持WebDAV
+			btnLocalDav.setOnClickListener(view -> {
+				localDialog.getButton(DialogInterface.BUTTON_NEGATIVE).callOnClick();
+				browseDav();
+			});
+		else btnLocalDav.setVisibility(View.GONE);
 		textLocalAddress.setText(Environment.getExternalStorageDirectory().getPath());
 		btnLocalGo.callOnClick();
 	}
@@ -1824,7 +1835,8 @@ public class MainActivity extends AppCompatActivity {
 			if (clone) file.delete();
 		};
 		if (clone) cb.run(new File(getCacheDir(), CLONING_FILE_NAME));
-		else getSrcFromUri(cb, null, null);
+		else getSrcFromUri(cb);
+//		else getSrcFromUri(cb, null, null);
 	}
 
 	private void importWiki(Uri uri) {
@@ -1889,7 +1901,8 @@ public class MainActivity extends AppCompatActivity {
 					e.printStackTrace();
 					Toast.makeText(MainActivity.this, R.string.download_failed, Toast.LENGTH_SHORT).show();
 				}
-			}, null, null);
+			});
+//			}, null, null);
 			return;
 		}
 		String id = null;
@@ -1943,6 +1956,7 @@ public class MainActivity extends AppCompatActivity {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+		onConfigurationChanged(getResources().getConfiguration());	// 刷新界面主题色
 	}
 
 	@Override
@@ -1955,19 +1969,22 @@ public class MainActivity extends AppCompatActivity {
 //			((ViewGroup) parent).removeView(splash);
 //		w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 		int color = getResources().getColor(R.color.design_default_color_primary);
+		WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(w, w.getDecorView());
+//		WindowInsetsControllerCompat wic0 = new WindowInsetsControllerCompat(w, w.getDecorView());
+//		WindowInsetsControllerCompat wic0 = new WindowInsetsControllerCompat(w, w.getDecorView());
 		if (APIOver23)
 			w.setStatusBarColor(color);
 		if (APIOver26)
 			w.setNavigationBarColor(color);
-		if (APIOver30) {
-			WindowInsetsControllerCompat wic = WindowInsetsControllerCompat.toWindowInsetsControllerCompat(w.getInsetsController());
-			wic.show(WindowInsetsCompat.Type.systemBars());
-			boolean lightBar = (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
-			wic.setAppearanceLightNavigationBars(lightBar);
-			wic.setAppearanceLightStatusBars(lightBar);
-			w.setDecorFitsSystemWindows(true);
-		} else
-			w.getDecorView().setSystemUiVisibility((newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES ? (APIOver23 ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : View.SYSTEM_UI_FLAG_VISIBLE) | (APIOver26 ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : View.SYSTEM_UI_FLAG_VISIBLE) : View.SYSTEM_UI_FLAG_VISIBLE);
+//		if (APIOver30) {
+//			WindowInsetsControllerCompat wic = WindowInsetsControllerCompat.toWindowInsetsControllerCompat(w.getInsetsController());
+		wic.show(WindowInsetsCompat.Type.systemBars());
+		boolean lightBar = (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
+		wic.setAppearanceLightNavigationBars(lightBar);
+		wic.setAppearanceLightStatusBars(lightBar);
+		WindowCompat.setDecorFitsSystemWindows(w, true);
+//		} else
+//			w.getDecorView().setSystemUiVisibility((newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES ? (APIOver23 ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : View.SYSTEM_UI_FLAG_VISIBLE) | (APIOver26 ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : View.SYSTEM_UI_FLAG_VISIBLE) : View.SYSTEM_UI_FLAG_VISIBLE);
 	}
 
 	static JSONObject initJson(Context context) throws JSONException {

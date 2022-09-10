@@ -9,35 +9,35 @@
     android:layout_height="match_parent"
     android:orientation="vertical">
 
-    <LinearLayout
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content">
+<!--    <LinearLayout-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content">-->
 
-        <HorizontalScrollView
-            android:layout_width="0dp"
-            android:layout_height="wrap_content"
-            android:layout_weight="1">
+<!--        <HorizontalScrollView-->
+<!--            android:layout_width="0dp"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:layout_weight="1">-->
 
-            <LinearLayout
-                android:id="@+id/template_filters_list"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content"
-                android:orientation="horizontal" />
-        </HorizontalScrollView>
+<!--            <LinearLayout-->
+<!--                android:id="@+id/template_filters_list"-->
+<!--                android:layout_width="wrap_content"-->
+<!--                android:layout_height="wrap_content"-->
+<!--                android:orientation="horizontal" />-->
+<!--        </HorizontalScrollView>-->
 
-        <ImageButton
-            xmlns:app="http://schemas.android.com/apk/res-auto"
-            android:id="@+id/template_filter"
-            style="@style/Widget.AppCompat.ActionButton"
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:contentDescription="@string/filter"
-            app:srcCompat="@drawable/ic_filter" />
-    </LinearLayout>
+<!--        <ImageButton-->
+<!--            xmlns:app="http://schemas.android.com/apk/res-auto"-->
+<!--            android:id="@+id/template_filter"-->
+<!--            style="@style/Widget.AppCompat.ActionButton"-->
+<!--            android:layout_width="wrap_content"-->
+<!--            android:layout_height="wrap_content"-->
+<!--            android:contentDescription="@string/filter"-->
+<!--            app:srcCompat="@drawable/ic_filter" />-->
+<!--    </LinearLayout>-->
 
-    <androidx.recyclerview.widget.RecyclerView
-        android:id="@+id/template_list"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content" />
+<!--    <androidx.recyclerview.widget.RecyclerView-->
+<!--        android:id="@+id/template_list"-->
+<!--        android:layout_width="match_parent"-->
+<!--        android:layout_height="wrap_content" />-->
 
 </LinearLayout>

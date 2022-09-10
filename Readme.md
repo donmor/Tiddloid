@@ -53,7 +53,11 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * My wiki list change its order randomly every time.
 
-    Check your Android version. One of the functions in the JSON library behaves differently below 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo (8.0) and above to enable all of its features.
+    Check your Android version. One of the functions in the JSON library behaves differently below 4.4, causing random wiki list order bug on KitKat devices. We recommend you to use Tiddloid on Oreo(8) to enable all of its features.
+
+* Sometimes there are random characters under the page.
+
+    Check your Android and Tiddloid version. There could be a bug in Android 10 filesystem API causing the files not correctly closed. A temporary fix is applied in Tiddloid 2.3.0, which eliminates the random code at the end of page on Android 9 and 10 and above (and the source file on Android 9 only). We recommend you to use Tiddloid on Oreo(8) to enable all of its features.
 
 * There are lags if WebDAV Wikis added.
 
@@ -62,6 +66,10 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 * I upgraded from 1.4 and all of my TiddlyWikis added before no longer to work.
 
     Check if your system revoked local storage accessing permissions. `Local (Legacy)` mode (which directly accesses local files) disabled on new installations by default. To enable it, Open "WebDAV / Local (Legacy)" and press the button on the top-left corner.
+
+* I can't find `Add to Tiddloid` in floating menus in other apps.
+
+    * Android 11 put a limit on all apps, preventing them from fetching complete application list, that's why it disappeared. It's still functional in legacy apps and some apps with certain hacks.
 
 * I still want to add `Local (Legacy)` wikis.
 

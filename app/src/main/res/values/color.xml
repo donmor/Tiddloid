@@ -11,5 +11,5 @@
     <color name="design_default_color_primary">@android:color/background_light</color>
     <color name="design_default_color_primary_dark">@android:color/darker_gray</color>
     <color name="design_default_color_accent">#0099CC</color>
-    <color name="tint_background">#1A000000</color>
+<!--    <color name="tint_background">#1A000000</color>-->
 </resources>

@@ -1,6 +1,5 @@
 Update details:
-#- Added internal template list
-#- Refactored content receiver:
+- Refactored content receiver:
   - If any wiki opened:
     - Any selected text sent here will be append to opened wiki as a draft tiddler
     - Any other file sent here will get prepared for import and stacked in $:/Import
@@ -15,8 +14,11 @@ Update details:
 - Now will transfer data only if the remote template file updated
 - Added WebView debugging (for debug build only)
 - Added support to UTF-16-encoded files
-#- Now shows source of files in wiki list
-#- Fixed the problem that Nextcloud's WebDAV server cannot be accessed
+- Now shows source of files in wiki list
+- Fixed a bug causing incorrect color scheme when go back to the file list from a dark themed page but the system is light themed (or vice versa)
 - Fixed a bug causing failure on picking text with certain characters
 - Fixed a bug causing crash on importing files from file manager apps if is a fresh installation
-- Applied a temporary fix to the problem that random code appended to files on Android 11 and above
+- Applied a temporary fix to the problem that random code appended to files on Android 10 and above
+  - Known issue:
+    - Crashes due to OOM when large files loaded
+    - Source file cannot be fixed on Android 10 and above (works on Android 9 only)

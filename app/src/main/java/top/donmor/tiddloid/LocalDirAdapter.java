@@ -22,7 +22,6 @@ import java.util.List;
 public class LocalDirAdapter extends RecyclerView.Adapter<LocalDirAdapter.LocalDirHolder> {
 
 	private List<File> localItems = null;
-	private final Context context;
 	private ItemClickListener mItemClickListener;
 	private final LayoutInflater inflater;
 	private boolean canBack;
@@ -31,7 +30,6 @@ public class LocalDirAdapter extends RecyclerView.Adapter<LocalDirAdapter.LocalD
 	private static final String PD = "..";
 
 	LocalDirAdapter(Context context) {
-		this.context = context;
 		inflater = LayoutInflater.from(context);
 	}
 
