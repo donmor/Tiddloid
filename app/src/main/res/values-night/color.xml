@@ -1,15 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-night/color.xml <= [P|Tiddloid]
-  ~ Last modified: 17:16:24 2019/09/27
-  ~ Copyright (c) 2019 donmor
+  ~ Last modified: 20:15:08 2022/09/10
+  ~ Copyright (c) 2022 donmor
   -->
 
 <resources>
     <color name="content">@android:color/white</color>
     <color name="content_tint">#CCFFFFFF</color>
     <color name="content_sub">#8AFFFFFF</color>
+    <color name="content_back_dec">#303030</color>
     <color name="design_default_color_primary">@color/cardview_dark_background</color>
     <color name="design_default_color_primary_dark">@android:color/darker_gray</color>
     <color name="design_default_color_accent">#72CEED</color>
-<!--    <color name="tint_background">#1AFFFFFF</color>-->
 </resources>

@@ -1,7 +1,7 @@
 /*
  * top.donmor.tiddloid.LocalDirAdapter <= [P|Tiddloid]
- * Last modified: 05:03:14 2022/08/28
- * Copyright (c) 2019 donmor
+ * Last modified: 20:51:59 2022/08/28
+ * Copyright (c) 2022 donmor
  */
 
 package top.donmor.tiddloid;

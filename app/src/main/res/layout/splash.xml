@@ -1,4 +1,10 @@
 <?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/layout/splash.xml <= [P|Tiddloid]
+  ~ Last modified: 15:28:19 2022/02/05
+  ~ Copyright (c) 2022 donmor
+  -->
+
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     android:layout_width="match_parent"

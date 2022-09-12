@@ -1,3 +1,9 @@
+<!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/menu/menu_twi.xml <= [P|Tiddloid]
+  ~ Last modified: 11:20:27 2022/02/05
+  ~ Copyright (c) 2022 donmor
+  -->
+
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"

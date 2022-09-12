@@ -1,8 +1,7 @@
 /*
  * top.donmor.tiddloid.utils.TLSSocketFactory <= [P|Tiddloid]
- * Last modified: 18:31:28 2019/05/10
- * Publish code included. Visit https://blog.dev-area.net/2015/08/13/android-4-1-enable-tls-1-1-and-tls-1-2/ for details.
- * Copyright (c) 2019 donmor
+ * Last modified: 17:42:28 2019/10/11
+ * Copyright (c) 2022 donmor
  */
 
 package top.donmor.tiddloid.utils;

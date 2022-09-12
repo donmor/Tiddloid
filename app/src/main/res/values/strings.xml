@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 16:07:41 2019/09/26
-  ~ Copyright (c) 2019 donmor
+  ~ Last modified: 22:52:05 2022/09/10
+  ~ Copyright (c) 2022 donmor
   -->
 
 <resources>
@@ -182,10 +182,8 @@
     <string name="app_name" translatable="false">Tiddloid</string>
     <string name="entry_name">Add to Tiddloid</string>
     <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
-    <string name="filter" translatable="false">filter</string>
     <string name="logo" translatable="false">logo</string>
     <string name="path" translatable="false">path</string>
-    <string name="site" translatable="false">site</string>
     <string name="icon" translatable="false">icon</string>
     <string name="dav_go" translatable="false">dav_enter</string>
     <string name="dav_legacy" translatable="false">dav_local</string>
@@ -274,4 +272,20 @@
         For more details about this app, please visit the project page ( https://github.com/donmor/Tiddloid/ ) or my homepage ( https://donmor.top/ ).
     </string>
     <string name="about_title" translatable="false">Tiddloid - %s</string>
+    <string name="agreements_title">Terms of Use</string>
+    <string name="agreements_desc1">Tiddloid is published under GPL v2:</string>
+    <string name="agreements_desc2">Tiddloid require these permissions to work properly:</string>
+    <string name="agreements_privacy">
+        [Internet Connection]
+        \nFor fetching remote templates
+        \n[Writing External Storage]
+        \nOptional, for processing file in legacy way
+        \n[Camera]
+        \nOptional, for probable plugins that use camera
+        \n[Creating Shortcut]
+        \nOptional, for creating shortcuts
+    </string>
+    <string name="agreements_desc3">To continue, you have to accept the agreements above.</string>
+    <string name="agreements_accept">Accept</string>
+    <string name="agreements_decline">Decline</string>
 </resources>

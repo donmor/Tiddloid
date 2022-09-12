@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
-  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-ki/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 16:07:41 2019/09/26
-  ~ Copyright (c) 2019 donmor
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-ko/strings.xml <= [P|Tiddloid]
+  ~ Last modified: 19:42:20 2022/08/28
+  ~ Copyright (c) 2022 donmor
   -->
 
 <resources>
@@ -88,4 +88,20 @@
 		\n
 		이 응용 프로그램에 대한 자세한 내용은 프로젝트 페이지 ( https://github.com/donmor/Tiddloid/ ) 또는 내 홈페이지 ( https://donmor.top/ )를 방문하십시오.
 	</string>
+    <string name="agreements_title">사용 조건</string>
+	<string name="agreements_desc1">이 애플리케이션은 GPLv2 라이선스에 따라 게시됩니다:</string>
+	<string name="agreements_desc2">Tiddloid가 제대로 작동하려면 다음 권한이 필요합니다:</string>
+	<string name="agreements_privacy">
+		[인터넷 연결]
+        \n원격 템플릿 가져오기
+        \n[외부 저장소 쓰기]
+        \n선택 사항, 레거시 방식으로 파일 처리
+        \n[카메라]
+        \n선택 사항, 카메라를 사용하는 플러그인의 경우
+        \n[바로가기 생성]
+		\n선택 사항, 바로 가기 생성용
+	</string>
+	<string name="agreements_desc3">계속하려면 위의 계약에 동의해야 합니다.</string>
+	<string name="agreements_accept">동의하기</string>
+	<string name="agreements_decline">거절하다</string>
 </resources>

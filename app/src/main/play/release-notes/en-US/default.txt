@@ -22,3 +22,4 @@ Update details:
   - Known issue:
     - Crashes due to OOM when large files loaded
     - Source file cannot be fixed on Android 10 and above (works on Android 9 only)
+- Minor fixes

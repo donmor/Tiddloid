@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-es/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 16:07:41 2019/09/26
-  ~ Copyright (c) 2019 donmor
+  ~ Last modified: 19:42:20 2022/08/28
+  ~ Copyright (c) 2022 donmor
   -->
 
 <resources>
@@ -88,4 +88,20 @@
         \n
         Para obtener más detalles sobre esta aplicación, visite la página del proyecto ( https://github.com/donmor/Tiddloid/ ) o mi página de inicio ( https://donmor.top/ )..
     </string>
+    <string name="agreements_title">Términos de Uso</string>
+	<string name="agreements_desc1">"Esta aplicación se lanza bajo la licencia GPLv2\" "</string>
+	<string name="agreements_desc2">Tiddloid requiere estos permisos para funcionar correctamente:</string>
+	<string name="agreements_privacy">
+		[Conexión a Internet]
+        \nPara obtener plantillas remotas
+        \n[Escribir almacenamiento externo]
+        \nOpcional, para procesar archivos de forma heredada
+        \n[Cámara]
+        \nOpcional, para complementos probables que usan cámara
+        \n[Creando acceso directo]
+		\nOpcional, para crear accesos directos
+	</string>
+	<string name="agreements_desc3">Para continuar, debe aceptar los acuerdos anteriores.</string>
+	<string name="agreements_accept">Aceptar</string>
+	<string name="agreements_decline">Rechazar</string>
 </resources>

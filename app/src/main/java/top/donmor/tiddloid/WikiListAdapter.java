@@ -1,7 +1,7 @@
 /*
  * top.donmor.tiddloid.WikiListAdapter <= [P|Tiddloid]
- * Last modified: 05:03:14 2019/05/07
- * Copyright (c) 2019 donmor
+ * Last modified: 17:09:26 2022/08/28
+ * Copyright (c) 2022 donmor
  */
 
 package top.donmor.tiddloid;

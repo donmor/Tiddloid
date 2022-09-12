@@ -1,3 +1,9 @@
+<!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/menu/menu_main.xml <= [P|Tiddloid]
+  ~ Last modified: 20:05:33 2022/09/10
+  ~ Copyright (c) 2022 donmor
+  -->
+
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
@@ -23,11 +29,6 @@
         android:icon="@drawable/ic_dav"
         android:title="@string/action_dav"
         app:showAsAction="never" />
-<!--    <item-->
-<!--        android:id="@+id/action_template"-->
-<!--        android:icon="@drawable/ic_language"-->
-<!--        android:title="TODO:TEMPLATE"-->
-<!--        app:showAsAction="never" />-->
     <item
         android:id="@+id/action_about"
         android:icon="@drawable/ic_info_outline"

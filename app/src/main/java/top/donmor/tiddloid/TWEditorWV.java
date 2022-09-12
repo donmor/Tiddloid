@@ -1,7 +1,7 @@
 /*
  * top.donmor.tiddloid.TWEditorWV <= [P|Tiddloid]
- * Last modified: 18:33:05 2019/05/10
- * Copyright (c) 2019 donmor
+ * Last modified: 21:43:19 2022/09/10
+ * Copyright (c) 2022 donmor
  */
 
 package top.donmor.tiddloid;
@@ -497,13 +497,9 @@ public class TWEditorWV extends AppCompatActivity {
 			@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 			@Override
 			public void onPermissionRequest(PermissionRequest request) {
-//				try {
 				for (String r : request.getResources())
 					if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r))
 						openCamera(TWEditorWV.this, request);
-//				} catch (Exception e) {
-//					e.printStackTrace();
-//				}
 			}
 		};
 		wv.setWebChromeClient(wcc);
@@ -671,6 +667,7 @@ public class TWEditorWV extends AppCompatActivity {
 				if (optMenu != null) {
 					optMenu.getItem(0).setVisible(false);
 					optMenu.getItem(1).setVisible(false);
+					optMenu.removeGroup(CA_GRP_ID);
 				}
 			}
 
@@ -698,7 +695,6 @@ public class TWEditorWV extends AppCompatActivity {
 									} catch (JSONException e) {
 										e.printStackTrace();
 									}
-//									view.evaluateJavascript(getString(R.string.js_new_tiddler_c, extraContent.toString().replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);
 								}
 							} else if (extraContent != null) {
 								JSONObject p = new JSONObject();
@@ -708,10 +704,8 @@ public class TWEditorWV extends AppCompatActivity {
 								} catch (JSONException e) {
 									e.printStackTrace();
 								}
-//								view.evaluateJavascript(getString(R.string.js_new_tiddler, extraContent.toString().replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);// TODO: Import any type here
 							} else if (extraContent2 != null)
-								view.evaluateJavascript(getString(R.string.js_import, extraContent2.toString()), null);// TODO: Import any type here
-//								view.evaluateJavascript(getString(R.string.js_import, extraContent2.toString().replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);// TODO: Import any type here
+								view.evaluateJavascript(getString(R.string.js_import, extraContent2.toString()), null);
 							extraContent = null;
 							extraContent2 = null;
 						});
@@ -796,11 +790,7 @@ public class TWEditorWV extends AppCompatActivity {
 				return;
 			}
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
-		} else if (Intent.ACTION_SEND.equals(action)) {    // 分享链接克隆站点		TODO: Accept any type; *Check if is plain text
-//			if (!(MainActivity.TYPE_HTML.equals(intent.getType())) || !(MIME_TEXT.equals(intent.getType()) && intent.getStringExtra(Intent.EXTRA_TEXT).contains(MainActivity.SCH_HTTP))) {
-//				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-//				return;
-//			}
+		} else if (Intent.ACTION_SEND.equals(action)) {    // 分享
 			String cs = null;
 			boolean bin = !MIME_TEXT.equals(intent.getType()) || (cs = intent.getStringExtra(Intent.EXTRA_TEXT)) == null;
 			if (isClassic && bin) {
@@ -822,7 +812,7 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
 				int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-				TW_CONTENT_ENCODING enc = TW_TYPES.get(type);    // TODO: Parse .tid / .multids
+				TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
 				JSONArray array = new JSONArray().put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
 						.put(KEY_TYPE, type)
 						.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
@@ -838,17 +828,8 @@ public class TWEditorWV extends AppCompatActivity {
 				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 				return;
 			}
-//			System.out.println(cs.replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`"));
-//			System.out.println(getString(R.string.js_import));
-//			System.out.println(getString(R.string.js_import, cs.replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")));
-//			String a = cs.replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`"),
-//					b = getString(R.string.js_import),
-//					b1 = getString(R.string.js_import, cs),
-//					c = getString(R.string.js_import, cs.replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`"));
 			wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : bin ? R.string.js_import : R.string.js_new_tiddler, cs), null);
-//			wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : bin ? R.string.js_import : R.string.js_new_tiddler, cs.replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);
-//			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
-		} else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {    // 分享链接克隆站点		TODO: Accept multi files
+		} else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {    // 分享链接克隆站点
 			String cs;
 			if (isClassic) {
 				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
@@ -885,7 +866,6 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 			cs = array.toString();
 			wv.evaluateJavascript(getString(R.string.js_import, cs), null);
-//			wv.evaluateJavascript(getString(R.string.js_import, cs.replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);
 		} else if (Intent.ACTION_PROCESS_TEXT.equals(action)) {    // 摘录文本
 			CharSequence cs;
 			if (!MainActivity.APIOver23 || !isWiki || (cs = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)) == null || cs.length() == 0) return;
@@ -896,7 +876,6 @@ public class TWEditorWV extends AppCompatActivity {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
-//			wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, cs.toString().replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);
 		} else {    // MA/Shortcut
 			if ((bu = intent.getExtras()) == null || (fid = bu.getString(MainActivity.KEY_ID)) == null)
 				return;
@@ -1120,20 +1099,6 @@ public class TWEditorWV extends AppCompatActivity {
 		for (int i = 0; i < menu.size(); i++) {
 			if ((vi = menu.getItem(i)) != null && (vp = vi.getIntent()) != null && (vc = vp.getComponent()) != null && getPackageName().equals(vc.getPackageName())) {
 				vi.setTitle(R.string.context_new_tiddler);
-//				vi.setOnMenuItemClickListener(menuItem -> {
-//					wv.evaluateJavascript(getString(R.string.js_get_selected), s -> {
-//						JSONObject p = new JSONObject();
-//						try {
-//							p.put(KEY_TEXT, s.subSequence(1, s.length() - 1).toString());
-//							wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, p.toString()), null);
-//						} catch (JSONException e) {
-//							e.printStackTrace();
-//						}
-////						wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, s.subSequence(1, s.length() - 1).toString().replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);
-//					});
-//					mode.finish();
-//					return false;
-//				});
 				break;
 			} else vi = null;
 		}
@@ -1146,7 +1111,6 @@ public class TWEditorWV extends AppCompatActivity {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-//				wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, s.subSequence(1, s.length() - 1).toString().replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);
 			});
 			mode.finish();
 			return false;
@@ -1163,11 +1127,7 @@ public class TWEditorWV extends AppCompatActivity {
 					.setPositiveButton(android.R.string.yes, (dialog, which) -> {
 								dialog.dismiss();
 								if (nextWikiIntent == null)
-//									new Handler().postDelayed(() -> {
-//										runOnUiThread(() -> {
 									TWEditorWV.super.finish();
-//										});
-//									},100);
 								else
 									nextWiki(nextWikiIntent);
 							}
@@ -1272,7 +1232,7 @@ public class TWEditorWV extends AppCompatActivity {
 					wa = null;
 				}
 			} else wa = null;
-		} else if (Intent.ACTION_SEND.equals(action)) {    // 接收分享文件	TODO: Any type -> b64 -> extraContent2
+		} else if (Intent.ACTION_SEND.equals(action)) {    // 接收分享文件
 			wa = null;
 			String data;
 			if (MainActivity.TYPE_HTML.equals(nextWikiIntent.getType())) {    // 接收html文件
@@ -1395,7 +1355,7 @@ public class TWEditorWV extends AppCompatActivity {
 					e.printStackTrace();
 				}
 			}
-		} else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {    // 分享链接克隆站点		TODO: Accept multi files
+		} else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {    // 分享链接克隆站点
 			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
 				Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 				finish();
@@ -1448,7 +1408,6 @@ public class TWEditorWV extends AppCompatActivity {
 				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-//				wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, cs.toString().replaceAll("\\\\", "\\\\\\\\").replaceAll("`", "\\\\`")), null);
 				return;
 			}
 			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
@@ -1484,8 +1443,16 @@ public class TWEditorWV extends AppCompatActivity {
 			setTitle(R.string.app_name);
 			toolbar.setSubtitle(null);
 			wv.getSettings().setJavaScriptEnabled(false);
+			customActionsMap.clear();
+			customActions = null;
 			wv.loadUrl(URL_BLANK);
-			getDelegate().setLocalNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
+			themeColor = null;
+			hideAppbar = false;
+			onConfigurationChanged(getResources().getConfiguration());
+			overrodeCharset = null;
+			hashes = null;
+			tree = null;
+			treeIndex = null;
 		}
 		// 解取Title/Subtitle/favicon
 		wApp = wa;    // nonnull: normal/file/content/url; null: http(s)/html
@@ -1599,7 +1566,7 @@ public class TWEditorWV extends AppCompatActivity {
 					data = new String(bytes, StandardCharsets.UTF_8);    // UTF-8 / Fallback
 				int sk;
 				if (MainActivity.APIOver28 && (sk = data.indexOf(KEY_PATCH1)) > 0 && sk + KEY_PATCH1.length() < data.length())
-					data = data.substring(0, sk + KEY_PATCH1.length());    // APIOver30 bug workaround
+					data = data.substring(0, sk + KEY_PATCH1.length());    // APIOver29 bug workaround
 				wv.loadDataWithBaseURL(ux.toString(), data, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
 			} catch (IOException | SecurityException e) {
 				e.printStackTrace();
@@ -1921,23 +1888,16 @@ public class TWEditorWV extends AppCompatActivity {
 			window.setStatusBarColor(primColor);
 		if (MainActivity.APIOver26)
 			window.setNavigationBarColor(primColor);
-//		if (MainActivity.APIOver30) {
-//			WindowInsetsControllerCompat wic = WindowInsetsControllerCompat.toWindowInsetsControllerCompat(window.getInsetsController());
 		wic.setAppearanceLightNavigationBars(lightBar);
 		wic.setAppearanceLightStatusBars(lightBar);
 		if (newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE) {
 			wic.hide(WindowInsetsCompat.Type.systemBars());
 			wic.setSystemBarsBehavior(WindowInsetsControllerCompat.BEHAVIOR_SHOW_TRANSIENT_BARS_BY_SWIPE);
 			WindowCompat.setDecorFitsSystemWindows(window, false);
-//				window.setDecorFitsSystemWindows(false);
 		} else {
 			wic.show(WindowInsetsCompat.Type.systemBars());
 			WindowCompat.setDecorFitsSystemWindows(window, true);
-//				window.setDecorFitsSystemWindows(true);
 		}
-//		} else
-//			window.getDecorView().setSystemUiVisibility((lightBar ? (MainActivity.APIOver23 ? View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR : View.SYSTEM_UI_FLAG_VISIBLE) | (MainActivity.APIOver26 ? View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR : View.SYSTEM_UI_FLAG_VISIBLE) : View.SYSTEM_UI_FLAG_VISIBLE) |
-//					(newConfig.orientation == Configuration.ORIENTATION_LANDSCAPE ? View.SYSTEM_UI_FLAG_FULLSCREEN | View.SYSTEM_UI_FLAG_HIDE_NAVIGATION | View.SYSTEM_UI_FLAG_IMMERSIVE_STICKY : View.SYSTEM_UI_FLAG_VISIBLE));
 		findViewById(R.id.wv_appbar).setBackgroundColor(primColor);
 		toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);// 刷新字色
 		toolbar.setSubtitleTextAppearance(this, R.style.TextAppearance_AppCompat_Small);
@@ -1949,8 +1909,6 @@ public class TWEditorWV extends AppCompatActivity {
 		((ImageButton) findViewById(R.id.find_up)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_up_d));
 		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_down : R.drawable.ic_arrow_down_d));
 		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_close : R.drawable.ic_close_d));
-//		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(getResources().getDrawable(R.drawable.ic_arrow_down));
-//		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(getResources().getDrawable(R.drawable.ic_close));
 		if (optMenu != null) {
 			try {
 				optMenu.removeGroup(CA_GRP_ID);

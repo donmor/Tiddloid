@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-zh-rCN/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 16:07:41 2019/09/26
-  ~ Copyright (c) 2019 donmor
+  ~ Last modified: 19:42:20 2022/08/28
+  ~ Copyright (c) 2022 donmor
   -->
 
 <resources>
@@ -89,4 +89,19 @@
 		有关本应用程序的更多详细信息，请访问项目页面（ https://github.com/donmor/Tiddloid/ ）或我的主页（ https://donmor.top/ ）。\n
 			您还可以访问太记的项目页面（ https://github.com/tiddly-gittly/TidGi-Desktop ），了解有关中文版桌面应用程序的更多信息。
 	</string>
+    <string name="agreements_title">使用条款</string>
+	<string name="agreements_desc1">本应用程序遵循GPLv2许可发布：</string>
+	<string name="agreements_desc2">Tiddloid 需要这些权限才能正常工作：</string>
+	<string name="agreements_privacy">
+		[网络连接]
+        \n用于获取远程模板
+        \n[写入外部存储]
+        \n可选，用于以传统方式处理文件
+        \n[相机]
+        \n可选，用于可能使用相机的插件
+        \n[创建快捷方式]
+        \n可选，用于创建快捷方式</string>
+	<string name="agreements_desc3">您必须接受上述条款才能使用本软件 。</string>
+	<string name="agreements_accept">接受</string>
+	<string name="agreements_decline">拒绝</string>
 </resources>

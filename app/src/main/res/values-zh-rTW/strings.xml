@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-zh-rTW/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 16:07:41 2019/09/26
-  ~ Copyright (c) 2019 donmor
+  ~ Last modified: 19:42:20 2022/08/28
+  ~ Copyright (c) 2022 donmor
   -->
 
 <resources>
@@ -88,4 +88,19 @@
 		\n
 		有關本應用程式的更多詳細信息，請訪問項目頁面（ https://github.com/donmor/Tiddloid/ ）或我的主頁（ https://donmor.top/ ）。
 	</string>
+	<string name="agreements_title">使用條款</string>
+	<string name="agreements_desc1">本應用程序遵循GPLv2許可發布：</string>
+	<string name="agreements_desc2">Tiddloid 需要這些權限才能正常工作：</string>
+	<string name="agreements_privacy">
+		[網絡連接]
+        \n用於獲取遠程模板
+        \n[寫入外部存儲]
+        \n可選，用於以傳統方式處理文件
+        \n[相機]
+        \n可選，對於可能使用相機的插件
+        \n[創建快捷方式]
+        \n可選，用於創建快捷方式</string>
+	<string name="agreements_desc3">要繼續，您必須接受上述協議。</string>
+	<string name="agreements_accept">接受</string>
+	<string name="agreements_decline">拒絕</string>
 </resources>

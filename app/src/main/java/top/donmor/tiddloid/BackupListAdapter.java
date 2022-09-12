@@ -1,7 +1,7 @@
 /*
  * top.donmor.tiddloid.BackupListAdapter <= [P|Tiddloid]
- * Last modified: 03:43:00 2019/05/07
- * Copyright (c) 2019 donmor
+ * Last modified: 15:22:20 2022/02/05
+ * Copyright (c) 2022 donmor
  */
 
 package top.donmor.tiddloid;
