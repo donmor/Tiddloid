@@ -106,7 +106,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
+import java.nio.ByteBuffer;
 import java.nio.channels.FileChannel;
+import java.nio.channels.NonReadableChannelException;
+import java.nio.channels.NonWritableChannelException;
+import java.nio.charset.Charset;
+import java.nio.charset.StandardCharsets;
 import java.security.KeyManagementException;
 import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
@@ -157,6 +162,8 @@ public class MainActivity extends AppCompatActivity {
 			KEY_FN_INDEX = "index.html",
 			KEY_FN_INDEX2 = "index.htm",
 			KEY_FD_R = "r",
+			KEY_FD_RW = "rw",
+			KEY_FD_W = "w",
 			KEY_SLASH = "/",
 			KEY_URI_NOTCH = "://",
 			MASK_SDF_BACKUP = "yyyyMMddHHmmssSSS",
@@ -172,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
 	private static final String
 			DB_FILE_NAME = "data.json",
 			DB_KEY_PATH = "path",
-			KEY_FD_W = "w",
+			KEY_PATCH1 = "</html>\n",    // Random char workaround
 			KEY_URI_RATE = "market://details?id=",
 			LICENSE_FILE_NAME = "LICENSE",
 			SCH_PACKAGES = "package",
@@ -181,8 +188,8 @@ public class MainActivity extends AppCompatActivity {
 	static final boolean APIOver21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP,
 			APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
-			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
-			APIOver28 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
+			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+	//			APIOver28 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
 	static final String
 			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
 			EXCEPTION_DOCUMENT_IO_ERROR = "Document IO Error",
@@ -253,6 +260,7 @@ public class MainActivity extends AppCompatActivity {
 		});
 		new Thread(() -> {
 			// 加载JSON数据
+//			batchFix(MainActivity.this);
 			try {
 				db = readJson(MainActivity.this);
 				if (!db.has(DB_KEY_WIKI)) throw new JSONException(EXCEPTION_JSON_DATA_ERROR);
@@ -460,7 +468,8 @@ public class MainActivity extends AppCompatActivity {
 													uf = uf + index;
 												}
 												try (InputStream is = davClient.get(uf);
-														FileOutputStream os = new FileOutputStream(dest)) {
+														OutputStream os = getContentResolver().openOutputStream(Uri.fromFile(dest))) {
+//														FileOutputStream os = new FileOutputStream(dest)) {
 													int length;
 													byte[] bytes = new byte[BUF_SIZE];
 													while ((length = is.read(bytes)) > -1) {
@@ -481,16 +490,17 @@ public class MainActivity extends AppCompatActivity {
 											throw new IOException(e.getMessage());
 										}
 										if (e0[0] != null) throw e0[0];
-									} else try (ParcelFileDescriptor ifd = getContentResolver().openFileDescriptor(u1, KEY_FD_R);
+									} else try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u1, KEY_FD_R));
+											ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
 											FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-											FileOutputStream os = new FileOutputStream(dest);
+											FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+//											FileOutputStream os = new FileOutputStream(dest);
 											FileChannel ic = is.getChannel();
 											FileChannel oc = os.getChannel()) {
-										ic.transferTo(0, ic.size(), oc);
-										ic.force(true);
+										fc2fc(ic, oc);
 									}
 									getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
-								} catch (IOException | IllegalArgumentException | ArrayIndexOutOfBoundsException | NullPointerException e) {
+								} catch (IOException | IllegalArgumentException | ArrayIndexOutOfBoundsException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
 									e.printStackTrace();
 									Toast.makeText(MainActivity.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 								}
@@ -584,18 +594,17 @@ public class MainActivity extends AppCompatActivity {
 													}
 												} else {
 													DocumentFile fdf = tu != null && finalDf == null && finalMdf != null && rfn != null ? finalMdf.createFile(TYPE_HTML, rfn) : finalDf;
-													try (ParcelFileDescriptor ifd = getContentResolver().openFileDescriptor(tu != null ? bdf.getUri() : Uri.fromFile(bf), KEY_FD_R);
-															ParcelFileDescriptor ofd = getContentResolver().openFileDescriptor(tu != null ? Objects.requireNonNull(fdf).getUri() : u, KEY_FD_W);
+													try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(tu != null ? bdf.getUri() : Uri.fromFile(bf), KEY_FD_R));
+															ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(tu != null ? Objects.requireNonNull(fdf).getUri() : u, KEY_FD_W));
 															FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 															FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 															FileChannel ic = is.getChannel();
 															FileChannel oc = os.getChannel()) {    // 由于SAF限制，文件模式无法还原丢失的文件，除非在原位创建一个文件，即使该文件是空的
-														ic.transferTo(0, ic.size(), oc);
-														ic.force(true);
+														fc2fc(ic, oc);
 														wikiConfigDialog.dismiss();
 														Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
 														loadPage(id);
-													} catch (IOException | NullPointerException e) {
+													} catch (IOException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
 														e.printStackTrace();
 														Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
 													}
@@ -780,6 +789,7 @@ public class MainActivity extends AppCompatActivity {
 					firstRunDialog.show();
 				}
 			});
+			batchFix(MainActivity.this);
 		}).start();
 	}
 
@@ -821,9 +831,14 @@ public class MainActivity extends AppCompatActivity {
 		long pModified = dest.lastModified();
 		UriFileInfo infoWrapper = new UriFileInfo();
 		try (InputStream isw = new AdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo)), infoWrapper).get();
-				FileOutputStream osw = new FileOutputStream(cache);
-				FileInputStream is = new FileInputStream(cache);
-				FileOutputStream os = new FileOutputStream(dest);
+				OutputStream osw = getContentResolver().openOutputStream(Uri.fromFile(cache));
+//				FileOutputStream osw = new FileOutputStream(cache);
+				ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(cache), KEY_FD_R));
+				ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
+				FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+//				FileInputStream is = new FileInputStream(cache);
+				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+//				FileOutputStream os = new FileOutputStream(dest);
 				FileChannel ic = is.getChannel();
 				FileChannel oc = os.getChannel()) {
 			// 下载到缓存
@@ -839,8 +854,7 @@ public class MainActivity extends AppCompatActivity {
 				}
 				osw.flush();
 				if (interrupted) throw new InterruptedException(EXCEPTION_INTERRUPTED);
-				ic.transferTo(0, ic.size(), oc);
-				ic.force(true);
+				fc2fc(ic, oc);
 			}
 			dest.setLastModified(infoWrapper.lastModified);
 			if (progressDialog != null) progressDialog.dismiss();
@@ -851,7 +865,7 @@ public class MainActivity extends AppCompatActivity {
 			e.printStackTrace();
 			runOnUiThread(() -> Toast.makeText(this, R.string.server_error, Toast.LENGTH_SHORT).show());
 			if (progressDialog != null) progressDialog.dismiss();
-		} catch (IOException | SecurityException e) {
+		} catch (IOException | SecurityException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
 			e.printStackTrace();
 			runOnUiThread(() -> Toast.makeText(this, R.string.download_failed, Toast.LENGTH_SHORT).show());
 			if (progressDialog != null) progressDialog.dismiss();
@@ -1478,8 +1492,10 @@ public class MainActivity extends AppCompatActivity {
 	private void createWiki(Uri uri, boolean clone) {
 		OnGetSrc cb = file -> {
 			if (file.exists()) {
-				try (ParcelFileDescriptor ofd = getContentResolver().openFileDescriptor(uri, KEY_FD_W);
-						FileInputStream is = new FileInputStream(file);
+				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(file), KEY_FD_R));
+						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, KEY_FD_W));
+						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+//						FileInputStream is = new FileInputStream(file);
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel ic = is.getChannel();
 						FileChannel oc = os.getChannel()) {
@@ -1493,20 +1509,20 @@ public class MainActivity extends AppCompatActivity {
 						exist = uri.toString().equals(wa.optString(DB_KEY_URI));
 						if (exist) break;
 					}
-					if (exist)
+					if (exist) {
 						Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-					else {
+						if (wa.optBoolean(DB_KEY_BACKUP)) backup(MainActivity.this, uri, null);
+					} else {
 						wa = new JSONObject();
 						wa.put(DB_KEY_URI, uri.toString());
 						id = genId();
 						wl.put(id, wa);
+						wa.put(DB_KEY_BACKUP, false);
 					}
 					wa.put(KEY_NAME, KEY_TW);
 					wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
-					wa.put(DB_KEY_BACKUP, false);
 					writeJson(MainActivity.this, db);
-					ic.transferTo(0, ic.size(), oc);
-					ic.force(true);
+					fc2fc(ic, oc);
 					try {
 						getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
 					} catch (RuntimeException e) {
@@ -1514,7 +1530,7 @@ public class MainActivity extends AppCompatActivity {
 					}
 					if (!loadPage(id))
 						Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-				} catch (IOException | NullPointerException e) {
+				} catch (IOException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
 					e.printStackTrace();
 					Toast.makeText(MainActivity.this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
 				} catch (JSONException e) {
@@ -1578,13 +1594,14 @@ public class MainActivity extends AppCompatActivity {
 				return;
 			}
 			getSrcFromUri(file -> {
-				try (ParcelFileDescriptor ofd = getContentResolver().openFileDescriptor(nf.getUri(), KEY_FD_W);
-						FileInputStream is = new FileInputStream(file);
+				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(file), KEY_FD_R));
+						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(nf.getUri(), KEY_FD_W));
+						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+//						FileInputStream is = new FileInputStream(file);
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel ic = is.getChannel();
 						FileChannel oc = os.getChannel()) {
-					ic.transferTo(0, ic.size(), oc);
-					ic.force(true);
+					fc2fc(ic, oc);
 					addDir(uri);
 				} catch (IOException | NullPointerException e) {
 					e.printStackTrace();
@@ -1664,20 +1681,86 @@ public class MainActivity extends AppCompatActivity {
 		WindowCompat.setDecorFitsSystemWindows(w, true);
 	}
 
+	private static void batchFix(Context context) {    // TODO: Merge FOSs to FD>FOS>FC
+		File ext = context.getExternalFilesDir(null);
+		Charset mCharset = StandardCharsets.UTF_8;
+		if (ext != null && ext.isDirectory()) {
+			File[] files = ext.listFiles(pathname -> pathname.isFile() && pathname.canRead() && pathname.canWrite() && (
+					pathname.getName().endsWith(KEY_EX_HTML)
+							|| pathname.getName().endsWith(KEY_EX_HTM)
+							|| pathname.getName().endsWith(KEY_EX_HTA)));
+			if (files != null) for (File f : files) {
+				try (ParcelFileDescriptor ifd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(f), KEY_FD_R));
+						ParcelFileDescriptor ofd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(f), KEY_FD_RW));
+						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+						FileChannel ic = is.getChannel();
+						FileChannel oc = os.getChannel()) {   //读全部数据
+					long len = ic.size();
+					ByteBuffer sc = ByteBuffer.allocate((int) len);
+					ic.read(sc);
+					ic.force(true);
+					if (len < 32) throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
+					String data = null;
+					byte[] bytes = sc.array(), hdr = new byte[32];
+					System.arraycopy(bytes, 0, hdr, 0, 32);
+					if (Arrays.equals(hdr, TWEditorWV.HEADER_U16BE_BOM) || Arrays.equals(hdr, TWEditorWV.HEADER_U16LE_BOM)) {
+						data = new String(bytes, StandardCharsets.UTF_16);    // UTF-16 + BOM
+						mCharset = StandardCharsets.UTF_16;
+					}
+					if (data == null && Arrays.equals(hdr, TWEditorWV.HEADER_U16BE)) {
+						data = new String(bytes, StandardCharsets.UTF_16BE);    // UTF-16BE
+						mCharset = StandardCharsets.UTF_16BE;
+					}
+					if (data == null && Arrays.equals(hdr, TWEditorWV.HEADER_U16LE)) {
+						data = new String(bytes, StandardCharsets.UTF_16LE);    // UTF-16LE
+						mCharset = StandardCharsets.UTF_16LE;
+					}
+					if (data == null)
+						data = new String(bytes, StandardCharsets.UTF_8);    // UTF-8 / Fallback
+					int sk;
+					if ((sk = data.indexOf(KEY_PATCH1)) > 0 && sk + KEY_PATCH1.length() < data.length())
+						data = data.substring(0, sk + KEY_PATCH1.length());
+					ByteBuffer byteBuffer = ByteBuffer.wrap(data.getBytes(mCharset));
+					oc.write(byteBuffer);
+					oc.truncate(byteBuffer.array().length);
+					oc.force(true);
+				} catch (NullPointerException | IOException e) {
+					e.printStackTrace();
+				}
+			}
+		}
+	}
+
 	static JSONObject initJson(Context context) throws JSONException {
 		File ext = context.getExternalFilesDir(null), file = new File(ext, DB_FILE_NAME);
 		if (ext != null && file.isFile())
-			try (InputStream is = new FileInputStream(file)) {
-				byte[] b = new byte[is.available()];
-				if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
-				JSONObject jsonObject = new JSONObject(new String(b));
+			try (ParcelFileDescriptor ifd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(file), KEY_FD_R));
+					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+//					FileInputStream is = new FileInputStream(file);
+					FileChannel ic = is.getChannel()) {
+//				byte[] b = new byte[is.available()];
+//				if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
+				JSONObject jsonObject = new JSONObject(new String(fc2ba(ic)));
+//				JSONObject jsonObject = new JSONObject(new String(b));
 				if (!jsonObject.has(DB_KEY_WIKI)) jsonObject.put(DB_KEY_WIKI, new JSONObject());
 				return jsonObject;
-			} catch (IOException | JSONException e) {
+			} catch (IOException | JSONException | NonReadableChannelException e) {
 				e.printStackTrace();
 			} finally {
 				file.delete();
 			}
+//			try (InputStream is = new FileInputStream(file)) {
+//				byte[] b = new byte[is.available()];
+//				if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
+//				JSONObject jsonObject = new JSONObject(new String(b));
+//				if (!jsonObject.has(DB_KEY_WIKI)) jsonObject.put(DB_KEY_WIKI, new JSONObject());
+//				return jsonObject;
+//			} catch (IOException | JSONException e) {
+//				e.printStackTrace();
+//			} finally {
+//				file.delete();
+//			}
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put(DB_KEY_WIKI, new JSONObject());
 		return jsonObject;
@@ -1685,35 +1768,63 @@ public class MainActivity extends AppCompatActivity {
 
 
 	static JSONObject readJson(Context context) throws JSONException {
-		try (InputStream is = context.openFileInput(DB_FILE_NAME)) {
-			byte[] b = new byte[is.available()];
-			if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
-			return new JSONObject(new String(b));
-		} catch (IOException e) {
+		try (FileInputStream is = context.openFileInput(DB_FILE_NAME);
+				FileChannel ic = is.getChannel()) {
+//			byte[] b = new byte[is.available()];
+//			if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
+			return new JSONObject(new String(fc2ba(ic)));
+		} catch (IOException | NonReadableChannelException e) {
 			throw new JSONException(e.getMessage());
 		}
+//		try (InputStream is = context.openFileInput(DB_FILE_NAME)) {
+//			byte[] b = new byte[is.available()];
+//			if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
+//			return new JSONObject(new String(b));
+//		} catch (NonReadableChannelException | IOException e) {
+//			throw new JSONException(e.getMessage());
+//		}
 	}
 
 	static void writeJson(Context context, JSONObject vdb) throws JSONException {
-		try (FileOutputStream os = context.openFileOutput(DB_FILE_NAME, MODE_PRIVATE)) {
-			byte[] b = vdb.toString(2).getBytes();
-			os.write(b);
-			os.flush();
-		} catch (IOException e) {
+		try (FileOutputStream os = context.openFileOutput(DB_FILE_NAME, MODE_PRIVATE);
+				FileChannel oc = os.getChannel()) {
+//			byte[] b = vdb.toString(2).getBytes();
+//			os.write(b);
+//			os.flush();
+			ba2fc(vdb.toString(2).getBytes(), oc);
+		} catch (IOException | NonWritableChannelException e) {
 			throw new JSONException(e.getMessage());
 		}
+//		try (FileOutputStream os = context.openFileOutput(DB_FILE_NAME, MODE_PRIVATE)) {
+//			byte[] b = vdb.toString(2).getBytes();
+//			os.write(b);
+//			os.flush();
+//		} catch (NonWritableChannelException | IOException e) {
+//			throw new JSONException(e.getMessage());
+//		}
 	}
 
 	static void exportJson(Context context, JSONObject vdb) {
 		File ext = context.getExternalFilesDir(null);
 		if (ext == null) return;
-		try (OutputStream os = new FileOutputStream(new File(ext, DB_FILE_NAME))) {
-			byte[] b = vdb.toString(2).getBytes();
-			os.write(b);
-			os.flush();
-		} catch (IOException | JSONException e) {
+		try (ParcelFileDescriptor ofd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(new File(ext, DB_FILE_NAME)), KEY_FD_W));
+//				OutputStream os = new FileOutputStream(new File(ext, DB_FILE_NAME))) {
+				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+				FileChannel oc = os.getChannel()) {
+//			byte[] b = vdb.toString(2).getBytes();
+//			os.write(b);
+//			os.flush();
+			ba2fc(vdb.toString(2).getBytes(), oc);
+		} catch (IOException | JSONException | NonWritableChannelException e) {
 			e.printStackTrace();
 		}
+//		try (OutputStream os = new FileOutputStream(new File(ext, DB_FILE_NAME))) {
+//			byte[] b = vdb.toString(2).getBytes();
+//			os.write(b);
+//			os.flush();
+//		} catch (IOException | JSONException e) {
+//			e.printStackTrace();
+//		}
 	}
 
 	@SuppressWarnings("SameReturnValue")
@@ -1861,15 +1972,14 @@ public class MainActivity extends AppCompatActivity {
 			if ((bdf = mdf.createFile(TYPE_HTML, bfn)) == null)
 				throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 		}
-		try (ParcelFileDescriptor ifd = context.getContentResolver().openFileDescriptor(tree ? df.getUri() : u, KEY_FD_R);
-				ParcelFileDescriptor ofd = context.getContentResolver().openFileDescriptor(tree ? bdf.getUri() : Uri.fromFile(new File(mfd, bfn)), KEY_FD_W);
+		try (ParcelFileDescriptor ifd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(tree ? df.getUri() : u, KEY_FD_R));
+				ParcelFileDescriptor ofd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(tree ? bdf.getUri() : Uri.fromFile(new File(mfd, bfn)), KEY_FD_W));
 				FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 				FileChannel ic = is.getChannel();
 				FileChannel oc = os.getChannel()) {
-			ic.transferTo(0, ic.size(), oc);
-			ic.force(true);
-		} catch (NullPointerException e) {
+			fc2fc(ic, oc);
+		} catch (IOException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
 			throw new IOException(e.getMessage());
 		}
 	}
@@ -1878,6 +1988,46 @@ public class MainActivity extends AppCompatActivity {
 		SimpleDateFormat format = new SimpleDateFormat(MASK_SDF_BACKUP, Locale.US);
 		format.setTimeZone(TimeZone.getTimeZone(KEY_TZ_UTC));
 		return '.' + format.format(new Date(time));
+	}
+
+	static byte[] fc2ba(@NonNull FileChannel ic) throws IOException, NonReadableChannelException {
+		if (ic.size() > Integer.MAX_VALUE) throw new IOException();
+		ByteBuffer buffer = ByteBuffer.allocate((int) ic.size());
+		ic.read(buffer);
+		return buffer.array();
+//		int len = is.available();
+//		int length, lengthTotal = 0;
+//		byte[] bytes = new byte[MainActivity.BUF_SIZE];
+//		while ((length = is.read(bytes)) > -1) {
+//			oc.write(ByteBuffer.wrap(bytes));
+//			lengthTotal += length;
+//		}
+//		if (lengthTotal != len)
+//			throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
+//		oc.truncate(bytes.length);
+//		oc.force(true);
+	}
+
+	static void ba2fc(byte[] bytes, @NonNull FileChannel oc) throws IOException, NonWritableChannelException {
+//		int len = is.available();
+//		int length, lengthTotal = 0;
+//		byte[] bytes = new byte[MainActivity.BUF_SIZE];
+//		while ((length = is.read(bytes)) > -1) {
+		oc.write(ByteBuffer.wrap(bytes));
+//			lengthTotal += length;
+//		}
+//		if (lengthTotal != len)
+//			throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
+		oc.truncate(bytes.length);
+		oc.force(true);
+	}
+
+	static void fc2fc(@NonNull FileChannel ic, @NonNull FileChannel oc) throws IOException, NonReadableChannelException, NonWritableChannelException {
+		long len = ic.size();
+		ic.transferTo(0, len, oc);
+		oc.truncate(len);
+		ic.force(true);
+		oc.force(true);
 	}
 
 	static void trimDB140(Context context, JSONObject db) {
