@@ -57,7 +57,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
 * 页面下方有时出现乱码。
 
-    检查Android系统及Tiddloid版本。Android 10及以上系统中文件API可能存在问题，导致文件无法正常结尾。Tiddloid 2.3.0中应用了临时修复措施，在Android 9以上中会自动消除显示页面中的乱码（仅在Android 9中保存可以消除源文件中的乱码）。推荐在Android 8运行以获得最佳体验。
+    检查Android系统及Tiddloid版本。Android 10及以上系统中文件API可能存在问题，导致文件无法正常结尾。此问题已在Tiddloid 2.3.0中修复。将损坏的文件置于`[内置存储]/Android/data/top.donmor.tiddloid/files`并冷启动进入文件列表可执行批量修复（过大的文件可能导致OOM错误）。推荐在Android 8运行以获得最佳体验。
 
 * 添加WebDAV项目后发生卡顿。
 
@@ -83,18 +83,18 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
     以下是不同版本之间的差异：
 
-    | 功能                               | Tiddloid 1.x  | Tiddloid 2.0 及以上                                    | [Tiddloid Lite](https://gitee.com/donmor/TiddloidLite) |
-    | ----------------------------------------- | ------------- | ------------------------------------------------------------ | -------------------------------- |
-    | 文件API                                | Java文件API | Android SAF以及 Java文件API  | Android SAF |
-    | 备份系统                        | 有          | 有                                                         | 无                              |
-    | 搜索-克隆系统        | 有         | 无（改为接收从浏览器分享的TiddlyWiki站点URL并保存） | 无                              |
-    | 下载服务                           | 有          | 无                                                          | 无                              |
-    | 直接访问同目录下的文件 | 支持         | 部分支持（旧版模式，文件夹模式通过缓存所有文件） | 不支持                            |
-    | 云存储                          | 不支持         | 支持（通过SAF）                                          | 支持（通过SAF）           |
-    | WebDAV                          | 不支持         | 支持                                                     | 不支持                    |
-    | 模板 | 首次使用时下载，可手动更新 | 创建新文件时下载，并缓存以备无网络时使用            |创建新文件时下载|
-    | 兼容性 | 适配大多数Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5及Classic |适配新Android版本，支持TiddlyWiKi5|
-    | 推荐的Android版本 | Android 4.4 ~ 9.0 | Android 4.4 及以上，8.0及以上最佳 |Android 4.4 及以上，8.0及以上最佳|
+    | 功能                   | Tiddloid 1.x                                    | Tiddloid 2.0 及以上                                 | [Tiddloid Lite](https://gitee.com/donmor/TiddloidLite) |
+    |------------------------|-------------------------------------------------|-----------------------------------------------------|--------------------------------------------------------|
+    | 文件API                | Java文件API                                     | Android SAF以及 Java文件API                         | Android SAF                                            |
+    | 备份系统               | 有                                              | 有                                                  | 无                                                     |
+    | 搜索-克隆系统          | 有                                              | 无（改为接收从浏览器分享的TiddlyWiki站点URL并保存） | 无                                                     |
+    | 下载服务               | 有                                              | 无                                                  | 无                                                     |
+    | 直接访问同目录下的文件 | 支持                                            | 部分支持（旧版模式，文件夹模式通过缓存所有文件）    | 不支持                                                 |
+    | 云存储                 | 不支持                                          | 支持（通过SAF）                                     | 支持（通过SAF）                                        |
+    | WebDAV                 | 不支持                                          | 支持                                                | 不支持                                                 |
+    | 模板                   | 首次使用时下载，可手动更新                      | 创建新文件时下载，并缓存以备无网络时使用            | 创建新文件时下载                                       |
+    | 兼容性                 | 适配大多数Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5及Classic         | 适配新Android版本，支持TiddlyWiKi5                     |
+    | 推荐的Android版本      | Android 4.4 ~ 9.0                               | Android 4.4 及以上，8.0最佳                         | Android 4.4 及以上，8.0最佳                            |
 
 
 ### 许可

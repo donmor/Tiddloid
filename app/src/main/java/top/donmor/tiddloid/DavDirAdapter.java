@@ -23,6 +23,7 @@ public class DavDirAdapter extends RecyclerView.Adapter<DavDirAdapter.DavDirHold
 
 	private List<DavResource> davItems = null;
 	private ItemClickListener mItemClickListener;
+	private PathMon mPathMon;
 	private final LayoutInflater inflater;
 	private String host;
 	private boolean canBack;
@@ -35,7 +36,8 @@ public class DavDirAdapter extends RecyclerView.Adapter<DavDirAdapter.DavDirHold
 	}
 
 	static class DavDirHolder extends RecyclerView.ViewHolder {
-		private final Button btnDavItem;
+		final Button btnDavItem;
+		String strPath;
 
 		DavDirHolder(View itemView) {
 			super(itemView);
@@ -72,7 +74,12 @@ public class DavDirAdapter extends RecyclerView.Adapter<DavDirAdapter.DavDirHold
 		}
 		DavResource res = davItems.get(pos);
 		holder.btnDavItem.setCompoundDrawablesRelativeWithIntrinsicBounds(res.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_description, 0, 0, 0);
-		holder.btnDavItem.setOnClickListener(v -> mItemClickListener.onItemClick(host + res.getHref()));
+		holder.strPath = host + res.getHref();
+		mPathMon.checkPath(holder);
+		holder.btnDavItem.setOnClickListener(v -> {
+			mItemClickListener.onItemClick(holder.strPath);
+			mPathMon.checkPath(holder);
+		});
 		holder.btnDavItem.setText(res.getName());
 		holder.btnDavItem.setEnabled(res.isDirectory() || MainActivity.TYPE_HTML.equals(res.getContentType()) || MainActivity.TYPE_HTA.equals(res.getContentType()));
 		holder.btnDavItem.setVisibility(View.VISIBLE);
@@ -91,6 +98,14 @@ public class DavDirAdapter extends RecyclerView.Adapter<DavDirAdapter.DavDirHold
 
 	void setOnItemClickListener(ItemClickListener itemClickListener) {
 		this.mItemClickListener = itemClickListener;
+	}
+
+	interface PathMon {
+		void checkPath(DavDirHolder h);
+	}
+
+	void setPathMon(PathMon m) {
+		this.mPathMon = m;
 	}
 
 	void reload(List<DavResource> dir, String host, boolean canBack) {

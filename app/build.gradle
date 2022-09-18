@@ -55,6 +55,7 @@ android {
             signingConfig signingConfigs.donmor
         }
     }
+    namespace 'top.donmor.tiddloid'
     applicationVariants.all { variant ->
         variant.resValue "string", "versionName", variant.versionName
     }

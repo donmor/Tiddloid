@@ -23,6 +23,7 @@ public class LocalDirAdapter extends RecyclerView.Adapter<LocalDirAdapter.LocalD
 
 	private List<File> localItems = null;
 	private ItemClickListener mItemClickListener;
+	private PathMon mPathMon;
 	private final LayoutInflater inflater;
 	private boolean canBack;
 
@@ -34,7 +35,8 @@ public class LocalDirAdapter extends RecyclerView.Adapter<LocalDirAdapter.LocalD
 	}
 
 	static class LocalDirHolder extends RecyclerView.ViewHolder {
-		private final Button btnLocalItem;
+		final Button btnLocalItem;
+		File strPath;
 
 		LocalDirHolder(View itemView) {
 			super(itemView);
@@ -71,7 +73,12 @@ public class LocalDirAdapter extends RecyclerView.Adapter<LocalDirAdapter.LocalD
 		}
 		File res = localItems.get(pos);
 		holder.btnLocalItem.setCompoundDrawablesRelativeWithIntrinsicBounds(res.isDirectory() ? R.drawable.ic_folder : R.drawable.ic_description, 0, 0, 0);
-		holder.btnLocalItem.setOnClickListener(v -> mItemClickListener.onItemClick(res));
+		holder.strPath = res;
+		mPathMon.checkPath(holder);
+		holder.btnLocalItem.setOnClickListener(v -> {
+			mItemClickListener.onItemClick(res);
+			mPathMon.checkPath(holder);
+		});
 		holder.btnLocalItem.setText(res.getName());
 		holder.btnLocalItem.setEnabled(res.isDirectory() || res.getName().endsWith(MainActivity.KEY_EX_HTML) || res.getName().endsWith(MainActivity.KEY_EX_HTM) || res.getName().endsWith(MainActivity.KEY_EX_HTA));
 		holder.btnLocalItem.setVisibility(View.VISIBLE);
@@ -90,6 +97,14 @@ public class LocalDirAdapter extends RecyclerView.Adapter<LocalDirAdapter.LocalD
 
 	void setOnItemClickListener(ItemClickListener itemClickListener) {
 		this.mItemClickListener = itemClickListener;
+	}
+
+	interface PathMon {
+		void checkPath(LocalDirHolder h);
+	}
+
+	void setPathMon(PathMon m) {
+		this.mPathMon = m;
 	}
 
 	void reload(List<File> dir, boolean canBack) {

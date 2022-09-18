@@ -76,6 +76,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.WindowCompat;
 import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
@@ -1510,7 +1511,6 @@ public class TWEditorWV extends AppCompatActivity {
 					} else {
 						u = u1;
 						try {
-							wa = null;
 							boolean exist = false;
 							Iterator<String> iterator = wl.keys();
 							while (iterator.hasNext()) {
@@ -2257,9 +2257,9 @@ public class TWEditorWV extends AppCompatActivity {
 		txtFind.setHintTextColor(getResources().getColor(R.color.content_sub));
 		((TextView) findViewById(R.id.find_indicator)).setTextColor(getResources().getColor(R.color.content_sub));
 		toolbar.setNavigationIcon(MainActivity.APIOver24 || lightBar ? R.drawable.ic_arrow_back : R.drawable.ic_arrow_back_d);
-		((ImageButton) findViewById(R.id.find_up)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_up_d));
-		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_down : R.drawable.ic_arrow_down_d));
-		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(getResources().getDrawable(MainActivity.APIOver21 || lightBar ? R.drawable.ic_close : R.drawable.ic_close_d));
+		((ImageButton) findViewById(R.id.find_up)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_up_d, null));
+		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_down : R.drawable.ic_arrow_down_d, null));
+		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_close : R.drawable.ic_close_d, null));
 		if (optMenu != null) {
 			try {
 				optMenu.removeGroup(CA_GRP_ID);

@@ -57,7 +57,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 * Sometimes there are random characters under the page.
 
-    Check your Android and Tiddloid version. There could be a bug in Android 10 filesystem API causing the files not correctly closed. A temporary fix is applied in Tiddloid 2.3.0, which eliminates the random code at the end of page on Android 9 and 10 and above (and the source file on Android 9 only). We recommend you to use Tiddloid on Oreo(8) to enable all of its features.
+    Check your Android and Tiddloid version. There could be a bug in Android 10 filesystem API causing the files not correctly closed. Has been fixed in Tiddloid 2.3.0. Put corrupted files in `[Internal]/Android/data/top.donmor.tiddloid/files` and cold start into wiki list to trigger a batch fix (May OOM when large files loaded). We recommend you to use Tiddloid on Oreo(8) to enable all of its features.
 
 * There are lags if WebDAV Wikis added.
 
@@ -83,18 +83,18 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
     Here's the difference between different versions:
 
-    | Feature                                   | Tiddloid 1.x  | Tiddloid 2.0 and above                                       | [Tiddloid Lite](https://github.com/donmor/TiddloidLite) |
-    | ----------------------------------------- | ------------- | ------------------------------------------------------------ | -------------------------------- |
-    | File API                                  | Java File API | Android Storage Access Framework and also Java File API      | Android Storage Access Framework |
-    | Backup system                             | Yes           | Yes                                                          | No                               |
-    | Search-and-Fork system                    | Yes           | No (Instead it receives shared URLs from browsers and show options to save the page) | No                               |
-    | Downloader                                | Yes           | No                                                           | No                               |
-    | Direct access to files in the same folder | Yes           | Partial (Legacy, or TiddlyWiki folders by caching all files) | No                               |
-    | Cloud Service                             | No            | Yes (via SAF)                                                | Yes (via SAF)                    |
-    | WebDAV client                             | No            | Yes                                                          | No                               |
-    | Template                                  | Download on first startup, manually updated      | Download on creating new wiki, and cached in case it is unable to access the Internet |Download on creating new wiki|
-    | Compatibility                             | Supports most of Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis |Supports latest Android versions best and supports most of TW5|
-    | Recommended Android version               | Android 4.4 ~ 9.0 | Android 4.4 and above, best for 8.0 and above |Android 4.4 and above, best for 8.0 and above|
+    | Feature                                   | Tiddloid 1.x                                              | Tiddloid 2.0 and above                                                                | [Tiddloid Lite](https://github.com/donmor/TiddloidLite)        |
+    |-------------------------------------------|-----------------------------------------------------------|---------------------------------------------------------------------------------------|----------------------------------------------------------------|
+    | File API                                  | Java File API                                             | Android Storage Access Framework and also Java File API                               | Android Storage Access Framework                               |
+    | Backup system                             | Yes                                                       | Yes                                                                                   | No                                                             |
+    | Search-and-Fork system                    | Yes                                                       | No (Instead it receives shared URLs from browsers and show options to save the page)  | No                                                             |
+    | Downloader                                | Yes                                                       | No                                                                                    | No                                                             |
+    | Direct access to files in the same folder | Yes                                                       | Partial (Legacy, or TiddlyWiki folders by caching all files)                          | No                                                             |
+    | Cloud Service                             | No                                                        | Yes (via SAF)                                                                         | Yes (via SAF)                                                  |
+    | WebDAV client                             | No                                                        | Yes                                                                                   | No                                                             |
+    | Template                                  | Download on first startup, manually updated               | Download on creating new wiki, and cached in case it is unable to access the Internet | Download on creating new wiki                                  |
+    | Compatibility                             | Supports most of Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis                | Supports latest Android versions best and supports most of TW5 |
+    | Recommended Android version               | Android 4.4 ~ 9.0                                         | Android 4.4 and above, best for 8.0                                                   | Android 4.4 and above, best for 8.0                            |
 
 
 ### License

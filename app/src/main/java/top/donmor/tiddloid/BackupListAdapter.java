@@ -149,7 +149,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 						}
 						if (!haveIndex) throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
 					} else {
-						bkv = davClient.list(bkp = mainFile.toString() + MainActivity.BACKUP_POSTFIX);
+						bkv = davClient.list(bkp = mainFile + MainActivity.BACKUP_POSTFIX);
 						bkv.remove(0);
 					}
 				} catch (IOException | IndexOutOfBoundsException e) {

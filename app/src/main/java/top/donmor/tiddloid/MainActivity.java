@@ -196,15 +196,16 @@ public class MainActivity extends AppCompatActivity {
 			EXCEPTION_FILE_NOT_FOUND = "File not present",
 			EXCEPTION_TREE_INDEX_NOT_FOUND = "File index.htm(l) not present",
 			EXCEPTION_TREE_NOT_A_DIRECTORY = "File passed in is not a directory",
-			EXCEPTION_SAF_FILE_NOT_EXISTS = "Chosen file no longer exists",
-			EXCEPTION_TRANSFER_CORRUPTED = "Transfer dest file corrupted: hash or size not match";
+			EXCEPTION_SAF_FILE_NOT_EXISTS = "Chosen file no longer exists";
 	private static final String
 			EXCEPTION_JSON_ID_NOT_FOUND = "Cannot find this id in the JSON data file",
 			EXCEPTION_SHORTCUT_NOT_SUPPORTED = "Invoking a function that is not supported by the current system",
 			EXCEPTION_NO_INTERNET = "No Internet connection",
-			EXCEPTION_INTERRUPTED = "Interrupted by user";
+			EXCEPTION_INTERRUPTED = "Interrupted by user",
+			EXCEPTION_TRANSFER_CORRUPTED = "Transfer dest file corrupted: hash or size not match";
 	private static final String[] TYPE_FILTERS = {TYPE_HTA, TYPE_HTML};
 
+	@SuppressLint("NotifyDataSetChanged")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
 		long time0 = System.nanoTime();
@@ -301,7 +302,7 @@ public class MainActivity extends AppCompatActivity {
 				}
 
 				// 长按属性
-				@SuppressLint("QueryPermissionsNeeded")
+				@SuppressLint({"QueryPermissionsNeeded", "NotifyDataSetChanged"})
 				@Override
 				public void onItemLongClick(final int pos, final String id) {
 					if (pos == -1) return;
@@ -433,14 +434,14 @@ public class MainActivity extends AppCompatActivity {
 								cbDelFile.setEnabled(!iNet);
 								cbDelBackups.setEnabled(false);
 								cbDelFile.setOnCheckedChangeListener((buttonView, isChecked) -> cbDelBackups.setEnabled(isChecked));
-								AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(MainActivity.this)
+								@SuppressLint("NotifyDataSetChanged") AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(MainActivity.this)
 										.setTitle(android.R.string.dialog_alert_title)
 										.setMessage(R.string.confirm_to_remove_wiki)
 										.setView(view1)
 										.setNegativeButton(android.R.string.cancel, null)
 										.setPositiveButton(android.R.string.ok, (dialog1, which1) -> {
 											removeWiki(id, cbDelFile.isChecked(), cbDelBackups.isChecked(), davClient);
-											if (!APIOver21) wikiListAdapter.notifyDataSetChanged();
+											if (!APIOver21) wikiListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 											else wikiListAdapter.notifyItemRemoved(pos);
 										})
 										.create();
@@ -557,7 +558,7 @@ public class MainActivity extends AppCompatActivity {
 														String sru = null, lt = null;
 														try {
 															if (davClient.exists(u.toString()) && davClient.list(u.toString()).get(0).isDirectory())
-																sru = u.toString() + (bku.charAt(bku.length() - 1) == 'l' ? KEY_FN_INDEX : KEY_FN_INDEX2);
+																sru = u + (bku.charAt(bku.length() - 1) == 'l' ? KEY_FN_INDEX : KEY_FN_INDEX2);
 															else sru = u.toString();
 															try (InputStream is = davClient.get(bku);
 																	ByteArrayOutputStream os = new ByteArrayOutputStream()) {
@@ -615,7 +616,7 @@ public class MainActivity extends AppCompatActivity {
 									confirmRollback.show();
 									break;
 								case 2:        // 移除备份
-									AlertDialog confirmDelBackup = new AlertDialog.Builder(wikiConfigDialog.getContext())
+									@SuppressLint("NotifyDataSetChanged") AlertDialog confirmDelBackup = new AlertDialog.Builder(wikiConfigDialog.getContext())
 											.setTitle(android.R.string.dialog_alert_title)
 											.setMessage(R.string.confirm_to_del_backup)
 											.setNegativeButton(android.R.string.no, null)
@@ -644,7 +645,7 @@ public class MainActivity extends AppCompatActivity {
 													else
 														throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 													backupListAdapter.reload(u, davClient);
-													if (!APIOver21) backupListAdapter.notifyDataSetChanged();
+													if (!APIOver21) backupListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 													else backupListAdapter.notifyItemRemoved(pos1);
 												} catch (IOException e) {
 													e.printStackTrace();
@@ -676,7 +677,7 @@ public class MainActivity extends AppCompatActivity {
 							frmBackupList.setVisibility(cbBackup.isChecked() ? View.VISIBLE : View.GONE);
 							if (isChecked) {
 								backupListAdapter.reload(u, davClient);
-								if (APIOver21) backupListAdapter.notifyDataSetChanged();
+								if (APIOver21) backupListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 								else rvBackupList.setAdapter(backupListAdapter);
 							}
 						} catch (IOException | JSONException e) {
@@ -695,7 +696,7 @@ public class MainActivity extends AppCompatActivity {
 				runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show());
 				return;
 			}
-			if (APIOver21) wikiListAdapter.notifyDataSetChanged();
+			if (APIOver21) wikiListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 			else runOnUiThread(() -> rvWikiList.setAdapter(wikiListAdapter));
 			runOnUiThread(() -> noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE));
 			while ((System.nanoTime() - time0) / 1000000 < 1000) try {
@@ -1140,6 +1141,7 @@ public class MainActivity extends AppCompatActivity {
 		return super.onOptionsItemSelected(item);
 	}
 
+	@SuppressLint("NotifyDataSetChanged")
 	private void browseDav() {
 		if (!APIOver21) {    // API19暂不支持WebDAV
 			browseLocal();
@@ -1172,23 +1174,6 @@ public class MainActivity extends AppCompatActivity {
 				})
 				.create();
 		davDialog.setOnShowListener(dialog -> davDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-		textDavAddress.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable editable) {
-				String http = SCH_HTTP + KEY_URI_NOTCH, https = SCH_HTTPS + KEY_URI_NOTCH, u = editable.toString();
-				boolean valid = u.startsWith(http) && !u.equals(http) || u.startsWith(https) && !u.equals(https);
-				davDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(valid);
-				btnDavGo.setEnabled(valid);
-			}
-		});
 		RecyclerView davDir = davView.findViewById(R.id.rvDavDir);
 		davDir.setLayoutManager(new LinearLayoutManager(this));
 		DavDirAdapter davDirAdapter = new DavDirAdapter(MainActivity.this);
@@ -1205,6 +1190,39 @@ public class MainActivity extends AppCompatActivity {
 				btnDavGo.callOnClick();
 			}
 		});
+		DavDirAdapter.PathMon mPathMon = h -> {
+			Editable e;
+			if (h.strPath == null || (e = textDavAddress.getText()) == null) {
+				h.btnDavItem.setPressed(false);
+				return;
+			}
+			h.btnDavItem.setPressed(h.strPath.equals(e.toString()));
+		};
+		davDirAdapter.setPathMon(mPathMon);
+		textDavAddress.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
+
+			@Override
+			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable editable) {
+				String http = SCH_HTTP + KEY_URI_NOTCH, https = SCH_HTTPS + KEY_URI_NOTCH, u = editable.toString();
+				boolean valid = u.startsWith(http) && !u.equals(http) || u.startsWith(https) && !u.equals(https);
+				davDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(valid);
+				btnDavGo.setEnabled(valid);
+				DavDirAdapter adapter = (DavDirAdapter) davDir.getAdapter();
+				if (adapter == null) return;
+				for (int i = 0; i < adapter.getItemCount(); i++) {
+					DavDirAdapter.DavDirHolder holder = (DavDirAdapter.DavDirHolder) davDir.findViewHolderForAdapterPosition(i);
+					if (holder != null)
+						mPathMon.checkPath(holder);
+				}
+			}
+		});
 		davDir.setAdapter(davDirAdapter);
 		davDir.setItemAnimator(new DefaultItemAnimator());
 		btnDavGo.setOnClickListener(view -> {
@@ -1217,7 +1235,7 @@ public class MainActivity extends AppCompatActivity {
 					runOnUiThread(() -> {
 						bar.setVisibility(View.VISIBLE);
 						davDirAdapter.reload(null, null, false);
-						davDirAdapter.notifyDataSetChanged();
+						davDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 					});
 					String ux = u.toString();
 					if (davClient.exists(ux)) {
@@ -1233,7 +1251,7 @@ public class MainActivity extends AppCompatActivity {
 						runOnUiThread(() -> {
 							URI uri = URI.create(ux);
 							davDirAdapter.reload(cd, uri.getScheme() + KEY_URI_NOTCH + uri.getAuthority(), finalCanCdP);
-							davDirAdapter.notifyDataSetChanged();
+							davDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 							bar.setVisibility(View.GONE);
 						});
 					} else throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
@@ -1243,14 +1261,14 @@ public class MainActivity extends AppCompatActivity {
 					runOnUiThread(() -> {
 						Toast.makeText(MainActivity.this, R.string.server_error, Toast.LENGTH_SHORT).show();
 						davDirAdapter.reload(null, null, false);
-						davDirAdapter.notifyDataSetChanged();
+						davDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 						bar.setVisibility(View.GONE);
 					});
 				} catch (IOException | IllegalArgumentException e) {
 					runOnUiThread(() -> {
 						Toast.makeText(this, R.string.no_file, Toast.LENGTH_SHORT).show();
 						davDirAdapter.reload(null, null, false);
-						davDirAdapter.notifyDataSetChanged();
+						davDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 						bar.setVisibility(View.GONE);
 					});
 				}
@@ -1360,6 +1378,7 @@ public class MainActivity extends AppCompatActivity {
 		});
 	}
 
+	@SuppressLint("NotifyDataSetChanged")
 	private void browseLocal() {
 		@SuppressLint("InflateParams") View localView = LayoutInflater.from(MainActivity.this).inflate(R.layout.local_dialog, null);
 		ImageButton btnLocalGo = localView.findViewById(R.id.btnLocalGo),
@@ -1380,23 +1399,6 @@ public class MainActivity extends AppCompatActivity {
 				.setPositiveButton(android.R.string.ok, null)
 				.create();
 		localDialog.setOnShowListener(dialog -> localDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-		textLocalAddress.addTextChangedListener(new TextWatcher() {
-			@Override
-			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-			}
-
-			@Override
-			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
-			}
-
-			@Override
-			public void afterTextChanged(Editable editable) {
-				String u = editable.toString();
-				boolean valid = new File(u).exists();
-				localDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(valid);
-				btnLocalGo.setEnabled(valid);
-			}
-		});
 		RecyclerView localDir = localView.findViewById(R.id.rvLocalDir);
 		localDir.setLayoutManager(new LinearLayoutManager(this));
 		LocalDirAdapter localDirAdapter = new LocalDirAdapter(MainActivity.this);
@@ -1415,6 +1417,39 @@ public class MainActivity extends AppCompatActivity {
 				btnLocalGo.callOnClick();
 			}
 		});
+		LocalDirAdapter.PathMon mPathMon = h -> {
+			Editable e;
+			if (h.strPath == null || (e = textLocalAddress.getText()) == null) {
+				h.btnLocalItem.setPressed(false);
+				return;
+			}
+			h.btnLocalItem.setPressed(h.strPath.getPath().equals(e.toString()));
+		};
+		localDirAdapter.setPathMon(mPathMon);
+		textLocalAddress.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
+
+			@Override
+			public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable editable) {
+				String u = editable.toString();
+				boolean valid = new File(u).exists();
+				localDialog.getButton(DialogInterface.BUTTON_POSITIVE).setEnabled(valid);
+				btnLocalGo.setEnabled(valid);
+				LocalDirAdapter adapter = (LocalDirAdapter) localDir.getAdapter();
+				if (adapter == null) return;
+				for (int i = 0; i < adapter.getItemCount(); i++) {
+					LocalDirAdapter.LocalDirHolder holder = (LocalDirAdapter.LocalDirHolder) localDir.findViewHolderForAdapterPosition(i);
+					if (holder != null)
+						mPathMon.checkPath(holder);
+				}
+			}
+		});
 		localDir.setAdapter(localDirAdapter);
 		localDir.setItemAnimator(new DefaultItemAnimator());
 		btnLocalGo.setOnClickListener(view -> {
@@ -1427,7 +1462,7 @@ public class MainActivity extends AppCompatActivity {
 					File[] cd = d ? fd.f.listFiles() : fd.pd.listFiles();
 					if (d) fd.pd = fd.f.getParentFile();
 					localDirAdapter.reload(cd != null ? Arrays.asList(cd) : null, fd.pd != null && fd.pd.isDirectory() && fd.pd.canRead());
-					localDirAdapter.notifyDataSetChanged();
+					localDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 				} else throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 			} catch (IOException | IllegalArgumentException | SecurityException e) {
 				runOnUiThread(() -> {
@@ -1650,13 +1685,14 @@ public class MainActivity extends AppCompatActivity {
 		super.onPause();
 	}
 
+	@SuppressLint("NotifyDataSetChanged")
 	@Override
 	public void onResume() {
 		super.onResume();
 		try {
 			db = readJson(this);
 			wikiListAdapter.reload(db);
-			wikiListAdapter.notifyDataSetChanged();
+			wikiListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
 			noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -1681,7 +1717,7 @@ public class MainActivity extends AppCompatActivity {
 		WindowCompat.setDecorFitsSystemWindows(w, true);
 	}
 
-	private static void batchFix(Context context) {    // TODO: Merge FOSs to FD>FOS>FC
+	private static void batchFix(Context context) {
 		File ext = context.getExternalFilesDir(null);
 		Charset mCharset = StandardCharsets.UTF_8;
 		if (ext != null && ext.isDirectory()) {

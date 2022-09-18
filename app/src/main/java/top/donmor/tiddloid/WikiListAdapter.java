@@ -61,7 +61,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	private final float scale;
 
 	// 常量
-	private static final String c160 = "\u00A0", zeroB = "0\u00A0B", PAT_SIZE = "\u00A0\u00A0\u00A0\u00A0#,##0.##";
+	private static final String c160 = "\u00A0", zeroB = "\u00A0\u00A0\u00A0\u00A00\u00A0B", PAT_SIZE = "\u00A0\u00A0\u00A0\u00A0#,##0.##";
 	private static final String[] units = new String[]{"B", "KB", "MB"};
 
 	WikiListAdapter(Context context) {
@@ -194,7 +194,8 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 							}
 					}
 				}
-				if (id.equals(db.optString(MainActivity.DB_KEY_DEFAULT))) builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.default_wiki));
+				if (id.equals(db.optString(MainActivity.DB_KEY_DEFAULT)))
+					builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.default_wiki));
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -211,7 +212,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		return ids.size();
 	}
 
-
 	interface ItemClickListener {
 		void onItemClick(int pos, String id);
 
@@ -221,7 +221,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	void setOnItemClickListener(ItemClickListener itemClickListener) {
 		this.mItemClickListener = itemClickListener;
 	}
-
 
 	interface ReloadListener {
 		void onReloaded(int count);
