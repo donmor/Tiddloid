@@ -226,6 +226,415 @@ public class MainActivity extends AppCompatActivity {
 		rvWikiList.setLayoutManager(new LinearLayoutManager(this));
 		rvWikiList.setItemAnimator(new DefaultItemAnimator());
 		wikiListAdapter = new WikiListAdapter(this);
+		wikiListAdapter.setReloadListener(count -> noWiki.setVisibility(count > 0 ? View.GONE : View.VISIBLE));
+		wikiListAdapter.setOnItemClickListener(new WikiListAdapter.ItemClickListener() {
+			// 点击打开
+			@Override
+			public void onItemClick(final int pos, final String id) {
+				if (pos == -1) return;
+				try {
+					JSONObject wa = db.getJSONObject(DB_KEY_WIKI).getJSONObject(id);
+					Uri uri = Uri.parse(wa.optString(DB_KEY_URI));
+					if (SCH_CONTENT.equals(uri.getScheme())) try {
+						getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
+					} catch (RuntimeException e) {
+						e.printStackTrace();
+					}
+					if (!loadPage(id))
+						Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
+				} catch (JSONException e) {
+					e.printStackTrace();
+					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+				}
+			}
+
+			// 长按属性
+			@SuppressLint({"QueryPermissionsNeeded", "NotifyDataSetChanged"})
+			@Override
+			public void onItemLongClick(final int pos, final String id) {
+				if (pos == -1) return;
+				View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.wikiconfig_dialog, null);
+				TextView textWikiInfo = view.findViewById(R.id.textWikiConfigPath);
+				// 初始化
+				final JSONObject wl, wa;
+				Uri u;
+				final String name;
+				try {
+					wl = db.getJSONObject(DB_KEY_WIKI);
+					wa = wl.getJSONObject(id);
+				} catch (JSONException e) {
+					e.printStackTrace();
+					Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+					return;
+				}
+				u = Uri.parse(wa.optString(DB_KEY_URI));
+				name = wa.optString(KEY_NAME, KEY_TW);
+				String path, provider = getString(R.string.unknown);
+				final boolean iDav = wa.has(DB_KEY_DAV_AUTH), iNet = !iDav && (SCH_HTTP.equals(u.getScheme()) || SCH_HTTPS.equals(u.getScheme())), legacy = SCH_FILE.equals(u.getScheme());
+				final Sardine davClient;
+				if (iDav) {
+					provider = getString(R.string.webdav);
+					path = u.toString();
+					davClient = new OkHttpSardine();
+					davClient.setCredentials(wa.optString(DB_KEY_DAV_AUTH), wa.optString(DB_KEY_DAV_TOKEN));
+				} else if (iNet) {
+					provider = getString(R.string.internet);
+					path = u.toString();
+					davClient = null;
+				} else if (legacy) {
+					provider = getString(R.string.local_legacy);
+					path = u.getPath();
+					davClient = null;
+				} else {
+					// 获取来源名
+					PackageManager pm = getPackageManager();
+					String v;
+					for (ApplicationInfo info : pm.getInstalledApplications(PackageManager.GET_META_DATA))
+						if ((v = u.getAuthority()) != null && v.startsWith(info.packageName)) {
+							provider = pm.getApplicationLabel(info).toString();
+							break;
+						}
+					path = Uri.decode(u.getLastPathSegment());
+					davClient = null;
+				}
+				// 显示属性
+				textWikiInfo.setText(new StringBuilder(getString(R.string.provider))
+						.append(provider)
+						.append('\n')
+						.append(getString(R.string.pathDir))
+						.append(path));
+				final CheckBox cbDefault = view.findViewById(R.id.cbDefault), cbBackup = view.findViewById(R.id.cbBackup);
+				try {
+					cbDefault.setChecked(id.equals(db.optString(DB_KEY_DEFAULT)));
+					cbBackup.setChecked(wa.getBoolean(DB_KEY_BACKUP));
+				} catch (JSONException e) {
+					e.printStackTrace();
+				}
+				cbDefault.setOnCheckedChangeListener((compoundButton, b) -> {
+					try {
+						if (b) db.put(DB_KEY_DEFAULT, id);
+						else db.remove(DB_KEY_DEFAULT);
+						writeJson(MainActivity.this, db);
+					} catch (JSONException e) {
+						e.printStackTrace();
+					}
+				});
+				cbDefault.setEnabled(!iNet);
+				cbBackup.setEnabled(!iNet);
+				final ConstraintLayout frmBackupList = view.findViewById(R.id.frmBackupList);
+				if (cbBackup.isChecked()) frmBackupList.setVisibility(View.VISIBLE);
+				else frmBackupList.setVisibility(View.GONE);
+				final TextView lblNoBackup = view.findViewById(R.id.lblNoBackup);
+				RecyclerView rvBackupList = view.findViewById(R.id.rvBackupList);
+				rvBackupList.setLayoutManager(new LinearLayoutManager(view.getContext()));
+				// 读图标
+				Drawable icon = null;
+				byte[] b = Base64.decode(wa.optString(KEY_FAVICON), Base64.NO_PADDING);
+				final Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
+				if (APIOver21) {
+					if (favicon != null) icon = new BitmapDrawable(getResources(), favicon);
+					else
+						icon = ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_description);
+				}
+				final Uri tu;
+				Uri tu1 = null;
+				DocumentFile mdf = null, df = null;
+				if (APIOver21 && !legacy) try {
+					mdf = DocumentFile.fromTreeUri(MainActivity.this, u);
+					DocumentFile p;
+					if (mdf == null || !mdf.isDirectory()) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
+					df = (p = mdf.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
+					if (df == null || !df.isFile()) throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
+					tu1 = df.getUri();
+				} catch (IllegalArgumentException ignored) {
+				} catch (FileNotFoundException e) {
+					e.printStackTrace();
+					tu1 = Uri.parse(STR_EMPTY);
+					mdf = DocumentFile.fromTreeUri(MainActivity.this, u);
+					if (mdf != null && mdf.isDirectory()) {
+						DocumentFile[] ep = mdf.listFiles();
+						for (DocumentFile ef : ep)
+							if (ef.isDirectory() && ef.getName() != null
+									&& (ef.getName().endsWith(KEY_EX_HTML + BACKUP_POSTFIX) || ef.getName().endsWith(KEY_EX_HTM + BACKUP_POSTFIX) || ef.getName().endsWith(KEY_EX_HTA + BACKUP_POSTFIX))) {
+								DocumentFile vf = mdf.createFile(TYPE_HTML, ef.getName().substring(0, ef.getName().length() - BACKUP_POSTFIX.length()));
+								tu1 = vf != null ? vf.getUri() : Uri.parse(STR_EMPTY);
+								if (vf != null) {
+									vf.delete();
+								}
+								break;
+							}
+					}
+				} catch (IOException e) {
+					e.printStackTrace();
+					tu1 = Uri.parse(STR_EMPTY);
+				}
+				tu = tu1;    // 非null时为目录模式
+				// 构建dialog
+				final AlertDialog wikiConfigDialog = new AlertDialog.Builder(MainActivity.this)
+						.setTitle(name)
+						.setIcon(icon)
+						.setView(view)
+						.setPositiveButton(R.string.remove_wiki, (dialog, which) -> {
+							dialog.dismiss();
+							View view1 = LayoutInflater.from(MainActivity.this).inflate(R.layout.del_confirm, null);
+							final CheckBox cbDelFile = view1.findViewById(R.id.cbDelFile);
+							final CheckBox cbDelBackups = view1.findViewById(R.id.cbDelBackups);
+							cbDelFile.setEnabled(!iNet);
+							cbDelBackups.setEnabled(false);
+							cbDelFile.setOnCheckedChangeListener((buttonView, isChecked) -> cbDelBackups.setEnabled(isChecked));
+							@SuppressLint("NotifyDataSetChanged") AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(MainActivity.this)
+									.setTitle(android.R.string.dialog_alert_title)
+									.setMessage(R.string.confirm_to_remove_wiki)
+									.setView(view1)
+									.setNegativeButton(android.R.string.cancel, null)
+									.setPositiveButton(android.R.string.ok, (dialog1, which1) -> {
+										removeWiki(id, cbDelFile.isChecked(), cbDelBackups.isChecked(), davClient);
+										if (!APIOver21) wikiListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
+										else wikiListAdapter.notifyItemRemoved(pos);
+									})
+									.create();
+							removeWikiConfirmationDialog.setOnShowListener(dialog1 -> removeWikiConfirmationDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+							removeWikiConfirmationDialog.show();
+						})
+						.setNegativeButton(R.string.clone_wiki, (dialog, which) -> {
+							dialog.dismiss();
+							try {
+								Uri u1 = tu != null ? tu : u;
+								File dest = new File(getCacheDir(), CLONING_FILE_NAME);
+								dest.createNewFile();
+								if (iDav) {
+									final IOException[] e0 = new IOException[1];
+									Thread jt = new Thread(() -> {
+										String uf = u.toString();
+										try {
+											if (!davClient.exists(uf)) throw new FileNotFoundException(EXCEPTION_SAF_FILE_NOT_EXISTS);
+											List<DavResource> fl = davClient.list(uf);
+											String index = null;
+											if (fl.get(0).isDirectory()) {
+												for (DavResource f : fl) if (KEY_FN_INDEX.equals(index = f.getName()) || KEY_FN_INDEX2.equals(index)) break;
+												if (index == null) throw new FileNotFoundException(EXCEPTION_SAF_FILE_NOT_EXISTS);
+												uf = !uf.endsWith(KEY_SLASH) ? uf + KEY_SLASH : uf;
+												uf = uf + index;
+											}
+											try (InputStream is = davClient.get(uf);
+													OutputStream os = getContentResolver().openOutputStream(Uri.fromFile(dest))) {
+												int length;
+												byte[] bytes = new byte[BUF_SIZE];
+												while ((length = is.read(bytes)) > -1) {
+													os.write(bytes, 0, length);
+												}
+												os.flush();
+											}
+										} catch (IOException e) {
+											e.printStackTrace();
+											e0[0] = e;
+										}
+									});
+									jt.start();
+									try {
+										jt.join();
+									} catch (InterruptedException e) {
+										e.printStackTrace();
+										throw new IOException(e.getMessage());
+									}
+									if (e0[0] != null) throw e0[0];
+								} else try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u1, KEY_FD_R));
+										ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
+										FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+										FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+										FileChannel ic = is.getChannel();
+										FileChannel oc = os.getChannel()) {
+									fc2fc(ic, oc);
+								}
+								getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
+							} catch (IOException | IllegalArgumentException | ArrayIndexOutOfBoundsException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
+								e.printStackTrace();
+								Toast.makeText(MainActivity.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
+							}
+						})
+						.setNeutralButton(R.string.create_shortcut, ((dialog, which) -> {
+							dialog.dismiss();
+							try {
+								String sub = wa.optString(DB_KEY_SUBTITLE);
+								Bundle bu = new Bundle();
+								bu.putString(KEY_ID, id);
+								Intent in = new Intent(MainActivity.this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
+								if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
+									ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
+											.setShortLabel(name)
+											.setLongLabel(name + (sub.length() > 0 ? KEY_LBL + sub : sub))
+											.setIcon(favicon != null ? IconCompat.createWithBitmap(favicon) : IconCompat.createWithResource(MainActivity.this, APIOver21 ? R.drawable.ic_shortcut : R.mipmap.ic_shortcut))
+											.setIntent(in)
+											.build();
+									if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
+										Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
+									else throw new IllegalArgumentException(EXCEPTION_SHORTCUT_NOT_SUPPORTED);
+								}
+							} catch (IllegalArgumentException e) {
+								e.printStackTrace();
+								Toast.makeText(MainActivity.this, R.string.shortcut_failed, Toast.LENGTH_SHORT).show();
+							}
+						}))
+						.create();
+				wikiConfigDialog.setOnShowListener(dialog -> wikiConfigDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+				// 备份系统
+				final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
+				DocumentFile finalDf = df;
+				DocumentFile finalMdf = mdf;
+				backupListAdapter.setOnBtnClickListener((pos1, which) -> {
+					final File bf = !iDav && tu == null ? backupListAdapter.getBackupFile(pos1) : null;
+					final DocumentFile bdf = !iDav && tu != null ? backupListAdapter.getBackupDF(pos1) : null;
+					final String bku = iDav ? backupListAdapter.getBackupDavUri(pos1) : null;
+					String bdn = bdf != null && bdf.getParentFile() != null ? bdf.getParentFile().getName() : null, rfn = bdn != null ? bdn.substring(0, bdn.length() - BACKUP_POSTFIX.length()) : null;
+					if (iDav || bf != null && bf.isFile() || bdf != null && bdf.isFile())
+						switch (which) {
+							case 1:        // 回滚
+								AlertDialog confirmRollback = new AlertDialog.Builder(wikiConfigDialog.getContext())
+										.setTitle(android.R.string.dialog_alert_title)
+										.setMessage(R.string.confirm_to_rollback)
+										.setNegativeButton(android.R.string.no, null)
+										.setPositiveButton(android.R.string.yes, (dialog, which12) -> {
+											try {
+												backup(MainActivity.this, u, davClient);
+											} catch (IOException e) {
+												e.printStackTrace();
+											}
+											if (iDav) {
+												Thread jt = new Thread(() -> {
+													String sru = null, lt = null;
+													try {
+														if (davClient.exists(u.toString()) && davClient.list(u.toString()).get(0).isDirectory())
+															sru = u + (bku.charAt(bku.length() - 1) == 'l' ? KEY_FN_INDEX : KEY_FN_INDEX2);
+														else sru = u.toString();
+														try (InputStream is = davClient.get(bku);
+																ByteArrayOutputStream os = new ByteArrayOutputStream()) {
+															int length;
+															byte[] bytes = new byte[BUF_SIZE];
+															while ((length = is.read(bytes)) > -1) {
+																os.write(bytes, 0, length);
+															}
+															os.flush();
+															lt = davClient.lock(sru);
+															davClient.put(sru, os.toByteArray(), TYPE_HTML);
+														}
+														runOnUiThread(() -> {
+															wikiConfigDialog.dismiss();
+															Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
+															loadPage(id);
+														});
+													} catch (IOException e) {
+														e.printStackTrace();
+														runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show());
+													} finally {
+														try {
+															if (lt != null) davClient.unlock(sru, lt);
+														} catch (IOException e) {
+															e.printStackTrace();
+														}
+													}
+												});
+												jt.start();
+												try {
+													jt.join();
+												} catch (InterruptedException e) {
+													e.printStackTrace();
+												}
+											} else {
+												DocumentFile fdf = tu != null && finalDf == null && finalMdf != null && rfn != null ? finalMdf.createFile(TYPE_HTML, rfn) : finalDf;
+												try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(tu != null ? bdf.getUri() : Uri.fromFile(bf), KEY_FD_R));
+														ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(tu != null ? Objects.requireNonNull(fdf).getUri() : u, KEY_FD_W));
+														FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+														FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+														FileChannel ic = is.getChannel();
+														FileChannel oc = os.getChannel()) {    // 由于SAF限制，文件模式无法还原丢失的文件，除非在原位创建一个文件，即使该文件是空的
+													fc2fc(ic, oc);
+													wikiConfigDialog.dismiss();
+													Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
+													loadPage(id);
+												} catch (IOException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
+													e.printStackTrace();
+													Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
+												}
+											}
+										})
+										.create();
+								confirmRollback.setOnShowListener(dialog1 -> confirmRollback.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+								confirmRollback.show();
+								break;
+							case 2:        // 移除备份
+								@SuppressLint("NotifyDataSetChanged") AlertDialog confirmDelBackup = new AlertDialog.Builder(wikiConfigDialog.getContext())
+										.setTitle(android.R.string.dialog_alert_title)
+										.setMessage(R.string.confirm_to_del_backup)
+										.setNegativeButton(android.R.string.no, null)
+										.setPositiveButton(android.R.string.yes, (dialog, which1) -> {
+											try {
+												if (iDav) {
+													final IOException[] e0 = new IOException[1];
+													Thread jt = new Thread(() -> {
+														try {
+															davClient.delete(bku);
+														} catch (IOException e) {
+															e.printStackTrace();
+															e0[0] = e;
+														}
+													});
+													jt.start();
+													try {
+														jt.join();
+													} catch (InterruptedException e) {
+														e.printStackTrace();
+														throw new IOException(e.getMessage());
+													}
+													if (e0[0] != null) throw e0[0];
+												} else if (bf != null && bf.delete() || bdf != null && DocumentsContract.deleteDocument(getContentResolver(), bdf.getUri()))
+													Toast.makeText(wikiConfigDialog.getContext(), R.string.backup_deleted, Toast.LENGTH_SHORT).show();
+												else
+													throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
+												backupListAdapter.reload(u, davClient);
+												if (!APIOver21) backupListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
+												else backupListAdapter.notifyItemRemoved(pos1);
+											} catch (IOException e) {
+												e.printStackTrace();
+												Toast.makeText(wikiConfigDialog.getContext(), R.string.failed_deleting_file, Toast.LENGTH_SHORT).show();
+											}
+										}).create();
+								confirmDelBackup.setOnShowListener(dialog1 -> confirmDelBackup.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+								confirmDelBackup.show();
+								break;
+						}
+				});
+				backupListAdapter.setOnLoadListener(count -> {
+					if (count > 0)
+						lblNoBackup.setVisibility(View.GONE);
+					else
+						lblNoBackup.setVisibility(View.VISIBLE);
+				});
+				if (cbBackup.isChecked()) try {
+					backupListAdapter.reload(u, davClient);
+				} catch (IOException e) {
+					e.printStackTrace();
+				}
+				rvBackupList.setAdapter(backupListAdapter);
+				rvBackupList.setItemAnimator(new DefaultItemAnimator());
+				cbBackup.setOnCheckedChangeListener((buttonView, isChecked) -> {
+					try {
+						wa.put(DB_KEY_BACKUP, isChecked);
+						writeJson(MainActivity.this, db);
+						frmBackupList.setVisibility(cbBackup.isChecked() ? View.VISIBLE : View.GONE);
+						if (isChecked) {
+							backupListAdapter.reload(u, davClient);
+							if (APIOver21) backupListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
+							else rvBackupList.setAdapter(backupListAdapter);
+						}
+					} catch (IOException | JSONException e) {
+						e.printStackTrace();
+						Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
+					}
+				});
+				wikiConfigDialog.show();
+				wikiConfigDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(!iNet);
+			}
+		});
 		rvWikiList.setAdapter(wikiListAdapter);
 		// 注册SAF回调
 		getChooserClone = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -272,415 +681,6 @@ public class MainActivity extends AppCompatActivity {
 				}
 			}
 			trimDB140(MainActivity.this, db);    // db格式转换
-			wikiListAdapter.setReloadListener(count -> noWiki.setVisibility(count > 0 ? View.GONE : View.VISIBLE));
-			wikiListAdapter.setOnItemClickListener(new WikiListAdapter.ItemClickListener() {
-				// 点击打开
-				@Override
-				public void onItemClick(final int pos, final String id) {
-					if (pos == -1) return;
-					try {
-						JSONObject wa = db.getJSONObject(DB_KEY_WIKI).getJSONObject(id);
-						Uri uri = Uri.parse(wa.optString(DB_KEY_URI));
-						if (SCH_CONTENT.equals(uri.getScheme())) try {
-							getContentResolver().takePersistableUriPermission(uri, TAKE_FLAGS);
-						} catch (RuntimeException e) {
-							e.printStackTrace();
-						}
-						if (!loadPage(id))
-							Toast.makeText(MainActivity.this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-					} catch (JSONException e) {
-						e.printStackTrace();
-						Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-					}
-				}
-
-				// 长按属性
-				@SuppressLint({"QueryPermissionsNeeded", "NotifyDataSetChanged"})
-				@Override
-				public void onItemLongClick(final int pos, final String id) {
-					if (pos == -1) return;
-					View view = LayoutInflater.from(MainActivity.this).inflate(R.layout.wikiconfig_dialog, null);
-					TextView textWikiInfo = view.findViewById(R.id.textWikiConfigPath);
-					// 初始化
-					final JSONObject wl, wa;
-					Uri u;
-					final String name;
-					try {
-						wl = db.getJSONObject(DB_KEY_WIKI);
-						wa = wl.getJSONObject(id);
-					} catch (JSONException e) {
-						e.printStackTrace();
-						Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-						return;
-					}
-					u = Uri.parse(wa.optString(DB_KEY_URI));
-					name = wa.optString(KEY_NAME, KEY_TW);
-					String path, provider = getString(R.string.unknown);
-					final boolean iDav = wa.has(DB_KEY_DAV_AUTH), iNet = !iDav && (SCH_HTTP.equals(u.getScheme()) || SCH_HTTPS.equals(u.getScheme())), legacy = SCH_FILE.equals(u.getScheme());
-					final Sardine davClient;
-					if (iDav) {
-						provider = getString(R.string.webdav);
-						path = u.toString();
-						davClient = new OkHttpSardine();
-						davClient.setCredentials(wa.optString(DB_KEY_DAV_AUTH), wa.optString(DB_KEY_DAV_TOKEN));
-					} else if (iNet) {
-						provider = getString(R.string.internet);
-						path = u.toString();
-						davClient = null;
-					} else if (legacy) {
-						provider = getString(R.string.local_legacy);
-						path = u.getPath();
-						davClient = null;
-					} else {
-						// 获取来源名
-						PackageManager pm = getPackageManager();
-						String v;
-						for (ApplicationInfo info : pm.getInstalledApplications(PackageManager.GET_META_DATA))
-							if ((v = u.getAuthority()) != null && v.startsWith(info.packageName)) {
-								provider = pm.getApplicationLabel(info).toString();
-								break;
-							}
-						path = Uri.decode(u.getLastPathSegment());
-						davClient = null;
-					}
-					// 显示属性
-					textWikiInfo.setText(new StringBuilder(getString(R.string.provider))
-							.append(provider)
-							.append('\n')
-							.append(getString(R.string.pathDir))
-							.append(path));
-					final CheckBox cbDefault = view.findViewById(R.id.cbDefault), cbBackup = view.findViewById(R.id.cbBackup);
-					try {
-						cbDefault.setChecked(id.equals(db.optString(DB_KEY_DEFAULT)));
-						cbBackup.setChecked(wa.getBoolean(DB_KEY_BACKUP));
-					} catch (JSONException e) {
-						e.printStackTrace();
-					}
-					cbDefault.setOnCheckedChangeListener((compoundButton, b) -> {
-						try {
-							if (b) db.put(DB_KEY_DEFAULT, id);
-							else db.remove(DB_KEY_DEFAULT);
-							writeJson(MainActivity.this, db);
-						} catch (JSONException e) {
-							e.printStackTrace();
-						}
-					});
-					cbDefault.setEnabled(!iNet);
-					cbBackup.setEnabled(!iNet);
-					final ConstraintLayout frmBackupList = view.findViewById(R.id.frmBackupList);
-					if (cbBackup.isChecked()) frmBackupList.setVisibility(View.VISIBLE);
-					else frmBackupList.setVisibility(View.GONE);
-					final TextView lblNoBackup = view.findViewById(R.id.lblNoBackup);
-					RecyclerView rvBackupList = view.findViewById(R.id.rvBackupList);
-					rvBackupList.setLayoutManager(new LinearLayoutManager(view.getContext()));
-					// 读图标
-					Drawable icon = null;
-					byte[] b = Base64.decode(wa.optString(KEY_FAVICON), Base64.NO_PADDING);
-					final Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
-					if (APIOver21) {
-						if (favicon != null) icon = new BitmapDrawable(getResources(), favicon);
-						else
-							icon = ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_description);
-					}
-					final Uri tu;
-					Uri tu1 = null;
-					DocumentFile mdf = null, df = null;
-					if (APIOver21 && !legacy) try {
-						mdf = DocumentFile.fromTreeUri(MainActivity.this, u);
-						DocumentFile p;
-						if (mdf == null || !mdf.isDirectory()) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
-						df = (p = mdf.findFile(KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
-						if (df == null || !df.isFile()) throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
-						tu1 = df.getUri();
-					} catch (IllegalArgumentException ignored) {
-					} catch (FileNotFoundException e) {
-						e.printStackTrace();
-						tu1 = Uri.parse(STR_EMPTY);
-						mdf = DocumentFile.fromTreeUri(MainActivity.this, u);
-						if (mdf != null && mdf.isDirectory()) {
-							DocumentFile[] ep = mdf.listFiles();
-							for (DocumentFile ef : ep)
-								if (ef.isDirectory() && ef.getName() != null
-										&& (ef.getName().endsWith(KEY_EX_HTML + BACKUP_POSTFIX) || ef.getName().endsWith(KEY_EX_HTM + BACKUP_POSTFIX) || ef.getName().endsWith(KEY_EX_HTA + BACKUP_POSTFIX))) {
-									DocumentFile vf = mdf.createFile(TYPE_HTML, ef.getName().substring(0, ef.getName().length() - BACKUP_POSTFIX.length()));
-									tu1 = vf != null ? vf.getUri() : Uri.parse(STR_EMPTY);
-									if (vf != null) {
-										vf.delete();
-									}
-									break;
-								}
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-						tu1 = Uri.parse(STR_EMPTY);
-					}
-					tu = tu1;    // 非null时为目录模式
-					// 构建dialog
-					final AlertDialog wikiConfigDialog = new AlertDialog.Builder(MainActivity.this)
-							.setTitle(name)
-							.setIcon(icon)
-							.setView(view)
-							.setPositiveButton(R.string.remove_wiki, (dialog, which) -> {
-								dialog.dismiss();
-								View view1 = LayoutInflater.from(MainActivity.this).inflate(R.layout.del_confirm, null);
-								final CheckBox cbDelFile = view1.findViewById(R.id.cbDelFile);
-								final CheckBox cbDelBackups = view1.findViewById(R.id.cbDelBackups);
-								cbDelFile.setEnabled(!iNet);
-								cbDelBackups.setEnabled(false);
-								cbDelFile.setOnCheckedChangeListener((buttonView, isChecked) -> cbDelBackups.setEnabled(isChecked));
-								@SuppressLint("NotifyDataSetChanged") AlertDialog removeWikiConfirmationDialog = new AlertDialog.Builder(MainActivity.this)
-										.setTitle(android.R.string.dialog_alert_title)
-										.setMessage(R.string.confirm_to_remove_wiki)
-										.setView(view1)
-										.setNegativeButton(android.R.string.cancel, null)
-										.setPositiveButton(android.R.string.ok, (dialog1, which1) -> {
-											removeWiki(id, cbDelFile.isChecked(), cbDelBackups.isChecked(), davClient);
-											if (!APIOver21) wikiListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
-											else wikiListAdapter.notifyItemRemoved(pos);
-										})
-										.create();
-								removeWikiConfirmationDialog.setOnShowListener(dialog1 -> removeWikiConfirmationDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-								removeWikiConfirmationDialog.show();
-							})
-							.setNegativeButton(R.string.clone_wiki, (dialog, which) -> {
-								dialog.dismiss();
-								try {
-									Uri u1 = tu != null ? tu : u;
-									File dest = new File(getCacheDir(), CLONING_FILE_NAME);
-									dest.createNewFile();
-									if (iDav) {
-										final IOException[] e0 = new IOException[1];
-										Thread jt = new Thread(() -> {
-											String uf = u.toString();
-											try {
-												if (!davClient.exists(uf)) throw new FileNotFoundException(EXCEPTION_SAF_FILE_NOT_EXISTS);
-												List<DavResource> fl = davClient.list(uf);
-												String index = null;
-												if (fl.get(0).isDirectory()) {
-													for (DavResource f : fl) if (KEY_FN_INDEX.equals(index = f.getName()) || KEY_FN_INDEX2.equals(index)) break;
-													if (index == null) throw new FileNotFoundException(EXCEPTION_SAF_FILE_NOT_EXISTS);
-													uf = !uf.endsWith(KEY_SLASH) ? uf + KEY_SLASH : uf;
-													uf = uf + index;
-												}
-												try (InputStream is = davClient.get(uf);
-														OutputStream os = getContentResolver().openOutputStream(Uri.fromFile(dest))) {
-													int length;
-													byte[] bytes = new byte[BUF_SIZE];
-													while ((length = is.read(bytes)) > -1) {
-														os.write(bytes, 0, length);
-													}
-													os.flush();
-												}
-											} catch (IOException e) {
-												e.printStackTrace();
-												e0[0] = e;
-											}
-										});
-										jt.start();
-										try {
-											jt.join();
-										} catch (InterruptedException e) {
-											e.printStackTrace();
-											throw new IOException(e.getMessage());
-										}
-										if (e0[0] != null) throw e0[0];
-									} else try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u1, KEY_FD_R));
-											ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
-											FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-											FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
-											FileChannel ic = is.getChannel();
-											FileChannel oc = os.getChannel()) {
-										fc2fc(ic, oc);
-									}
-									getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
-								} catch (IOException | IllegalArgumentException | ArrayIndexOutOfBoundsException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
-									e.printStackTrace();
-									Toast.makeText(MainActivity.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
-								}
-							})
-							.setNeutralButton(R.string.create_shortcut, ((dialog, which) -> {
-								dialog.dismiss();
-								try {
-									String sub = wa.optString(DB_KEY_SUBTITLE);
-									Bundle bu = new Bundle();
-									bu.putString(KEY_ID, id);
-									Intent in = new Intent(MainActivity.this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN);
-									if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
-										ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
-												.setShortLabel(name)
-												.setLongLabel(name + (sub.length() > 0 ? KEY_LBL + sub : sub))
-												.setIcon(favicon != null ? IconCompat.createWithBitmap(favicon) : IconCompat.createWithResource(MainActivity.this, APIOver21 ? R.drawable.ic_shortcut : R.mipmap.ic_shortcut))
-												.setIntent(in)
-												.build();
-										if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
-											Toast.makeText(MainActivity.this, R.string.shortcut_created, Toast.LENGTH_SHORT).show();
-										else throw new IllegalArgumentException(EXCEPTION_SHORTCUT_NOT_SUPPORTED);
-									}
-								} catch (IllegalArgumentException e) {
-									e.printStackTrace();
-									Toast.makeText(MainActivity.this, R.string.shortcut_failed, Toast.LENGTH_SHORT).show();
-								}
-							}))
-							.create();
-					wikiConfigDialog.setOnShowListener(dialog -> wikiConfigDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-					// 备份系统
-					final BackupListAdapter backupListAdapter = new BackupListAdapter(wikiConfigDialog.getContext());
-					DocumentFile finalDf = df;
-					DocumentFile finalMdf = mdf;
-					backupListAdapter.setOnBtnClickListener((pos1, which) -> {
-						final File bf = !iDav && tu == null ? backupListAdapter.getBackupFile(pos1) : null;
-						final DocumentFile bdf = !iDav && tu != null ? backupListAdapter.getBackupDF(pos1) : null;
-						final String bku = iDav ? backupListAdapter.getBackupDavUri(pos1) : null;
-						String bdn = bdf != null && bdf.getParentFile() != null ? bdf.getParentFile().getName() : null, rfn = bdn != null ? bdn.substring(0, bdn.length() - BACKUP_POSTFIX.length()) : null;
-						if (iDav || bf != null && bf.isFile() || bdf != null && bdf.isFile())
-							switch (which) {
-								case 1:        // 回滚
-									AlertDialog confirmRollback = new AlertDialog.Builder(wikiConfigDialog.getContext())
-											.setTitle(android.R.string.dialog_alert_title)
-											.setMessage(R.string.confirm_to_rollback)
-											.setNegativeButton(android.R.string.no, null)
-											.setPositiveButton(android.R.string.yes, (dialog, which12) -> {
-												try {
-													backup(MainActivity.this, u, davClient);
-												} catch (IOException e) {
-													e.printStackTrace();
-												}
-												if (iDav) {
-													Thread jt = new Thread(() -> {
-														String sru = null, lt = null;
-														try {
-															if (davClient.exists(u.toString()) && davClient.list(u.toString()).get(0).isDirectory())
-																sru = u + (bku.charAt(bku.length() - 1) == 'l' ? KEY_FN_INDEX : KEY_FN_INDEX2);
-															else sru = u.toString();
-															try (InputStream is = davClient.get(bku);
-																	ByteArrayOutputStream os = new ByteArrayOutputStream()) {
-																int length;
-																byte[] bytes = new byte[BUF_SIZE];
-																while ((length = is.read(bytes)) > -1) {
-																	os.write(bytes, 0, length);
-																}
-																os.flush();
-																lt = davClient.lock(sru);
-																davClient.put(sru, os.toByteArray(), TYPE_HTML);
-															}
-															runOnUiThread(() -> {
-																wikiConfigDialog.dismiss();
-																Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
-																loadPage(id);
-															});
-														} catch (IOException e) {
-															e.printStackTrace();
-															runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show());
-														} finally {
-															try {
-																if (lt != null) davClient.unlock(sru, lt);
-															} catch (IOException e) {
-																e.printStackTrace();
-															}
-														}
-													});
-													jt.start();
-													try {
-														jt.join();
-													} catch (InterruptedException e) {
-														e.printStackTrace();
-													}
-												} else {
-													DocumentFile fdf = tu != null && finalDf == null && finalMdf != null && rfn != null ? finalMdf.createFile(TYPE_HTML, rfn) : finalDf;
-													try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(tu != null ? bdf.getUri() : Uri.fromFile(bf), KEY_FD_R));
-															ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(tu != null ? Objects.requireNonNull(fdf).getUri() : u, KEY_FD_W));
-															FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-															FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
-															FileChannel ic = is.getChannel();
-															FileChannel oc = os.getChannel()) {    // 由于SAF限制，文件模式无法还原丢失的文件，除非在原位创建一个文件，即使该文件是空的
-														fc2fc(ic, oc);
-														wikiConfigDialog.dismiss();
-														Toast.makeText(MainActivity.this, R.string.wiki_rolled_back_successfully, Toast.LENGTH_SHORT).show();
-														loadPage(id);
-													} catch (IOException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
-														e.printStackTrace();
-														Toast.makeText(MainActivity.this, R.string.failed_writing_file, Toast.LENGTH_SHORT).show();
-													}
-												}
-											})
-											.create();
-									confirmRollback.setOnShowListener(dialog1 -> confirmRollback.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-									confirmRollback.show();
-									break;
-								case 2:        // 移除备份
-									@SuppressLint("NotifyDataSetChanged") AlertDialog confirmDelBackup = new AlertDialog.Builder(wikiConfigDialog.getContext())
-											.setTitle(android.R.string.dialog_alert_title)
-											.setMessage(R.string.confirm_to_del_backup)
-											.setNegativeButton(android.R.string.no, null)
-											.setPositiveButton(android.R.string.yes, (dialog, which1) -> {
-												try {
-													if (iDav) {
-														final IOException[] e0 = new IOException[1];
-														Thread jt = new Thread(() -> {
-															try {
-																davClient.delete(bku);
-															} catch (IOException e) {
-																e.printStackTrace();
-																e0[0] = e;
-															}
-														});
-														jt.start();
-														try {
-															jt.join();
-														} catch (InterruptedException e) {
-															e.printStackTrace();
-															throw new IOException(e.getMessage());
-														}
-														if (e0[0] != null) throw e0[0];
-													} else if (bf != null && bf.delete() || bdf != null && DocumentsContract.deleteDocument(getContentResolver(), bdf.getUri()))
-														Toast.makeText(wikiConfigDialog.getContext(), R.string.backup_deleted, Toast.LENGTH_SHORT).show();
-													else
-														throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
-													backupListAdapter.reload(u, davClient);
-													if (!APIOver21) backupListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
-													else backupListAdapter.notifyItemRemoved(pos1);
-												} catch (IOException e) {
-													e.printStackTrace();
-													Toast.makeText(wikiConfigDialog.getContext(), R.string.failed_deleting_file, Toast.LENGTH_SHORT).show();
-												}
-											}).create();
-									confirmDelBackup.setOnShowListener(dialog1 -> confirmDelBackup.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-									confirmDelBackup.show();
-									break;
-							}
-					});
-					backupListAdapter.setOnLoadListener(count -> {
-						if (count > 0)
-							lblNoBackup.setVisibility(View.GONE);
-						else
-							lblNoBackup.setVisibility(View.VISIBLE);
-					});
-					if (cbBackup.isChecked()) try {
-						backupListAdapter.reload(u, davClient);
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					rvBackupList.setAdapter(backupListAdapter);
-					rvBackupList.setItemAnimator(new DefaultItemAnimator());
-					cbBackup.setOnCheckedChangeListener((buttonView, isChecked) -> {
-						try {
-							wa.put(DB_KEY_BACKUP, isChecked);
-							writeJson(MainActivity.this, db);
-							frmBackupList.setVisibility(cbBackup.isChecked() ? View.VISIBLE : View.GONE);
-							if (isChecked) {
-								backupListAdapter.reload(u, davClient);
-								if (APIOver21) backupListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
-								else rvBackupList.setAdapter(backupListAdapter);
-							}
-						} catch (IOException | JSONException e) {
-							e.printStackTrace();
-							Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
-						}
-					});
-					wikiConfigDialog.show();
-					wikiConfigDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(!iNet);
-				}
-			});
 			try {
 				wikiListAdapter.reload(db);
 			} catch (JSONException e) {
