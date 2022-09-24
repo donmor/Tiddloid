@@ -7,6 +7,7 @@
 package top.donmor.tiddloid;
 
 import android.Manifest;
+import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
@@ -73,6 +74,7 @@ import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
@@ -98,8 +100,6 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.nio.channels.FileChannel;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
@@ -131,7 +131,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private Uri uri = null, cachedUri;
-	private boolean isWiki, isClassic, hideAppbar = false, ready = false, failed = false;
+	private boolean isWiki, isClassic, hideAppbar = false, ready = false, failed = false, firstRun;
 	private Charset overrodeCharset = null;
 	private byte[] exData = null;
 	private Menu optMenu;
@@ -310,26 +310,6 @@ public class TWEditorWV extends AppCompatActivity {
 				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_RW));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
-//						OutputStream os = getContentResolver().openOutputStream(uri)) {
-//					if (os == null)
-//						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
-//					int len = is.available();
-//					ByteBuffer byteBuffer = ByteBuffer.wr
-//					int length;
-//					int lengthTotal = 0;
-//					byte[] bytes = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(bytes)) > -1) {
-//						oc.write(ByteBuffer.wrap(bytes, 0, length));
-//						os.write(bytes, 0, length);
-//						lengthTotal += length;
-//					}
-//					if (lengthTotal != len)
-//						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-//					os.flush();
-//					os.getChannel().truncate(len);
-//					os.getChannel().force(true);
-//					oc.truncate(len);
-//					oc.force(true);
 					MainActivity.ba2fc(exData, oc);
 				} catch (NullPointerException | IOException | NonWritableChannelException e) {
 					e.printStackTrace();
@@ -340,39 +320,6 @@ public class TWEditorWV extends AppCompatActivity {
 					}
 					Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
 				}
-//				try (ByteArrayInputStream is = new ByteArrayInputStream(exData);
-//						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_RW));
-//						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
-//						FileChannel oc = os.getChannel()) {
-////						OutputStream os = getContentResolver().openOutputStream(uri)) {
-////					if (os == null)
-////						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
-//					int len = is.available();
-////					ByteBuffer byteBuffer = ByteBuffer.wr
-//					int length;
-//					int lengthTotal = 0;
-//					byte[] bytes = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(bytes)) > -1) {
-//						oc.write(ByteBuffer.wrap(bytes, 0, length));
-////						os.write(bytes, 0, length);
-//						lengthTotal += length;
-//					}
-//					if (lengthTotal != len)
-//						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-////					os.flush();
-////					os.getChannel().truncate(len);
-////					os.getChannel().force(true);
-//					oc.truncate(len);
-//					oc.force(true);
-//				} catch (IOException | NullPointerException e) {
-//					e.printStackTrace();
-//					try {
-//						DocumentsContract.deleteDocument(getContentResolver(), uri);
-//					} catch (FileNotFoundException e1) {
-//						e.printStackTrace();
-//					}
-//					Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
-//				}
 			}
 			exData = null;
 		});
@@ -388,9 +335,6 @@ public class TWEditorWV extends AppCompatActivity {
 				if (u != null) try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u, MainActivity.KEY_FD_RW));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
-//						OutputStream os = getContentResolver().openOutputStream(u)) {
-//					if (os == null)
-//						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
 					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
 					boolean exist = false;
 					String id = null;
@@ -413,21 +357,6 @@ public class TWEditorWV extends AppCompatActivity {
 					wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
 					wa.put(MainActivity.DB_KEY_URI, u.toString());
 					MainActivity.writeJson(this, db);
-//					int len = is.available();
-//					int length, lengthTotal = 0;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) {
-//						oc.write(ByteBuffer.wrap(b, 0, length));
-//						os.write(b, 0, length);
-//						lengthTotal += length;
-//					}
-//					if (lengthTotal != len)
-//						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-//					os.flush();
-//					oc.truncate(len);
-//					oc.force(true);
-//					os.getChannel().truncate(len);
-//					os.getChannel().force(true);
 					MainActivity.ba2fc(exData, oc);
 					Bundle bu = new Bundle();
 					bu.putString(MainActivity.KEY_ID, id);
@@ -444,65 +373,6 @@ public class TWEditorWV extends AppCompatActivity {
 					failed = true;
 					dumpOnFail(exData, u);
 				}
-//				if (u != null) try (ByteArrayInputStream is = new ByteArrayInputStream(exData);
-//						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u, MainActivity.KEY_FD_RW));
-//						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
-//						FileChannel oc = os.getChannel()) {
-////						OutputStream os = getContentResolver().openOutputStream(u)) {
-////					if (os == null)
-////						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
-//					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
-//					boolean exist = false;
-//					String id = null;
-//					Iterator<String> iterator = wl.keys();
-//					while (iterator.hasNext()) {
-//						if ((wa = wl.getJSONObject(id = iterator.next())).has(MainActivity.DB_KEY_DAV_AUTH)) continue;
-//						exist = u.toString().equals(wa.optString(MainActivity.DB_KEY_URI));
-//						if (exist) break;
-//					}
-//					if (exist) {
-//						Toast.makeText(this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-//						if (wa.optBoolean(MainActivity.DB_KEY_BACKUP)) MainActivity.backup(this, u, null);
-//					} else {
-//						wa = new JSONObject();
-//						id = MainActivity.genId();
-//						wl.put(id, wa);
-//						wa.put(MainActivity.DB_KEY_BACKUP, false);
-//					}
-//					wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
-//					wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
-//					wa.put(MainActivity.DB_KEY_URI, u.toString());
-//					MainActivity.writeJson(this, db);
-//					int len = is.available();
-//					int length, lengthTotal = 0;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) {
-//						oc.write(ByteBuffer.wrap(b, 0, length));
-////						os.write(b, 0, length);
-//						lengthTotal += length;
-//					}
-//					if (lengthTotal != len)
-//						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-////					os.flush();
-//					oc.truncate(len);
-//					oc.force(true);
-////					os.getChannel().truncate(len);
-////					os.getChannel().force(true);
-//					Bundle bu = new Bundle();
-//					bu.putString(MainActivity.KEY_ID, id);
-//					failed = false;
-//					nextWiki(new Intent().putExtras(bu));
-//				} catch (NullPointerException | IOException e) {
-//					e.printStackTrace();
-//					Toast.makeText(TWEditorWV.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
-//					failed = true;
-//					dumpOnFail(exData, u);
-//				} catch (JSONException e) {
-//					e.printStackTrace();
-//					Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-//					failed = true;
-//					dumpOnFail(exData, u);
-//				}
 			}
 			exData = null;
 		});
@@ -653,7 +523,7 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@JavascriptInterface
 			public void saveWiki(final String data) {
-				if (wApp == null || (MainActivity.SCH_HTTP.equals(uri.getScheme()) || MainActivity.SCH_HTTPS.equals(uri.getScheme()))) {
+				if (wApp == null || (MainActivity.SCH_HTTP.equals(uri.getScheme()) || MainActivity.SCH_HTTPS.equals(uri.getScheme())) && !(cachedUri == null)) {
 					exData = data.getBytes(StandardCharsets.UTF_8);
 					getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT)
 							.addCategory(Intent.CATEGORY_OPENABLE)
@@ -674,27 +544,9 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				Uri ux = cachedUri != null ? cachedUri : uri;
 				String lt = null;
-				long t0 = System.nanoTime();
 				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, MainActivity.KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
-//					if (os == null)
-//						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
-//					int len = is.available();
-//					int length, lengthTotal = 0;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) {
-//						oc.write(ByteBuffer.wrap(b, 0, length));
-//						os.write(b, 0, length);
-//						lengthTotal += length;
-//					}
-//					if (lengthTotal != len)
-//						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-//					os.flush();
-//					oc.truncate(len);
-//					oc.force(true);
-//					os.getChannel().truncate(len);
-//					os.getChannel().force(true);
 					MainActivity.ba2fc(data.getBytes(overrodeCharset != null ? overrodeCharset : StandardCharsets.UTF_8), oc);
 					if (cachedUri != null) {    //	DAV
 						davClient = new OkHttpSardine();
@@ -728,61 +580,6 @@ public class TWEditorWV extends AppCompatActivity {
 						}
 					}
 				}
-//				try (ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(overrodeCharset != null ? overrodeCharset : StandardCharsets.UTF_8));
-//						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, MainActivity.KEY_FD_W));
-//						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
-//						FileChannel oc = os.getChannel()) {
-////					if (os == null)
-////						throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
-//					int len = is.available();
-//					int length, lengthTotal = 0;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) {
-//						oc.write(ByteBuffer.wrap(b, 0, length));
-////						os.write(b, 0, length);
-//						lengthTotal += length;
-//					}
-//					if (lengthTotal != len)
-//						throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-////					os.flush();
-//					oc.truncate(len);
-//					oc.force(true);
-////					os.getChannel().truncate(len);
-////					os.getChannel().force(true);
-//					if (cachedUri != null) {    //	DAV
-//						davClient = new OkHttpSardine();
-//						davClient.setCredentials(auth, tok);
-//						lt = davClient.lock(uri.toString());
-//						davClient.put(uri.toString(), new File(cachedUri.getPath()), MainActivity.TYPE_HTML);
-//					}
-//					failed = false;
-//					runOnUiThread(() -> {
-//						try {
-//							if (cachedUri != null && !wApp.optString(MainActivity.DB_KEY_URI).equals(uri.toString()))
-//								syncTree(wApp.optString(MainActivity.DB_KEY_URI), auth, tok);
-//							else if (tree != null && treeIndex != null)
-//								syncTree(tree, id, treeIndex);
-//						} catch (IOException e) {
-//							e.printStackTrace();
-//						}
-//						getInfo(wv);
-//					});
-//				} catch (IOException | NullPointerException e) {
-//					e.printStackTrace();
-//					Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
-//					failed = true;
-//					dumpOnFail(data.getBytes(StandardCharsets.UTF_8), uri);
-//				} finally {
-//					if (davClient != null && lt != null) {
-//						try {
-//							davClient.unlock(uri.toString(), lt);
-//						} catch (IOException e) {
-//							e.printStackTrace();
-//						}
-//					}
-//				}
-				long t1 = System.nanoTime();
-				System.out.println(t1 - t0);
 			}
 
 			@JavascriptInterface
@@ -856,7 +653,6 @@ public class TWEditorWV extends AppCompatActivity {
 							view.getSettings().setBuiltInZoomControls(isClassic);
 							view.getSettings().setDisplayZoomControls(isClassic);
 							if (isClassic) {
-
 								view.evaluateJavascript(getString(R.string.js_settings_c), null);
 								if (MainActivity.SCH_CONTENT.equals(Uri.parse(view.getUrl()).getScheme()))
 									view.evaluateJavascript(getString(R.string.js_settings_c2), null);
@@ -905,6 +701,7 @@ public class TWEditorWV extends AppCompatActivity {
 			try {
 				db = MainActivity.initJson(TWEditorWV.this);    // 初始化JSON数据，如果加载失败
 				MainActivity.writeJson(TWEditorWV.this, db);
+				firstRun = true;
 			} catch (JSONException e1) {
 				e1.printStackTrace();
 				Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
@@ -947,6 +744,65 @@ public class TWEditorWV extends AppCompatActivity {
 		// 加载数据
 		MainActivity.trimDB140(this, db);
 		nextWiki(getIntent());
+		if (firstRun)
+			MainActivity.firstRunReq(this);
+	}
+
+	private JSONArray getExDataSingle(final Intent intent) {
+		Uri uri;
+		try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM), MainActivity.KEY_FD_R));
+				FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+				FileChannel ic = is.getChannel()) {
+			String path = Uri.decode(uri.toString()), type = intent.getType();
+			int esp = path.lastIndexOf('.');
+			if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
+				type = TW_TYPE_EXT_D.get(path.substring(esp));
+				if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
+			}
+			if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
+			int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
+			TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
+			return new JSONArray().put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
+					.put(KEY_TYPE, type)
+					.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
+							? Base64.encodeToString(MainActivity.fc2ba(ic), Base64.NO_WRAP)
+							: enc == TW_CONTENT_ENCODING.UTF16LE
+							? new String(MainActivity.fc2ba(ic), StandardCharsets.UTF_16)
+							: new String(MainActivity.fc2ba(ic))));
+		} catch (NullPointerException | IOException | JSONException | NonReadableChannelException e) {
+			e.printStackTrace();
+		}
+		return null;
+	}
+
+	private JSONArray getExDataMultiple(final Intent intent) {
+		JSONArray array = new JSONArray();
+		ArrayList<Uri> files = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+		for (Uri uri : files)
+			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_R));
+					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+					FileChannel ic = is.getChannel()) {
+				String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
+				if (type == null) type = MIME_TEXT;
+				int esp = path.lastIndexOf('.');
+				if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
+					type = TW_TYPE_EXT_D.get(path.substring(esp));
+					if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
+				}
+				if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
+				int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
+				TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
+				array.put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
+						.put(KEY_TYPE, type)
+						.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
+								? Base64.encodeToString(MainActivity.fc2ba(ic), Base64.NO_WRAP)
+								: enc == TW_CONTENT_ENCODING.UTF16LE
+								? new String(MainActivity.fc2ba(ic), StandardCharsets.UTF_16)
+								: new String(MainActivity.fc2ba(ic))));
+			} catch (NullPointerException | IOException | JSONException | NonReadableChannelException e) {
+				e.printStackTrace();
+			}
+		return array;
 	}
 
 	// 热启动
@@ -970,63 +826,18 @@ public class TWEditorWV extends AppCompatActivity {
 				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 				return;
 			}
-			Uri uri;
-			if (bin)
-				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM), MainActivity.KEY_FD_R));
-						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-						FileChannel ic = is.getChannel()) {
-//					InputStream is = getContentResolver().openInputStream(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM));
-//					ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
-//				int length;
-//				byte[] b = new byte[MainActivity.BUF_SIZE];
-//				while ((length = is.read(b)) != -1) os.write(b, 0, length);
-//				os.flush();
-					String path = Uri.decode(uri.toString()), type = intent.getType();
-					int esp = path.lastIndexOf('.');
-					if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
-						type = TW_TYPE_EXT_D.get(path.substring(esp));
-						if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
-					}
-					if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
-					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
-					JSONArray array = new JSONArray().put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
-							.put(KEY_TYPE, type)
-							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
-									? Base64.encodeToString(MainActivity.fc2ba(ic), Base64.NO_WRAP)
-									: enc == TW_CONTENT_ENCODING.UTF16LE
-									? new String(MainActivity.fc2ba(ic), StandardCharsets.UTF_16)
-									: new String(MainActivity.fc2ba(ic))));
-					cs = array.toString();
-				} catch (NullPointerException | IOException | JSONException | NonReadableChannelException e) {
+			if (bin) {
+				JSONArray array = getExDataSingle(intent);
+				cs = array != null ? array.toString() : null;
+			} else {
+				JSONObject p = new JSONObject();
+				try {
+					p.put(KEY_TEXT, cs);
+					cs = p.toString();
+				} catch (JSONException e) {
 					e.printStackTrace();
 				}
-//			if (bin) try (InputStream is = getContentResolver().openInputStream(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM));
-//					ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
-//				int length;
-//				byte[] b = new byte[MainActivity.BUF_SIZE];
-//				while ((length = is.read(b)) != -1) os.write(b, 0, length);
-//				os.flush();
-//				String path = Uri.decode(uri.toString()), type = intent.getType();
-//				int esp = path.lastIndexOf('.');
-//				if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
-//					type = TW_TYPE_EXT_D.get(path.substring(esp));
-//					if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
-//				}
-//				if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
-//				int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-//				TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
-//				JSONArray array = new JSONArray().put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
-//						.put(KEY_TYPE, type)
-//						.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
-//								? Base64.encodeToString(os.toByteArray(), Base64.NO_WRAP)
-//								: enc == TW_CONTENT_ENCODING.UTF16LE
-//								? new String(os.toByteArray(), StandardCharsets.UTF_16)
-//								: new String(os.toByteArray())));
-//				cs = array.toString();
-//			} catch (IOException | JSONException e) {
-//				e.printStackTrace();
-//			}
+			}
 			if (cs == null) {
 				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 				return;
@@ -1038,63 +849,7 @@ public class TWEditorWV extends AppCompatActivity {
 				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 				return;
 			}
-			JSONArray array = new JSONArray();
-			ArrayList<Uri> files = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-			for (Uri uri : files)
-				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_R));
-						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-						FileChannel ic = is.getChannel()) {
-//					int length;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) os.write(b, 0, length);
-					String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
-					if (type == null) type = MIME_TEXT;
-					int esp = path.lastIndexOf('.');
-					if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
-						type = TW_TYPE_EXT_D.get(path.substring(esp));
-						if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
-					}
-					if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
-					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
-					array.put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
-							.put(KEY_TYPE, type)
-							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
-									? Base64.encodeToString(MainActivity.fc2ba(ic), Base64.NO_WRAP)
-									: enc == TW_CONTENT_ENCODING.UTF16LE
-									? new String(MainActivity.fc2ba(ic), StandardCharsets.UTF_16)
-									: new String(MainActivity.fc2ba(ic))));
-//					os.flush();
-				} catch (NullPointerException | IOException | JSONException | NonReadableChannelException e) {
-					e.printStackTrace();
-				}
-//				try (InputStream is = getContentResolver().openInputStream(uri);
-//						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
-//					int length;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) os.write(b, 0, length);
-//					String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
-//					if (type == null) type = MIME_TEXT;
-//					int esp = path.lastIndexOf('.');
-//					if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
-//						type = TW_TYPE_EXT_D.get(path.substring(esp));
-//						if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
-//					}
-//					if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
-//					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-//					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
-//					array.put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
-//							.put(KEY_TYPE, type)
-//							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
-//									? Base64.encodeToString(os.toByteArray(), Base64.NO_WRAP)
-//									: enc == TW_CONTENT_ENCODING.UTF16LE
-//									? new String(os.toByteArray(), StandardCharsets.UTF_16)
-//									: new String(os.toByteArray())));
-//					os.flush();
-//				} catch (IOException | JSONException e) {
-//					e.printStackTrace();
-//				}
-			cs = array.toString();
+			cs = getExDataMultiple(intent).toString();
 			wv.evaluateJavascript(getString(R.string.js_import, cs), null);
 		} else if (Intent.ACTION_PROCESS_TEXT.equals(action)) {    // 摘录文本
 			CharSequence cs;
@@ -1270,15 +1025,10 @@ public class TWEditorWV extends AppCompatActivity {
 		return true;
 	}
 
+	@SuppressLint("RestrictedApi")
 	@Override
 	public boolean onPrepareOptionsMenu(@NotNull Menu menu) {
-		if (MainActivity.CLASS_MENU_BUILDER.equals(menu.getClass().getSimpleName())) try {
-			Method method = menu.getClass().getDeclaredMethod(MainActivity.METHOD_SET_OPTIONAL_ICONS_VISIBLE, Boolean.TYPE);
-			method.setAccessible(true);
-			method.invoke(menu, true);
-		} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
-			e.printStackTrace();
-		}
+		if (menu instanceof MenuBuilder) ((MenuBuilder) menu).setOptionalIconsVisible(true);
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -1558,57 +1308,7 @@ public class TWEditorWV extends AppCompatActivity {
 					autoRemoveConfirm(wl, nextWikiId, null);
 					return;
 				}
-				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM), MainActivity.KEY_FD_R));
-						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-						FileChannel ic = is.getChannel()) {
-//					int length;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) os.write(b, 0, length);
-//					os.flush();
-					String path = Uri.decode(uri.toString()), type = nextWikiIntent.getType();
-					int esp = path.lastIndexOf('.');
-					if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
-						type = TW_TYPE_EXT_D.get(path.substring(esp));
-						if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
-					}
-					if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
-					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
-					extraContent2 = new JSONArray().put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
-							.put(KEY_TYPE, type)
-							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
-									? Base64.encodeToString(MainActivity.fc2ba(ic), Base64.NO_WRAP)
-									: enc == TW_CONTENT_ENCODING.UTF16LE
-									? new String(MainActivity.fc2ba(ic), StandardCharsets.UTF_16)
-									: new String(MainActivity.fc2ba(ic))));
-				} catch (NullPointerException | IOException | JSONException | NonReadableChannelException e) {
-					e.printStackTrace();
-				}
-//				try (InputStream is = getContentResolver().openInputStream(uri = nextWikiIntent.getParcelableExtra(Intent.EXTRA_STREAM));
-//						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
-//					int length;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) os.write(b, 0, length);
-//					os.flush();
-//					String path = Uri.decode(uri.toString()), type = nextWikiIntent.getType();
-//					int esp = path.lastIndexOf('.');
-//					if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
-//						type = TW_TYPE_EXT_D.get(path.substring(esp));
-//						if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
-//					}
-//					if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
-//					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-//					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
-//					extraContent2 = new JSONArray().put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
-//							.put(KEY_TYPE, type)
-//							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
-//									? Base64.encodeToString(os.toByteArray(), Base64.NO_WRAP)
-//									: enc == TW_CONTENT_ENCODING.UTF16LE
-//									? new String(os.toByteArray(), StandardCharsets.UTF_16)
-//									: new String(os.toByteArray())));
-//				} catch (IOException | JSONException e) {
-//					e.printStackTrace();
-//				}
+				extraContent2 = getExDataSingle(nextWikiIntent);
 			}
 		} else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {    // 分享链接克隆站点
 			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
@@ -1620,62 +1320,7 @@ public class TWEditorWV extends AppCompatActivity {
 				autoRemoveConfirm(wl, nextWikiId, null);
 				return;
 			}
-			extraContent2 = new JSONArray();
-			ArrayList<Uri> files = nextWikiIntent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
-			for (Uri uri : files)
-				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_R));
-						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-						FileChannel ic = is.getChannel()) {
-//					int length;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) os.write(b, 0, length);
-					String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
-					if (type == null) type = MIME_TEXT;
-					int esp = path.lastIndexOf('.');
-					if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
-						type = TW_TYPE_EXT_D.get(path.substring(esp));
-						if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
-					}
-					if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
-					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
-					extraContent2.put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
-							.put(KEY_TYPE, type)
-							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
-									? Base64.encodeToString(MainActivity.fc2ba(ic), Base64.NO_WRAP)
-									: enc == TW_CONTENT_ENCODING.UTF16LE
-									? new String(MainActivity.fc2ba(ic), StandardCharsets.UTF_16)
-									: new String(MainActivity.fc2ba(ic))));
-//					os.flush();
-				} catch (NullPointerException | IOException | JSONException | NonReadableChannelException e) {
-					e.printStackTrace();
-				}
-//				try (InputStream is = getContentResolver().openInputStream(uri);
-//						ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {
-//					int length;
-//					byte[] b = new byte[MainActivity.BUF_SIZE];
-//					while ((length = is.read(b)) != -1) os.write(b, 0, length);
-//					String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
-//					if (type == null) type = MIME_TEXT;
-//					int esp = path.lastIndexOf('.');
-//					if (esp > 0 && TW_TYPE_EXT.containsKey(path.substring(esp))) {
-//						type = TW_TYPE_EXT_D.get(path.substring(esp));
-//						if (type == null) type = TW_TYPE_EXT.get(path.substring(esp));
-//					}
-//					if (!TW_TYPES.containsKey(type)) type = MIME_TEXT;
-//					int seg = Math.max(path.lastIndexOf(':'), path.lastIndexOf('/'));
-//					TW_CONTENT_ENCODING enc = TW_TYPES.get(type);
-//					extraContent2.put(new JSONObject().put(KEY_TITLE, path.substring(seg + 1))
-//							.put(KEY_TYPE, type)
-//							.put(KEY_TEXT, enc == TW_CONTENT_ENCODING.BASE64
-//									? Base64.encodeToString(os.toByteArray(), Base64.NO_WRAP)
-//									: enc == TW_CONTENT_ENCODING.UTF16LE
-//									? new String(os.toByteArray(), StandardCharsets.UTF_16)
-//									: new String(os.toByteArray())));
-//					os.flush();
-//				} catch (IOException | JSONException e) {
-//					e.printStackTrace();
-//				}
+			extraContent2 = getExDataMultiple(nextWikiIntent);
 		} else if (Intent.ACTION_PROCESS_TEXT.equals(action)) {    // 接收摘录
 			if (!MainActivity.APIOver23) {
 				if (!isWiki) finish();
@@ -1804,7 +1449,6 @@ public class TWEditorWV extends AppCompatActivity {
 		}
 		String ufn;
 		if (uri == null
-//				|| MainActivity.APIOver28 && MainActivity.SCH_CONTENT.equals(uri.getScheme())
 				|| !MainActivity.APIOver21 && MainActivity.SCH_CONTENT.equals(uri.getScheme()) && actualUri == uri
 				|| actualUri != null && (MainActivity.TYPE_HTA.equals(getContentResolver().getType(actualUri))
 				|| (ufn = actualUri.getLastPathSegment()) != null && ufn.endsWith(EXT_HTA))) {
@@ -1818,17 +1462,6 @@ public class TWEditorWV extends AppCompatActivity {
 			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, MainActivity.KEY_FD_R));
 					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 					FileChannel ic = is.getChannel()) {   //读全部数据
-//				if (is == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
-//				int len = is.available();
-//				int length, lenTotal = 0;
-//				byte[] b = new byte[MainActivity.BUF_SIZE];
-//				while ((length = is.read(b)) != -1) {
-//					os.write(b, 0, length);
-//					lenTotal += length;
-//				}
-//				os.flush();
-//				if (lenTotal != len)
-//					throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 				String data = null;
 				byte[] bytes = MainActivity.fc2ba(ic), hdr = new byte[32];
 				System.arraycopy(bytes, 0, hdr, 0, 32);
@@ -1846,53 +1479,11 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				if (data == null)
 					data = new String(bytes, StandardCharsets.UTF_8);    // UTF-8 / Fallback
-//				int sk;
-//				if (MainActivity.APIOver28 && (sk = data.indexOf(KEY_PATCH1)) > 0 && sk + KEY_PATCH1.length() < data.length())
-//					data = data.substring(0, sk + KEY_PATCH1.length());    // APIOver29 bug workaround
 				wv.loadDataWithBaseURL(ux.toString(), data, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
 			} catch (NullPointerException | IOException | SecurityException | NonReadableChannelException e) {
 				e.printStackTrace();
 				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 			}
-//			try (InputStream is0 = getContentResolver().openInputStream(ux);
-//					BufferedInputStream is = is0 != null ? new BufferedInputStream(is0) : null;
-//					ByteArrayOutputStream os = new ByteArrayOutputStream(MainActivity.BUF_SIZE)) {   //读全部数据
-//				if (is == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
-//				int len = is.available();
-//				int length, lenTotal = 0;
-//				byte[] b = new byte[MainActivity.BUF_SIZE];
-//				while ((length = is.read(b)) != -1) {
-//					os.write(b, 0, length);
-//					lenTotal += length;
-//				}
-//				os.flush();
-//				if (lenTotal != len)
-//					throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-//				String data = null;
-//				byte[] bytes = os.toByteArray(), hdr = new byte[32];
-//				System.arraycopy(bytes, 0, hdr, 0, 32);
-//				if (Arrays.equals(hdr, HEADER_U16BE_BOM) || Arrays.equals(hdr, HEADER_U16LE_BOM)) {
-//					data = new String(bytes, StandardCharsets.UTF_16);    // UTF-16 + BOM
-//					overrodeCharset = StandardCharsets.UTF_16;
-//				}
-//				if (data == null && Arrays.equals(hdr, HEADER_U16BE)) {
-//					data = new String(bytes, StandardCharsets.UTF_16BE);    // UTF-16BE
-//					overrodeCharset = StandardCharsets.UTF_16BE;
-//				}
-//				if (data == null && Arrays.equals(hdr, HEADER_U16LE)) {
-//					data = new String(bytes, StandardCharsets.UTF_16LE);    // UTF-16LE
-//					overrodeCharset = StandardCharsets.UTF_16LE;
-//				}
-//				if (data == null)
-//					data = new String(bytes, StandardCharsets.UTF_8);    // UTF-8 / Fallback
-////				int sk;
-////				if (MainActivity.APIOver28 && (sk = data.indexOf(KEY_PATCH1)) > 0 && sk + KEY_PATCH1.length() < data.length())
-////					data = data.substring(0, sk + KEY_PATCH1.length());    // APIOver29 bug workaround
-//				wv.loadDataWithBaseURL(ux.toString(), data, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
-//			} catch (IOException | SecurityException e) {
-//				e.printStackTrace();
-//				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
-//			}
 		} else wv.loadUrl(actualUri != null ? actualUri.toString() : URL_BLANK);
 	}
 
@@ -1917,7 +1508,6 @@ public class TWEditorWV extends AppCompatActivity {
 					if (!cacheRoot.exists()) cacheRoot.mkdir();
 					try (InputStream is = davClient.get(davSrc);
 							OutputStream os = getContentResolver().openOutputStream(Uri.fromFile(index[0] = new File(cacheRoot, ivf.getName())))) {
-//							FileOutputStream os = new FileOutputStream(index[0] = new File(cacheRoot, ivf.getName()))) {
 						int length;
 						byte[] bytes = new byte[MainActivity.BUF_SIZE];
 						while ((length = is.read(bytes)) > -1) os.write(bytes, 0, length);
@@ -1991,15 +1581,6 @@ public class TWEditorWV extends AppCompatActivity {
 						} catch (IOException e) {
 							e.printStackTrace();
 						}
-//						try (DigestInputStream dis = new DigestInputStream(new FileInputStream(child), messageDigest)) {
-//							dis.on(true);
-//							byte[] buf = new byte[MainActivity.BUF_SIZE];
-//							int length;
-//							do length = dis.read(buf, 0, MainActivity.BUF_SIZE); while (length != -1);
-//							map.put(child.getPath(), dis.getMessageDigest().digest());
-//						} catch (IOException e) {
-//							e.printStackTrace();
-//						}
 				}
 		} catch (NullPointerException e) {
 			e.printStackTrace();
@@ -2042,7 +1623,6 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				try (InputStream is = davClient.get(iu);
 						OutputStream os = getContentResolver().openOutputStream(Uri.fromFile(dest))) {
-//						FileOutputStream os = new FileOutputStream(dest)) {
 					int length;
 					byte[] bytes = new byte[MainActivity.BUF_SIZE];
 					while ((length = is.read(bytes)) > -1) os.write(bytes, 0, length);
@@ -2100,13 +1680,10 @@ public class TWEditorWV extends AppCompatActivity {
 						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), MainActivity.KEY_FD_W));
 						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
-//						FileOutputStream os = new FileOutputStream(dest);
 						FileChannel ic = is.getChannel();
 						FileChannel oc = os.getChannel()
 				) {
 					MainActivity.fc2fc(ic, oc);
-//					ic.transferTo(0, ic.size(), oc);
-//					ic.force(true);
 					files.add(dest.getPath());
 					hashes.put(dest.getPath(), dg);
 				} catch (NullPointerException | IOException | NonReadableChannelException | NonWritableChannelException e) {
@@ -2176,31 +1753,10 @@ public class TWEditorWV extends AppCompatActivity {
 				new StringBuffer(mfn).insert(mfn.lastIndexOf('.'), MainActivity.formatBackup(System.currentTimeMillis())).toString())), MainActivity.KEY_FD_W));
 				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 				FileChannel oc = os.getChannel()) {
-//			int len = is.available(), length, lenTotal = 0;
-//			byte[] bytes = new byte[MainActivity.BUF_SIZE];
-//			while ((length = is.read(bytes)) > -1) {
-//				os.write(bytes, 0, length);
-//				lenTotal += length;
-//			}
-//			os.flush();
-//			if (lenTotal != len) throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 			MainActivity.ba2fc(data, oc);
 		} catch (NullPointerException | IOException | SecurityException | NonWritableChannelException e) {
 			e.printStackTrace();
 		}
-//		try (ByteArrayInputStream is = new ByteArrayInputStream(data);
-//				FileOutputStream os = new FileOutputStream(new File(dumpDir, new StringBuffer(mfn).insert(mfn.lastIndexOf('.'), MainActivity.formatBackup(System.currentTimeMillis())).toString()))) {
-//			int len = is.available(), length, lenTotal = 0;
-//			byte[] bytes = new byte[MainActivity.BUF_SIZE];
-//			while ((length = is.read(bytes)) > -1) {
-//				os.write(bytes, 0, length);
-//				lenTotal += length;
-//			}
-//			os.flush();
-//			if (lenTotal != len) throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-//		} catch (IOException | SecurityException e) {
-//			e.printStackTrace();
-//		}
 	}
 
 	// 生成icon

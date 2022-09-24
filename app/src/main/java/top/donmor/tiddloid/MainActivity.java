@@ -65,6 +65,7 @@ import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
+import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
@@ -102,8 +103,6 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -135,7 +134,7 @@ public class MainActivity extends AppCompatActivity {
 	private JSONObject db;
 	private ActivityResultLauncher<Intent> getChooserClone, getChooserCreate, getChooserImport, getChooserTree, getPermissionRequest;
 	private boolean acquiringStorage = false;
-	private int dialogPadding, dialogPadding2, dialogPadding3;
+	private int dialogPadding;
 	private static boolean firstRun = false;
 
 	// CONSTANT
@@ -173,9 +172,7 @@ public class MainActivity extends AppCompatActivity {
 			SCH_HTTPS = "https",
 			STR_EMPTY = "",
 			TYPE_HTA = "application/hta",
-			TYPE_HTML = "text/html",
-			CLASS_MENU_BUILDER = "MenuBuilder",
-			METHOD_SET_OPTIONAL_ICONS_VISIBLE = "setOptionalIconsVisible";
+			TYPE_HTML = "text/html";
 	private static final String
 			DB_FILE_NAME = "data.json",
 			DB_KEY_PATH = "path",
@@ -189,7 +186,6 @@ public class MainActivity extends AppCompatActivity {
 			APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
 			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
-	//			APIOver28 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.P;
 	static final String
 			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
 			EXCEPTION_DOCUMENT_IO_ERROR = "Document IO Error",
@@ -217,8 +213,6 @@ public class MainActivity extends AppCompatActivity {
 		setContentView(R.layout.activity_main);
 		onConfigurationChanged(getResources().getConfiguration());
 		dialogPadding = (int) (getResources().getDisplayMetrics().density * 30);
-		dialogPadding2 = (int) (getResources().getDisplayMetrics().density * 12);
-		dialogPadding3 = (int) (getResources().getDisplayMetrics().density * 24);
 		// 加载UI
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
@@ -261,7 +255,6 @@ public class MainActivity extends AppCompatActivity {
 		});
 		new Thread(() -> {
 			// 加载JSON数据
-//			batchFix(MainActivity.this);
 			try {
 				db = readJson(MainActivity.this);
 				if (!db.has(DB_KEY_WIKI)) throw new JSONException(EXCEPTION_JSON_DATA_ERROR);
@@ -407,7 +400,8 @@ public class MainActivity extends AppCompatActivity {
 						if (mdf != null && mdf.isDirectory()) {
 							DocumentFile[] ep = mdf.listFiles();
 							for (DocumentFile ef : ep)
-								if (ef.isDirectory() && ef.getName() != null && (ef.getName().endsWith(KEY_EX_HTML + BACKUP_POSTFIX) || ef.getName().endsWith(KEY_EX_HTM + BACKUP_POSTFIX) || ef.getName().endsWith(KEY_EX_HTA + BACKUP_POSTFIX))) {
+								if (ef.isDirectory() && ef.getName() != null
+										&& (ef.getName().endsWith(KEY_EX_HTML + BACKUP_POSTFIX) || ef.getName().endsWith(KEY_EX_HTM + BACKUP_POSTFIX) || ef.getName().endsWith(KEY_EX_HTA + BACKUP_POSTFIX))) {
 									DocumentFile vf = mdf.createFile(TYPE_HTML, ef.getName().substring(0, ef.getName().length() - BACKUP_POSTFIX.length()));
 									tu1 = vf != null ? vf.getUri() : Uri.parse(STR_EMPTY);
 									if (vf != null) {
@@ -441,7 +435,7 @@ public class MainActivity extends AppCompatActivity {
 										.setNegativeButton(android.R.string.cancel, null)
 										.setPositiveButton(android.R.string.ok, (dialog1, which1) -> {
 											removeWiki(id, cbDelFile.isChecked(), cbDelBackups.isChecked(), davClient);
-											if (!APIOver21) wikiListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+											if (!APIOver21) wikiListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 											else wikiListAdapter.notifyItemRemoved(pos);
 										})
 										.create();
@@ -470,7 +464,6 @@ public class MainActivity extends AppCompatActivity {
 												}
 												try (InputStream is = davClient.get(uf);
 														OutputStream os = getContentResolver().openOutputStream(Uri.fromFile(dest))) {
-//														FileOutputStream os = new FileOutputStream(dest)) {
 													int length;
 													byte[] bytes = new byte[BUF_SIZE];
 													while ((length = is.read(bytes)) > -1) {
@@ -495,7 +488,6 @@ public class MainActivity extends AppCompatActivity {
 											ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
 											FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 											FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
-//											FileOutputStream os = new FileOutputStream(dest);
 											FileChannel ic = is.getChannel();
 											FileChannel oc = os.getChannel()) {
 										fc2fc(ic, oc);
@@ -645,7 +637,7 @@ public class MainActivity extends AppCompatActivity {
 													else
 														throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 													backupListAdapter.reload(u, davClient);
-													if (!APIOver21) backupListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+													if (!APIOver21) backupListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 													else backupListAdapter.notifyItemRemoved(pos1);
 												} catch (IOException e) {
 													e.printStackTrace();
@@ -677,7 +669,7 @@ public class MainActivity extends AppCompatActivity {
 							frmBackupList.setVisibility(cbBackup.isChecked() ? View.VISIBLE : View.GONE);
 							if (isChecked) {
 								backupListAdapter.reload(u, davClient);
-								if (APIOver21) backupListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+								if (APIOver21) backupListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 								else rvBackupList.setAdapter(backupListAdapter);
 							}
 						} catch (IOException | JSONException e) {
@@ -696,7 +688,7 @@ public class MainActivity extends AppCompatActivity {
 				runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show());
 				return;
 			}
-			if (APIOver21) wikiListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+			if (APIOver21) wikiListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 			else runOnUiThread(() -> rvWikiList.setAdapter(wikiListAdapter));
 			runOnUiThread(() -> noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE));
 			while ((System.nanoTime() - time0) / 1000000 < 1000) try {
@@ -711,84 +703,8 @@ public class MainActivity extends AppCompatActivity {
 				if (splash != null && (parent = splash.getParent()) instanceof ViewGroup)
 					((ViewGroup) parent).removeView(splash);
 				w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
-				if (firstRun) {
-					LinearLayout layout = new LinearLayout(this);
-					layout.setOrientation(LinearLayout.VERTICAL);
-					layout.setPaddingRelative(dialogPadding3, dialogPadding2, dialogPadding3, 0);
-					TextView lbl1 = new TextView(this);
-					lbl1.setText(R.string.agreements_desc1);
-					lbl1.setTextAppearance(this, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
-					layout.addView(lbl1);
-					LinearLayout.LayoutParams agl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
-					TextView ag1 = new TextView(this);
-					ag1.setLayoutParams(agl);
-					ag1.setPadding(4, 0, 4, 0);
-					StringBuffer sb = new StringBuffer();
-					try (InputStream is = getAssets().open(LICENSE_FILE_NAME);
-							InputStreamReader isr = new InputStreamReader(is);
-							BufferedReader br = new BufferedReader(isr)) {
-						sb.append(br.readLine());
-						String line;
-						while ((line = br.readLine()) != null) {
-							sb.append("\n").append(line);
-						}
-					} catch (IOException e) {
-						e.printStackTrace();
-					}
-					ag1.setText(sb);
-					ag1.setHorizontallyScrolling(true);
-					ag1.setTextAppearance(this, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
-					ag1.setTypeface(Typeface.MONOSPACE);
-					ag1.setTextSize(12);
-					ag1.setBackgroundColor(getResources().getColor(R.color.content_back_dec));
-					HorizontalScrollView agh1 = new HorizontalScrollView(this);
-					agh1.setHorizontalScrollBarEnabled(false);
-					agh1.addView(ag1);
-					ScrollView agc1 = new ScrollView(this);
-					LinearLayout.LayoutParams agl1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (getResources().getDisplayMetrics().density * 80));
-					agc1.setLayoutParams(agl1);
-					agc1.addView(agh1);
-					layout.addView(agc1);
-					TextView lbl2 = new TextView(this);
-					lbl2.setText(R.string.agreements_desc2);
-					lbl2.setTextAppearance(this, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
-					layout.addView(lbl2);
-					TextView ag2 = new TextView(this);
-					ag2.setLayoutParams(agl);
-					ag2.setPadding(4, 0, 4, 0);
-					ag2.setText(R.string.agreements_privacy);
-					ag2.setHorizontallyScrolling(true);
-					ag2.setTextAppearance(this, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
-					ag2.setTypeface(Typeface.MONOSPACE);
-					ag2.setTextSize(12);
-					ag2.setBackgroundColor(getResources().getColor(R.color.content_back_dec));
-					HorizontalScrollView agh2 = new HorizontalScrollView(this);
-					agh2.setHorizontalScrollBarEnabled(false);
-					agh2.addView(ag2);
-					ScrollView agc2 = new ScrollView(this);
-					LinearLayout.LayoutParams agl2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (getResources().getDisplayMetrics().density * 40));
-					agc2.setLayoutParams(agl2);
-					agc2.addView(agh2);
-					layout.addView(agc2);
-					TextView lbl3 = new TextView(this);
-					lbl3.setText(R.string.agreements_desc3);
-					lbl3.setTextAppearance(this, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
-					layout.addView(lbl3);
-					AlertDialog firstRunDialog = new AlertDialog.Builder(this)
-							.setTitle(R.string.agreements_title)
-							.setView(layout)
-
-							.setPositiveButton(R.string.agreements_accept, null)
-							.setNegativeButton(R.string.agreements_decline, (dialog, which) -> {
-								File dir = getFilesDir(), file = new File(dir, DB_FILE_NAME);
-								file.delete();
-								finishAffinity();
-								System.exit(0);
-							})
-							.create();
-					firstRunDialog.setCanceledOnTouchOutside(false);
-					firstRunDialog.show();
-				}
+				if (firstRun)
+					firstRunReq(this);
 			});
 			batchFix(MainActivity.this);
 		}).start();
@@ -798,48 +714,39 @@ public class MainActivity extends AppCompatActivity {
 		void run(File file);
 	}
 
+	private static class UriFileInfo {
+		private long lastModified = 0L;
+	}
+
+	private static InputStream getAdaptiveUriInputStream(Uri uri, UriFileInfo infoWrapper) throws NetworkErrorException, InterruptedIOException {
+		try {
+			HttpsURLConnection httpURLConnection;
+			URL url = new URL(uri.normalizeScheme().toString());
+			httpURLConnection = (HttpsURLConnection) url.openConnection();
+			if (!APIOver21)
+				httpURLConnection.setSSLSocketFactory(new TLSSocketFactory());
+			httpURLConnection.connect();
+			infoWrapper.lastModified = httpURLConnection.getLastModified();
+			return httpURLConnection.getInputStream();
+		} catch (InterruptedIOException e) {
+			throw e;
+		} catch (NoSuchAlgorithmException | KeyManagementException | IOException e) {
+			e.printStackTrace();
+			throw new NetworkErrorException(EXCEPTION_NO_INTERNET);
+		}
+	}
+
 	private void fetchInThread(OnGetSrc cb, AlertDialog progressDialog) {
 		boolean interrupted = false;
-		class UriFileInfo {
-			private long lastModified = 0L;
-		}
-		class AdaptiveUriInputStream {
-			private final InputStream is;
-
-			private AdaptiveUriInputStream(Uri uri, UriFileInfo infoWrapper) throws NetworkErrorException, InterruptedIOException {
-				try {
-					HttpsURLConnection httpURLConnection;
-					URL url = new URL(uri.normalizeScheme().toString());
-					httpURLConnection = (HttpsURLConnection) url.openConnection();
-					if (!APIOver21)
-						httpURLConnection.setSSLSocketFactory(new TLSSocketFactory());
-					httpURLConnection.connect();
-					infoWrapper.lastModified = httpURLConnection.getLastModified();
-					is = httpURLConnection.getInputStream();
-				} catch (InterruptedIOException e) {
-					throw e;
-				} catch (NoSuchAlgorithmException | KeyManagementException | IOException e) {
-					e.printStackTrace();
-					throw new NetworkErrorException(EXCEPTION_NO_INTERNET);
-				}
-			}
-
-			private InputStream get() {
-				return is;
-			}
-		}
 		File cache = new File(getCacheDir(), genId()), dest = new File(getCacheDir(), TEMPLATE_FILE_NAME);
 		long pModified = dest.lastModified();
 		UriFileInfo infoWrapper = new UriFileInfo();
-		try (InputStream isw = new AdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo)), infoWrapper).get();
-				OutputStream osw = getContentResolver().openOutputStream(Uri.fromFile(cache));
-//				FileOutputStream osw = new FileOutputStream(cache);
+		try (InputStream isw = getAdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo)), infoWrapper);
+				OutputStream osw = Objects.requireNonNull(getContentResolver().openOutputStream(Uri.fromFile(cache)));
 				ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(cache), KEY_FD_R));
 				ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
 				FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-//				FileInputStream is = new FileInputStream(cache);
 				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
-//				FileOutputStream os = new FileOutputStream(dest);
 				FileChannel ic = is.getChannel();
 				FileChannel oc = os.getChannel()) {
 			// 下载到缓存
@@ -1077,15 +984,10 @@ public class MainActivity extends AppCompatActivity {
 		return true;
 	}
 
+	@SuppressLint("RestrictedApi")
 	@Override
 	public boolean onPrepareOptionsMenu(@NotNull Menu menu) {
-		if (CLASS_MENU_BUILDER.equals(menu.getClass().getSimpleName())) try {
-			Method method = menu.getClass().getDeclaredMethod(METHOD_SET_OPTIONAL_ICONS_VISIBLE, Boolean.TYPE);
-			method.setAccessible(true);
-			method.invoke(menu, true);
-		} catch (IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException e) {
-			e.printStackTrace();
-		}
+		if (menu instanceof MenuBuilder) ((MenuBuilder) menu).setOptionalIconsVisible(true);
 		if (!APIOver21) {
 			menu.getItem(2).setEnabled(false);
 			menu.getItem(3).setTitle(R.string.local_legacy);    // API19暂不支持WebDAV
@@ -1235,7 +1137,7 @@ public class MainActivity extends AppCompatActivity {
 					runOnUiThread(() -> {
 						bar.setVisibility(View.VISIBLE);
 						davDirAdapter.reload(null, null, false);
-						davDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+						davDirAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 					});
 					String ux = u.toString();
 					if (davClient.exists(ux)) {
@@ -1251,7 +1153,7 @@ public class MainActivity extends AppCompatActivity {
 						runOnUiThread(() -> {
 							URI uri = URI.create(ux);
 							davDirAdapter.reload(cd, uri.getScheme() + KEY_URI_NOTCH + uri.getAuthority(), finalCanCdP);
-							davDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+							davDirAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 							bar.setVisibility(View.GONE);
 						});
 					} else throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
@@ -1261,14 +1163,14 @@ public class MainActivity extends AppCompatActivity {
 					runOnUiThread(() -> {
 						Toast.makeText(MainActivity.this, R.string.server_error, Toast.LENGTH_SHORT).show();
 						davDirAdapter.reload(null, null, false);
-						davDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+						davDirAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 						bar.setVisibility(View.GONE);
 					});
 				} catch (IOException | IllegalArgumentException e) {
 					runOnUiThread(() -> {
 						Toast.makeText(this, R.string.no_file, Toast.LENGTH_SHORT).show();
 						davDirAdapter.reload(null, null, false);
-						davDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+						davDirAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 						bar.setVisibility(View.GONE);
 					});
 				}
@@ -1334,7 +1236,7 @@ public class MainActivity extends AppCompatActivity {
 							final File[] f0 = new File[1];
 							fetchInThread(file -> f0[0] = file, null);
 							if (f0[0].exists()) {
-								@SuppressWarnings("StringBufferMayBeStringBuilder") StringBuffer buffer = new StringBuffer(ux);
+								StringBuilder buffer = new StringBuilder(ux);
 								if (buffer.charAt(buffer.length() - 1) != '/') buffer.append('/');
 								buffer.append(KEY_FN_INDEX);
 								lt = davClient.lock(uf = buffer.toString());
@@ -1462,7 +1364,7 @@ public class MainActivity extends AppCompatActivity {
 					File[] cd = d ? fd.f.listFiles() : fd.pd.listFiles();
 					if (d) fd.pd = fd.f.getParentFile();
 					localDirAdapter.reload(cd != null ? Arrays.asList(cd) : null, fd.pd != null && fd.pd.isDirectory() && fd.pd.canRead());
-					localDirAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+					localDirAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
 				} else throw new IOException(EXCEPTION_DOCUMENT_IO_ERROR);
 			} catch (IOException | IllegalArgumentException | SecurityException e) {
 				runOnUiThread(() -> {
@@ -1530,7 +1432,6 @@ public class MainActivity extends AppCompatActivity {
 				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(file), KEY_FD_R));
 						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, KEY_FD_W));
 						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-//						FileInputStream is = new FileInputStream(file);
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel ic = is.getChannel();
 						FileChannel oc = os.getChannel()) {
@@ -1632,7 +1533,6 @@ public class MainActivity extends AppCompatActivity {
 				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(file), KEY_FD_R));
 						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(nf.getUri(), KEY_FD_W));
 						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-//						FileInputStream is = new FileInputStream(file);
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel ic = is.getChannel();
 						FileChannel oc = os.getChannel()) {
@@ -1692,7 +1592,7 @@ public class MainActivity extends AppCompatActivity {
 		try {
 			db = readJson(this);
 			wikiListAdapter.reload(db);
-			wikiListAdapter.notifyDataSetChanged();	// Poor performance but needed by API119
+			wikiListAdapter.notifyDataSetChanged();    // Poor performance but no other way's here
 			noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -1773,12 +1673,8 @@ public class MainActivity extends AppCompatActivity {
 		if (ext != null && file.isFile())
 			try (ParcelFileDescriptor ifd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(file), KEY_FD_R));
 					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
-//					FileInputStream is = new FileInputStream(file);
 					FileChannel ic = is.getChannel()) {
-//				byte[] b = new byte[is.available()];
-//				if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
 				JSONObject jsonObject = new JSONObject(new String(fc2ba(ic)));
-//				JSONObject jsonObject = new JSONObject(new String(b));
 				if (!jsonObject.has(DB_KEY_WIKI)) jsonObject.put(DB_KEY_WIKI, new JSONObject());
 				return jsonObject;
 			} catch (IOException | JSONException | NonReadableChannelException e) {
@@ -1786,17 +1682,6 @@ public class MainActivity extends AppCompatActivity {
 			} finally {
 				file.delete();
 			}
-//			try (InputStream is = new FileInputStream(file)) {
-//				byte[] b = new byte[is.available()];
-//				if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
-//				JSONObject jsonObject = new JSONObject(new String(b));
-//				if (!jsonObject.has(DB_KEY_WIKI)) jsonObject.put(DB_KEY_WIKI, new JSONObject());
-//				return jsonObject;
-//			} catch (IOException | JSONException e) {
-//				e.printStackTrace();
-//			} finally {
-//				file.delete();
-//			}
 		JSONObject jsonObject = new JSONObject();
 		jsonObject.put(DB_KEY_WIKI, new JSONObject());
 		return jsonObject;
@@ -1806,64 +1691,33 @@ public class MainActivity extends AppCompatActivity {
 	static JSONObject readJson(Context context) throws JSONException {
 		try (FileInputStream is = context.openFileInput(DB_FILE_NAME);
 				FileChannel ic = is.getChannel()) {
-//			byte[] b = new byte[is.available()];
-//			if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
 			return new JSONObject(new String(fc2ba(ic)));
 		} catch (IOException | NonReadableChannelException e) {
 			throw new JSONException(e.getMessage());
 		}
-//		try (InputStream is = context.openFileInput(DB_FILE_NAME)) {
-//			byte[] b = new byte[is.available()];
-//			if (is.read(b) < 0) throw new IOException(EXCEPTION_JSON_DATA_ERROR);
-//			return new JSONObject(new String(b));
-//		} catch (NonReadableChannelException | IOException e) {
-//			throw new JSONException(e.getMessage());
-//		}
 	}
 
 	static void writeJson(Context context, JSONObject vdb) throws JSONException {
 		try (FileOutputStream os = context.openFileOutput(DB_FILE_NAME, MODE_PRIVATE);
 				FileChannel oc = os.getChannel()) {
-//			byte[] b = vdb.toString(2).getBytes();
-//			os.write(b);
-//			os.flush();
 			ba2fc(vdb.toString(2).getBytes(), oc);
 		} catch (IOException | NonWritableChannelException e) {
 			throw new JSONException(e.getMessage());
 		}
-//		try (FileOutputStream os = context.openFileOutput(DB_FILE_NAME, MODE_PRIVATE)) {
-//			byte[] b = vdb.toString(2).getBytes();
-//			os.write(b);
-//			os.flush();
-//		} catch (NonWritableChannelException | IOException e) {
-//			throw new JSONException(e.getMessage());
-//		}
 	}
 
 	static void exportJson(Context context, JSONObject vdb) {
 		File ext = context.getExternalFilesDir(null);
 		if (ext == null) return;
 		try (ParcelFileDescriptor ofd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(new File(ext, DB_FILE_NAME)), KEY_FD_W));
-//				OutputStream os = new FileOutputStream(new File(ext, DB_FILE_NAME))) {
 				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 				FileChannel oc = os.getChannel()) {
-//			byte[] b = vdb.toString(2).getBytes();
-//			os.write(b);
-//			os.flush();
 			ba2fc(vdb.toString(2).getBytes(), oc);
 		} catch (IOException | JSONException | NonWritableChannelException e) {
 			e.printStackTrace();
 		}
-//		try (OutputStream os = new FileOutputStream(new File(ext, DB_FILE_NAME))) {
-//			byte[] b = vdb.toString(2).getBytes();
-//			os.write(b);
-//			os.flush();
-//		} catch (IOException | JSONException e) {
-//			e.printStackTrace();
-//		}
 	}
 
-	@SuppressWarnings("SameReturnValue")
 	@TargetApi(23)
 	private static boolean checkPermission(Context context) {
 		boolean havePerms = false;
@@ -2031,29 +1885,10 @@ public class MainActivity extends AppCompatActivity {
 		ByteBuffer buffer = ByteBuffer.allocate((int) ic.size());
 		ic.read(buffer);
 		return buffer.array();
-//		int len = is.available();
-//		int length, lengthTotal = 0;
-//		byte[] bytes = new byte[MainActivity.BUF_SIZE];
-//		while ((length = is.read(bytes)) > -1) {
-//			oc.write(ByteBuffer.wrap(bytes));
-//			lengthTotal += length;
-//		}
-//		if (lengthTotal != len)
-//			throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
-//		oc.truncate(bytes.length);
-//		oc.force(true);
 	}
 
 	static void ba2fc(byte[] bytes, @NonNull FileChannel oc) throws IOException, NonWritableChannelException {
-//		int len = is.available();
-//		int length, lengthTotal = 0;
-//		byte[] bytes = new byte[MainActivity.BUF_SIZE];
-//		while ((length = is.read(bytes)) > -1) {
 		oc.write(ByteBuffer.wrap(bytes));
-//			lengthTotal += length;
-//		}
-//		if (lengthTotal != len)
-//			throw new IOException(MainActivity.EXCEPTION_TRANSFER_CORRUPTED);
 		oc.truncate(bytes.length);
 		oc.force(true);
 	}
@@ -2085,5 +1920,85 @@ public class MainActivity extends AppCompatActivity {
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
+	}
+
+	static void firstRunReq(Activity context) {
+		LinearLayout layout = new LinearLayout(context);
+		layout.setOrientation(LinearLayout.VERTICAL);
+		int dialogPadding2 = (int) (context.getResources().getDisplayMetrics().density * 12),
+				dialogPadding3 = (int) (context.getResources().getDisplayMetrics().density * 24);
+		layout.setPaddingRelative(dialogPadding3, dialogPadding2, dialogPadding3, 0);
+		TextView lbl1 = new TextView(context);
+		lbl1.setText(R.string.agreements_desc1);
+		lbl1.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
+		layout.addView(lbl1);
+		LinearLayout.LayoutParams agl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		TextView ag1 = new TextView(context);
+		ag1.setLayoutParams(agl);
+		ag1.setPadding(4, 0, 4, 0);
+		StringBuffer sb = new StringBuffer();
+		try (InputStream is = context.getAssets().open(LICENSE_FILE_NAME);
+				InputStreamReader isr = new InputStreamReader(is);
+				BufferedReader br = new BufferedReader(isr)) {
+			sb.append(br.readLine());
+			String line;
+			while ((line = br.readLine()) != null) {
+				sb.append("\n").append(line);
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
+		ag1.setText(sb);
+		ag1.setHorizontallyScrolling(true);
+		ag1.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
+		ag1.setTypeface(Typeface.MONOSPACE);
+		ag1.setTextSize(12);
+		ag1.setBackgroundColor(context.getResources().getColor(R.color.content_back_dec));
+		HorizontalScrollView agh1 = new HorizontalScrollView(context);
+		agh1.setHorizontalScrollBarEnabled(false);
+		agh1.addView(ag1);
+		ScrollView agc1 = new ScrollView(context);
+		LinearLayout.LayoutParams agl1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (context.getResources().getDisplayMetrics().density * 80));
+		agc1.setLayoutParams(agl1);
+		agc1.addView(agh1);
+		layout.addView(agc1);
+		TextView lbl2 = new TextView(context);
+		lbl2.setText(R.string.agreements_desc2);
+		lbl2.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
+		layout.addView(lbl2);
+		TextView ag2 = new TextView(context);
+		ag2.setLayoutParams(agl);
+		ag2.setPadding(4, 0, 4, 0);
+		ag2.setText(R.string.agreements_privacy);
+		ag2.setHorizontallyScrolling(true);
+		ag2.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
+		ag2.setTypeface(Typeface.MONOSPACE);
+		ag2.setTextSize(12);
+		ag2.setBackgroundColor(context.getResources().getColor(R.color.content_back_dec));
+		HorizontalScrollView agh2 = new HorizontalScrollView(context);
+		agh2.setHorizontalScrollBarEnabled(false);
+		agh2.addView(ag2);
+		ScrollView agc2 = new ScrollView(context);
+		LinearLayout.LayoutParams agl2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (context.getResources().getDisplayMetrics().density * 40));
+		agc2.setLayoutParams(agl2);
+		agc2.addView(agh2);
+		layout.addView(agc2);
+		TextView lbl3 = new TextView(context);
+		lbl3.setText(R.string.agreements_desc3);
+		lbl3.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
+		layout.addView(lbl3);
+		AlertDialog firstRunDialog = new AlertDialog.Builder(context)
+				.setTitle(R.string.agreements_title)
+				.setView(layout)
+				.setPositiveButton(R.string.agreements_accept, null)
+				.setNegativeButton(R.string.agreements_decline, (dialog, which) -> {
+					File dir = context.getFilesDir(), file = new File(dir, DB_FILE_NAME);
+					file.delete();
+					context.finishAffinity();
+					System.exit(0);
+				})
+				.create();
+		firstRunDialog.setCanceledOnTouchOutside(false);
+		firstRunDialog.show();
 	}
 }

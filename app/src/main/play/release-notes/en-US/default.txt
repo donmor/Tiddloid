@@ -12,14 +12,14 @@ Update details:
 - Merged WebDAV and Legacy mode
     - Now asks for storage permission when "Local (Legacy)" opened for the first time
 - Now will transfer data only if the remote template file updated
+- Now will make a backup of files to be replaced if backup enabled
 - Added WebView debugging (for debug build only)
 - Added support to UTF-16-encoded files
 - Now shows source of files in wiki list
 - Fixed a bug causing incorrect color scheme when go back to the file list from a dark themed page but the system is light themed (or vice versa)
 - Fixed a bug causing failure on picking text with certain characters
+- Fixed a bug causing failure on cloning from a bookmarked URL
 - Fixed a bug causing crash on importing files from file manager apps if is a fresh installation
-- Applied a temporary fix to the problem that random code appended to files on Android 10 and above
-  - Known issue:
-    - Crashes due to OOM when large files loaded
-    - Source file cannot be fixed on Android 10 and above (works on Android 9 only)
+- Solved the problem causing random code appended to files on Android 10 and above
+  - Put corrupted files in `[Internal]/Android/data/top.donmor.tiddloid/files` and cold start into wiki list to trigger a batch fix (May OOM when large files loaded)
 - Minor fixes
