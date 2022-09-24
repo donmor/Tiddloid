@@ -808,13 +808,12 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private Boolean loadPage(String id) {
-		Intent in = new Intent();
 		try {
 			if (!db.getJSONObject(DB_KEY_WIKI).has(id))
 				throw new JSONException(EXCEPTION_JSON_ID_NOT_FOUND);
 			Bundle bu = new Bundle();
 			bu.putString(KEY_ID, id);
-			in.putExtras(bu).setClass(this, TWEditorWV.class);
+			Intent in = new Intent().putExtras(bu).setClass(this, TWEditorWV.class);
 			startActivity(in);
 			return true;
 		} catch (JSONException e) {
