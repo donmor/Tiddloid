@@ -47,6 +47,7 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
+import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
@@ -142,7 +143,6 @@ public class TWEditorWV extends AppCompatActivity {
 	private ActivityResultLauncher<Intent> getChooserDL, getChooserImport, getChooserClone;
 	private JSONArray customActions, extraContent2 = null;
 	private final HashMap<Integer, String> customActionsMap = new HashMap<>();
-
 
 	// CONSTANT
 	private static final String
@@ -276,7 +276,7 @@ public class TWEditorWV extends AppCompatActivity {
 		// 初始化顶栏
 		toolbar = findViewById(R.id.wv_toolbar);
 		setSupportActionBar(toolbar);
-		toolbar.setNavigationOnClickListener(v -> TWEditorWV.this.onBackPressed());
+		toolbar.setNavigationOnClickListener(v -> onBackPressed());
 		this.setTitle(R.string.app_name);
 		onConfigurationChanged(getResources().getConfiguration());
 		wvProgress = findViewById(R.id.progressBar);
@@ -307,7 +307,7 @@ public class TWEditorWV extends AppCompatActivity {
 			if (result.getData() != null) {
 				uri = result.getData().getData();
 				if (uri == null) return;
-				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_RW));
+				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
 					MainActivity.ba2fc(exData, oc);
@@ -332,7 +332,7 @@ public class TWEditorWV extends AppCompatActivity {
 			if (exData == null) return;
 			if (result.getData() != null) {
 				Uri u = result.getData().getData();
-				if (u != null) try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u, MainActivity.KEY_FD_RW));
+				if (u != null) try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u, MainActivity.KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
 					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
@@ -433,7 +433,7 @@ public class TWEditorWV extends AppCompatActivity {
 						.setView(nwv)
 						.setPositiveButton(android.R.string.ok, null)
 						.setOnDismissListener(dialog1 -> {
-							nwv.loadDataWithBaseURL(null, null, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
+							nwv.loadDataWithBaseURL(null, MainActivity.STR_EMPTY, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
 							nwv.clearHistory();
 							((ViewGroup) nwv.getParent()).removeView(nwv);
 							nwv.removeAllViews();
@@ -514,7 +514,7 @@ public class TWEditorWV extends AppCompatActivity {
 			// 保存文件（指名）
 			@JavascriptInterface
 			public void saveDownload(String data, String filename) {
-				TWEditorWV.this.exData = data.getBytes(StandardCharsets.UTF_8);
+				exData = data.getBytes(StandardCharsets.UTF_8);
 				getChooserDL.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT)
 						.addCategory(Intent.CATEGORY_OPENABLE)
 						.setType(MIME_ANY)
@@ -709,7 +709,7 @@ public class TWEditorWV extends AppCompatActivity {
 				return;
 			}
 		}
-		MainActivity.trimDB140(TWEditorWV.this, db);    // db格式转换
+		MainActivity.trimDB140(this, db);    // db格式转换
 		// 初始化页内查找
 		((EditText) findViewById(R.id.find_edit_find)).addTextChangedListener(new TextWatcher() {
 			@Override
@@ -742,7 +742,6 @@ public class TWEditorWV extends AppCompatActivity {
 			btnDn.setEnabled(i1 != 0);
 		});
 		// 加载数据
-		MainActivity.trimDB140(this, db);
 		nextWiki(getIntent());
 		if (firstRun)
 			MainActivity.firstRunReq(this);
@@ -1154,7 +1153,11 @@ public class TWEditorWV extends AppCompatActivity {
 					}
 				}).setOnDismissListener(dialogInterface -> TWEditorWV.this.finish())
 				.create();
-		confirmAutoRemove.setOnShowListener(dialog1 -> confirmAutoRemove.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+		confirmAutoRemove.setOnShowListener(dialog1 -> {
+			Window w;
+			if ((w = confirmAutoRemove.getWindow()) != null)
+				w.getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()));
+		});
 		confirmAutoRemove.show();
 	}
 
@@ -1788,7 +1791,7 @@ public class TWEditorWV extends AppCompatActivity {
 		float[] l = new float[3];
 		if (themeColor != null) Color.colorToHSV(themeColor, l);
 		boolean lightBar = themeColor != null ? l[2] > 0.75 : (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;    // 系统栏模式 根据主题色灰度/日夜模式
-		toolbar.setVisibility(wApp != null && (hideAppbar && ready) ? View.GONE : View.VISIBLE);
+		toolbar.setVisibility(wApp != null && hideAppbar && ready ? View.GONE : View.VISIBLE);
 		Window window = getWindow();
 		WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(window, window.getDecorView());
 		if (MainActivity.APIOver23)
@@ -1808,11 +1811,11 @@ public class TWEditorWV extends AppCompatActivity {
 		findViewById(R.id.wv_appbar).setBackgroundColor(primColor);
 		toolbar.setTitleTextAppearance(this, R.style.Toolbar_TitleText);// 刷新字色
 		toolbar.setSubtitleTextAppearance(this, R.style.TextAppearance_AppCompat_Small);
+		toolbar.setNavigationIcon(MainActivity.APIOver24 || lightBar ? R.drawable.ic_arrow_back : R.drawable.ic_arrow_back_d);
 		EditText txtFind = findViewById(R.id.find_edit_find);
 		txtFind.setTextColor(getResources().getColor(R.color.content));
 		txtFind.setHintTextColor(getResources().getColor(R.color.content_sub));
 		((TextView) findViewById(R.id.find_indicator)).setTextColor(getResources().getColor(R.color.content_sub));
-		toolbar.setNavigationIcon(MainActivity.APIOver24 || lightBar ? R.drawable.ic_arrow_back : R.drawable.ic_arrow_back_d);
 		((ImageButton) findViewById(R.id.find_up)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_up_d, null));
 		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_down : R.drawable.ic_arrow_down_d, null));
 		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_close : R.drawable.ic_close_d, null));
@@ -1852,17 +1855,22 @@ public class TWEditorWV extends AppCompatActivity {
 				item.setTitle(s);
 			}
 		}
+		if (MainActivity.APIOver29 && wv != null) wv.getSettings().setForceDark(lightBar ? WebSettings.FORCE_DARK_OFF : WebSettings.FORCE_DARK_ON);
 	}
 
 	// WebView清理
 	@Override
 	protected void onDestroy() {
 		if (wv != null) {
+			ViewParent parent = wv.getParent();
+			if (parent != null) ((ViewGroup) parent).removeView(wv);
+			wv.stopLoading();
+			wv.getSettings().setJavaScriptEnabled(false);
 			wv.removeJavascriptInterface(JSI);
-			wv.loadDataWithBaseURL(null, null, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
+			wv.loadDataWithBaseURL(null, MainActivity.STR_EMPTY, MainActivity.TYPE_HTML, StandardCharsets.UTF_8.name(), null);
 			wv.clearHistory();
-			((ViewGroup) wv.getParent()).removeView(wv);
 			wv.removeAllViews();
+			wv.destroyDrawingCache();
 			wv.destroy();
 			wv = null;
 		}

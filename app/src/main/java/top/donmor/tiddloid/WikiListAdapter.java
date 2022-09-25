@@ -105,6 +105,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
 				}
 			}
+			// 调用接口
 			holder.btnWiki.setOnClickListener(v -> mItemClickListener.onItemClick(holder.getBindingAdapterPosition(), id));
 			holder.btnWiki.setOnLongClickListener(v -> {
 				vibrator.vibrate(new long[]{0, 1}, -1);
@@ -209,7 +210,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 
 	@Override
 	public int getItemCount() {
-		return ids.size();
+		return ids != null ? ids.size() : 0;
 	}
 
 	interface ItemClickListener {

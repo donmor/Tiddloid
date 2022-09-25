@@ -161,7 +161,6 @@ public class MainActivity extends AppCompatActivity {
 			KEY_FN_INDEX = "index.html",
 			KEY_FN_INDEX2 = "index.htm",
 			KEY_FD_R = "r",
-			KEY_FD_RW = "rw",
 			KEY_FD_W = "w",
 			KEY_SLASH = "/",
 			KEY_URI_NOTCH = "://",
@@ -185,7 +184,8 @@ public class MainActivity extends AppCompatActivity {
 	static final boolean APIOver21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP,
 			APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
-			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O;
+			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
+			APIOver29 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
 	static final String
 			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
 			EXCEPTION_DOCUMENT_IO_ERROR = "Document IO Error",
@@ -226,7 +226,7 @@ public class MainActivity extends AppCompatActivity {
 		rvWikiList.setLayoutManager(new LinearLayoutManager(this));
 		rvWikiList.setItemAnimator(new DefaultItemAnimator());
 		wikiListAdapter = new WikiListAdapter(this);
-		wikiListAdapter.setReloadListener(count -> noWiki.setVisibility(count > 0 ? View.GONE : View.VISIBLE));
+		wikiListAdapter.setReloadListener(count -> runOnUiThread(() -> noWiki.setVisibility(count > 0 ? View.GONE : View.VISIBLE)));
 		wikiListAdapter.setOnItemClickListener(new WikiListAdapter.ItemClickListener() {
 			// 点击打开
 			@Override
@@ -714,11 +714,7 @@ public class MainActivity extends AppCompatActivity {
 		void run(File file);
 	}
 
-	private static class UriFileInfo {
-		private long lastModified = 0L;
-	}
-
-	private static InputStream getAdaptiveUriInputStream(Uri uri, UriFileInfo infoWrapper) throws NetworkErrorException, InterruptedIOException {
+	private static InputStream getAdaptiveUriInputStream(Uri uri, final long[] lastModified) throws NetworkErrorException, InterruptedIOException {
 		try {
 			HttpsURLConnection httpURLConnection;
 			URL url = new URL(uri.normalizeScheme().toString());
@@ -726,7 +722,7 @@ public class MainActivity extends AppCompatActivity {
 			if (!APIOver21)
 				httpURLConnection.setSSLSocketFactory(new TLSSocketFactory());
 			httpURLConnection.connect();
-			infoWrapper.lastModified = httpURLConnection.getLastModified();
+			lastModified[0] = httpURLConnection.getLastModified();
 			return httpURLConnection.getInputStream();
 		} catch (InterruptedIOException e) {
 			throw e;
@@ -740,8 +736,8 @@ public class MainActivity extends AppCompatActivity {
 		boolean interrupted = false;
 		File cache = new File(getCacheDir(), genId()), dest = new File(getCacheDir(), TEMPLATE_FILE_NAME);
 		long pModified = dest.lastModified();
-		UriFileInfo infoWrapper = new UriFileInfo();
-		try (InputStream isw = getAdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo)), infoWrapper);
+		final long[] lastModified = new long[]{0L};
+		try (InputStream isw = getAdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo)), lastModified);
 				OutputStream osw = Objects.requireNonNull(getContentResolver().openOutputStream(Uri.fromFile(cache)));
 				ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(cache), KEY_FD_R));
 				ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
@@ -750,7 +746,7 @@ public class MainActivity extends AppCompatActivity {
 				FileChannel ic = is.getChannel();
 				FileChannel oc = os.getChannel()) {
 			// 下载到缓存
-			if (infoWrapper.lastModified != pModified) {
+			if (lastModified[0] != pModified) {
 				int length;
 				byte[] bytes = new byte[BUF_SIZE];
 				while ((length = isw.read(bytes)) > -1) {
@@ -764,7 +760,7 @@ public class MainActivity extends AppCompatActivity {
 				if (interrupted) throw new InterruptedException(EXCEPTION_INTERRUPTED);
 				fc2fc(ic, oc);
 			}
-			dest.setLastModified(infoWrapper.lastModified);
+			dest.setLastModified(lastModified[0]);
 			if (progressDialog != null) progressDialog.dismiss();
 		} catch (InterruptedException | InterruptedIOException ignored) {
 			interrupted = true;
@@ -1032,7 +1028,6 @@ public class MainActivity extends AppCompatActivity {
 							}
 						}).create();
 				aboutDialog.setOnShowListener(dialog -> aboutDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-				aboutDialog.setOnShowListener(dialog1 -> aboutDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
 				aboutDialog.show();
 				((TextView) aboutDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
 				if (APIOver23)
@@ -1448,14 +1443,14 @@ public class MainActivity extends AppCompatActivity {
 						Toast.makeText(MainActivity.this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
 						if (wa.optBoolean(DB_KEY_BACKUP)) backup(MainActivity.this, uri, null);
 					} else {
-						wa = new JSONObject();
-						wa.put(DB_KEY_URI, uri.toString());
+						wa = new JSONObject()
+								.put(DB_KEY_URI, uri.toString())
+								.put(DB_KEY_BACKUP, false);
 						id = genId();
 						wl.put(id, wa);
-						wa.put(DB_KEY_BACKUP, false);
 					}
-					wa.put(KEY_NAME, KEY_TW);
-					wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
+					wa.put(KEY_NAME, KEY_TW)
+							.put(DB_KEY_SUBTITLE, STR_EMPTY);
 					writeJson(MainActivity.this, db);
 					fc2fc(ic, oc);
 					try {
@@ -1493,12 +1488,12 @@ public class MainActivity extends AppCompatActivity {
 			if (exist) {
 				Toast.makeText(this, R.string.wiki_already_exists, Toast.LENGTH_SHORT).show();
 			} else {
-				wa = new JSONObject();
 				id = genId();
-				wa.put(KEY_NAME, KEY_TW);
-				wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
-				wa.put(DB_KEY_URI, uri.toString());
-				wa.put(DB_KEY_BACKUP, false);
+				wa = new JSONObject()
+						.put(KEY_NAME, KEY_TW)
+						.put(DB_KEY_SUBTITLE, STR_EMPTY)
+						.put(DB_KEY_URI, uri.toString())
+						.put(DB_KEY_BACKUP, false);
 				wl.put(id, wa);
 			}
 			writeJson(this, db);
@@ -1605,10 +1600,8 @@ public class MainActivity extends AppCompatActivity {
 		Window w = getWindow();
 		int color = getResources().getColor(R.color.design_default_color_primary);
 		WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(w, w.getDecorView());
-		if (APIOver23)
-			w.setStatusBarColor(color);
-		if (APIOver26)
-			w.setNavigationBarColor(color);
+		if (APIOver23) w.setStatusBarColor(color);
+		if (APIOver26) w.setNavigationBarColor(color);
 		wic.show(WindowInsetsCompat.Type.systemBars());
 		boolean lightBar = (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
 		wic.setAppearanceLightNavigationBars(lightBar);
@@ -1626,7 +1619,7 @@ public class MainActivity extends AppCompatActivity {
 							|| pathname.getName().endsWith(KEY_EX_HTA)));
 			if (files != null) for (File f : files) {
 				try (ParcelFileDescriptor ifd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(f), KEY_FD_R));
-						ParcelFileDescriptor ofd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(f), KEY_FD_RW));
+						ParcelFileDescriptor ofd = Objects.requireNonNull(context.getContentResolver().openFileDescriptor(Uri.fromFile(f), KEY_FD_W));
 						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel ic = is.getChannel();
