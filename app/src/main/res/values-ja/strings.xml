@@ -7,10 +7,10 @@
 <resources>
 	<!--Misc-->
 	<string name="entry_name">Tiddloidに追加する</string>
-    <!--JSON and Settings-->
+	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/ja-JP/empty.html</string>
-    <!--UI-->
-    <string name="action_new">新しいTiddlyWikiファイルを作成します</string>
+	<!--UI-->
+	<string name="action_new">新しいTiddlyWikiファイルを作成します</string>
 	<string name="action_import">TiddlyWikiファイルをインポートする</string>
 	<string name="action_dir">TiddlyWikiフォルダーを追加します</string>
 	<string name="action_dav">WebDAV / ローカル（レガシー）</string>
@@ -71,35 +71,35 @@
 	<string name="confirm_to_auto_remove_wiki">Wikiは利用できなくなりました。削除しますか？</string>
 	<string name="confirm_to_rollback">以前のバックアップに復元しますか？ 現在のバージョンをバックアップします。</string>
 	<string name="confirm_to_exit_wiki">未保存の変更があります。本当に終了しますか？</string>
-    <string name="wiki_rolled_back_successfully">Wikiはロールバックされました</string>
+	<string name="wiki_rolled_back_successfully">Wikiはロールバックされました</string>
 	<string name="third_part_rising">このページから別のアプリケーションが開かれます。続行しますか？</string>
 	<string name="backup_deleted">バックアップを削除しました</string>
 	<string name="hint_login">"%1$sにログイン "</string>
 	<string name="hint_username">ユーザー名</string>
 	<string name="hint_password">パスワード</string>
 	<string name="market">評価する</string>
-    <string name="about">
+	<string name="about">
 		Tiddloidは、ローカルに保存されているTiddlyWikiを操作するためのアプリです。いくつかのアイデアを得たら、すぐにそれらを書き留めてどこにでもアクセスできるようにすることができます。TiddlyWikiの詳細については、https://tiddlywiki.com を参照してください。\n
 		\n
 		このアプリは、これらのオープンソースプロジェクトの助けを借りて、GPLv2ライセンスの下でリリースされています：\n
-        Json - https://json.org/ ,\n
-        sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		Json - https://json.org/ ,\n
+		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
 		ライセンスファイルはソースコードとともに提供されます。\n
 		\n
 		このアプリの詳細については、プロジェクトページ（ https://github.com/donmor/Tiddloid/ ）または私のホームページ（ https://donmor.top/ ）をご覧ください。
 	</string>
-    <string name="agreements_title">利用規約</string>
+	<string name="agreements_title">利用規約</string>
 	<string name="agreements_desc1">このアプリは、GPLv2ライセンスの下でリリースされています：</string>
 	<string name="agreements_desc2">Tiddloid が正しく機能するには、次の権限が必要です：</string>
 	<string name="agreements_privacy">
 		[インターネット接続]
-        \nサーバーからテンプレートを取得するため
-        \n[外部ストレージ書き込み中]
-        \n従来の方法でファイルを処理する場合、無視できます
-        \n[カメラ]
-        \nカメラを使用する可能性のあるプラグインについては、無視できます
-        \n[ショートカットを作成中]
-        \ショートカットを作成するため、無視できます</string>
+		\nサーバーからテンプレートを取得するため
+		\n[外部ストレージ書き込み中]
+		\n従来の方法でファイルを処理する場合、無視できます
+		\n[カメラ]
+		\nカメラを使用する可能性のあるプラグインについては、無視できます
+		\n[ショートカットを作成中]
+		\ショートカットを作成するため、無視できます</string>
 	<string name="agreements_desc3">続行するには、上記の契約に同意する必要があります。</string>
 	<string name="agreements_accept">承認</string>
 	<string name="agreements_decline">断る</string>

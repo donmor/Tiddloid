@@ -71,7 +71,7 @@
 	<string name="confirm_to_auto_remove_wiki">Le wiki n\'est plus disponible. Voulez-vous l\'enlever?</string>
 	<string name="confirm_to_rollback">Voulez-vous restaurer à la sauvegarde précédente? Une sauvegarde de la version précédente sera générée.</string>
 	<string name="confirm_to_exit_wiki">Les modifications non enregistrées détectés. Êtes-vous sûr de vouloir quitter?</string>
-    <string name="wiki_rolled_back_successfully">Wiki restauré avec succès</string>
+	<string name="wiki_rolled_back_successfully">Wiki restauré avec succès</string>
 	<string name="third_part_rising">La page tente de démarrer une autre application. Voulez-vous continuer?</string>
 	<string name="backup_deleted">Sauvegarde supprimée</string>
 	<string name="hint_login">Connectez-vous à %1$s</string>
@@ -79,27 +79,27 @@
 	<string name="hint_password">Mot de passe</string>
 	<string name="market">Évaluer l\'application</string>
 	<string name="about">
-        Tiddloid est une application pour travailler avec les TiddlyWikis stockés localement. Une fois avoir des idées, vous pouvez les écrire immédiatement vers le bas afin que vous puissiez y accéder partout. Pour plus de détails sur TiddlyWiki, veuillez consulter https://tiddlywiki.com/ .\n
-        \n
-        Cette application est publiée sous la licence GPLv2 à l\'aide de ces projets:\n
-        Json - https://json.org/ ,\n
-        sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
-        Les fichiers de licence sont fournis avec les codes sources.\n
-        \n
-        Pour plus de détails sur cette application, veuillez visiter la page du projet ( https://github.com/donmor/Tiddloid/ ) ou ma page d\'accueil ( https://donmor.top/ ).
+		Tiddloid est une application pour travailler avec les TiddlyWikis stockés localement. Une fois avoir des idées, vous pouvez les écrire immédiatement vers le bas afin que vous puissiez y accéder partout. Pour plus de détails sur TiddlyWiki, veuillez consulter https://tiddlywiki.com/ .\n
+		\n
+		Cette application est publiée sous la licence GPLv2 à l\'aide de ces projets:\n
+		Json - https://json.org/ ,\n
+		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		Les fichiers de licence sont fournis avec les codes sources.\n
+		\n
+		Pour plus de détails sur cette application, veuillez visiter la page du projet ( https://github.com/donmor/Tiddloid/ ) ou ma page d\'accueil ( https://donmor.top/ ).
     </string>
-    <string name="agreements_title">Conditions d\'utilisation</string>
+	<string name="agreements_title">Conditions d\'utilisation</string>
 	<string name="agreements_desc1">Cette application est publiée sous la licence GPLv2:</string>
 	<string name="agreements_desc2">Tiddloid nécessite ces autorisations pour fonctionner correctement :</string>
 	<string name="agreements_privacy">
 		[Connexion Internet]
-        \nPour récupérer des modèles distants
-        \n[Écriture sur le stockage externe]
-        \nFacultatif, pour traiter le fichier de manière héritée
-        \n[Appareil photo]
-        \nFacultatif, pour les plugins probables qui utilisent l\'appareil photo
-        \n[Création d\'un raccourci]
-        \nFacultatif, pour créer des raccourcis</string>
+		\nPour récupérer des modèles distants
+		\n[Écriture sur le stockage externe]
+		\nFacultatif, pour traiter le fichier de manière héritée
+		\n[Appareil photo]
+		\nFacultatif, pour les plugins probables qui utilisent l\'appareil photo
+		\n[Création d\'un raccourci]
+		\nFacultatif, pour créer des raccourcis</string>
 	<string name="agreements_desc3">Pour continuer, vous devez accepter les accords ci-dessus.</string>
 	<string name="agreements_accept">Accepter</string>
 	<string name="agreements_decline">Déclin</string>

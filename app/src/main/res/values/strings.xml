@@ -5,8 +5,8 @@
   -->
 
 <resources>
-    <!--JS-->
-    <string name="js_is_wiki" translatable="false">
+	<!--JS-->
+	<string name="js_is_wiki" translatable="false">
         (function() {
             var isTW = (mta = document.getElementsByTagName(\"meta\")[\"application-name\"])!= null &amp;&amp; mta.content==\"TiddlyWiki\" || typeof(version) == \"object\" &amp;&amp; typeof(version.title) == \"string\";
             if (isTW &amp;&amp; typeof(version) == \"undefined\" &amp;&amp; $tw.wiki == undefined) {
@@ -20,7 +20,7 @@
             return isTW;
         })();
     </string>
-    <string name="js_is_classic" translatable="false">
+	<string name="js_is_classic" translatable="false">
         (function() {
             var classic = typeof(version) == \"object\" &amp;&amp; typeof(version.major) == \"number\";
             if (classic) {
@@ -32,17 +32,17 @@
             return classic;
         })();
     </string>
-    <string name="js_exit" translatable="false">
+	<string name="js_exit" translatable="false">
         (function() {
             return $tw.saverHandler != undefined &amp;&amp; $tw.saverHandler.isDirty();
         })();
     </string>
-    <string name="js_exit_c" translatable="false">
+	<string name="js_exit_c" translatable="false">
         (function() {
             return (store.isDirty() || story.areAnyDirty());
         })();
     </string>
-    <string name="js_import" translatable="false">
+	<string name="js_import" translatable="false">
         (function() {
             var w0 = $tw.wiki.makeWidget($tw.wiki.parseText(\'text/vnd.tiddlywiki\', \'
                 &lt;$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\" /&gt;
@@ -57,7 +57,7 @@
             w0.children[0].children[0].dispatchEvent({type: \'tm-import-tiddlers\', param: JSON.stringify(nBlocks)});
         })();
     </string>
-    <string name="js_new_tiddler" translatable="false">
+	<string name="js_new_tiddler" translatable="false">
         (function() {
             var w0 = $tw.wiki.makeWidget($tw.wiki.parseText(\'text/vnd.tiddlywiki\', \'
                 &lt;$navigator story=\"$:/StoryList\" history=\"$:/HistoryList\" /&gt;
@@ -67,7 +67,7 @@
             w0.children[0].children[0].dispatchEvent({type: \'tm-new-tiddler\', param: {text: block.text}});
         })();
     </string>
-    <string name="js_new_tiddler_c" translatable="false">
+	<string name="js_new_tiddler_c" translatable="false">
         (function() {
             var block = %1$s;
             ({
@@ -83,23 +83,23 @@
             }).fn();
         })();
     </string>
-    <string name="js_get_selected" translatable="false">
+	<string name="js_get_selected" translatable="false">
         (function() {
             return window.getSelection().toString();
         })();
     </string>
-    <string name="js_pop" translatable="false">
+	<string name="js_pop" translatable="false">
         (function() {
             new $tw.Story().navigateTiddler(\"%1$s\");
         })();
     </string>
 
-    <string name="js_settings_c" translatable="false">
+	<string name="js_settings_c" translatable="false">
         (function() {
             setOption(\"chkSaveBackups\",false);
         })();"
     </string>
-    <string name="js_settings_c2" translatable="false">
+	<string name="js_settings_c2" translatable="false">
         (function() {
             readOnly = false;
             backstage.init();
@@ -107,24 +107,24 @@
             story.refreshAllTiddlers();
         })();
     </string>
-    <string name="js_print" translatable="false">
+	<string name="js_print" translatable="false">
         (function() {
             window.print = function() {
                 window.twi.print();
             }
         })();
     </string>
-    <string name="js_save" translatable="false">
+	<string name="js_save" translatable="false">
         (function() {
             $tw.saverHandler.saveWiki();
         })();
     </string>
-    <string name="js_save_c" translatable="false">
+	<string name="js_save_c" translatable="false">
         (function() {
             saveChanges();
         })()
     </string>
-    <string name="js_info" translatable="false">
+	<string name="js_info" translatable="false">
         (function() {
             if (undefined == $tw.wiki) {
                 return [document.title, \"\", \"enc\", \"enc\", \"enc\"]
@@ -169,7 +169,7 @@
             return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon, tl_ca, tl_mt, tl_dt];
         })();
     </string>
-    <string name="js_info_c" translatable="false">
+	<string name="js_info_c" translatable="false">
         (function() {
             var tl_title =  store.getTiddlerText(\"SiteTitle\");
             var tl_subtitle = store.getTiddlerText(\"SiteSubtitle\");
@@ -178,114 +178,114 @@
             return [tl_title, tl_subtitle, \"no\", \"\", tl_favicon, \"\"]
         })();
     </string>
-    <!--Misc-->
-    <string name="app_name" translatable="false">Tiddloid</string>
-    <string name="entry_name">Add to Tiddloid</string>
-    <string name="tiddlywiki" translatable="false">TiddlyWiki</string>
-    <string name="logo" translatable="false">logo</string>
-    <string name="path" translatable="false">path</string>
-    <string name="icon" translatable="false">icon</string>
-    <string name="dav_go" translatable="false">dav_enter</string>
-    <string name="dav_legacy" translatable="false">dav_local</string>
-    <string name="rollback" translatable="false">rollback</string>
-    <string name="del_backup" translatable="false">del_backup</string>
-    <!--JSON and Settings-->
-    <string name="template_repo">https://tiddlywiki.com/empty.html</string>
-    <!--UI-->
-    <string name="action_new">New TiddlyWiki file</string>
-    <string name="action_import">Import a TiddlyWiki file</string>
-    <string name="action_dir">Add a TiddlyWiki folder</string>
-    <string name="action_dav">WebDAV / Local (Legacy)</string>
-    <string name="action_about">About Tiddloid</string>
-    <string name="action_save_to">Save to Tiddloid</string>
-    <string name="action_save_to_file">Save as a new file</string>
-    <string name="action_save_to_link">Save as a bookmark</string>
-    <string name="action_save">Save changes</string>
-    <string name="context_new_tiddler">New Tiddler here</string>
-    <string name="context_find">Find</string>
-    <string name="context_save">Save</string>
-    <string name="dav_address">WebDAV address</string>
-    <string name="dav_username">Username</string>
-    <string name="dav_password">Password</string>
-    <string name="find_find">Find</string>
-    <string name="find_close">Close</string>
-    <string name="find_down">Down</string>
-    <string name="find_up">Up</string>
-    <string name="no_permission">Unable to get filesystem permissions</string>
-    <string name="no_wiki">There is nothing here</string>
-    <string name="no_file">No such file or directory</string>
-    <string name="provider">Source:&#160;</string>
-    <string name="pathDir">Path:&#160;</string>
-    <string name="internet">Internet</string>
-    <string name="webdav" translatable="false">WebDAV</string>
-    <string name="local_legacy">Local (Legacy)</string>
-    <string name="unknown">Unknown</string>
-    <string name="default_wiki">Default Wiki</string>
-    <string name="default_wiki_needed">Please set a default Wiki</string>
-    <string name="enable_backup">Enable backup</string>
-    <string name="no_backups">No backups</string>
-    <string name="create_shortcut">Create a shortcut</string>
-    <string name="shortcut_created">Shortcut successfully created</string>
-    <string name="shortcut_failed">Failed to create shortcut</string>
-    <string name="clone_wiki">Clone</string>
-    <string name="remove_wiki">Remove</string>
-    <string name="server_error">Unable to connect to the server</string>
-    <string name="download_failed">Download failed</string>
-    <string name="please_wait">Please wait&#8230;</string>
-    <string name="failed">Failed</string>
-    <string name="cancelled">Cancelled</string>
-    <string name="wiki_replaced">Existing Wiki Overwritten</string>
-    <string name="file_deleted">File deleted</string>
-    <string name="backup_failed">Backup failed</string>
-    <string name="delete_backups_as_well">Delete backups as well</string>
-    <string name="delete_the_html_file">Delete the HTML file (Can\'t be undone!)</string>
-    <string name="not_a_wiki_page">The page is not a TiddlyWiki.</string>
-    <string name="failed_creating_file">Failed creating the file</string>
-    <string name="failed_deleting_file">Failed deleting the file</string>
-    <string name="failed_writing_file">Failed writing the file</string>
-    <string name="error_loading_page">Error loading the page</string>
-    <string name="error_processing_file">Error processing the file</string>
-    <string name="wiki_not_exist">Wiki does not exist</string>
-    <string name="wiki_already_exists">The wiki already exists</string>
-    <string name="wiki_link_added">Bookmark successfully added</string>
-    <string name="data_error">Data error</string>
-    <string name="confirm_to_del_backup">Are you sure you want to delete this version?</string>
-    <string name="confirm_to_remove_wiki">Are you sure you want to remove this Wiki from Tiddloid?</string>
-    <string name="confirm_to_auto_remove_wiki">The wiki is no longer available. Do you want to remove it?</string>
-    <string name="confirm_to_rollback">Do you want to restore to the previous backup? A backup of the current version will be generated.</string>
-    <string name="confirm_to_exit_wiki">Unsaved changes detected. Are you sure you want to quit?</string>
-    <string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
-    <string name="third_part_rising">The page is trying to start another application. Do you want to continue?</string>
-    <string name="backup_deleted">Backup deleted</string>
-    <string name="hint_login">Login to %1$s</string>
-    <string name="hint_username">Username</string>
-    <string name="hint_password">Password</string>
-    <string name="market">Rate This App</string>
-    <string name="about">
-        Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down so that you can access them anywhere. For more details of TiddlyWiki, please see https://tiddlywiki.com/ .\n
-        \n
-        This app is released under GPL v2 license with the help of these open source projects:\n
-        Json - https://json.org/ ,\n
-        sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
-        License files provided with source codes.\n
-        \n
-        For more details about this app, please visit the project page ( https://github.com/donmor/Tiddloid/ ) or my homepage ( https://donmor.top/ ).
+	<!--Misc-->
+	<string name="app_name" translatable="false">Tiddloid</string>
+	<string name="entry_name">Add to Tiddloid</string>
+	<string name="tiddlywiki" translatable="false">TiddlyWiki</string>
+	<string name="logo" translatable="false">logo</string>
+	<string name="path" translatable="false">path</string>
+	<string name="icon" translatable="false">icon</string>
+	<string name="dav_go" translatable="false">dav_enter</string>
+	<string name="dav_legacy" translatable="false">dav_local</string>
+	<string name="rollback" translatable="false">rollback</string>
+	<string name="del_backup" translatable="false">del_backup</string>
+	<!--JSON and Settings-->
+	<string name="template_repo">https://tiddlywiki.com/empty.html</string>
+	<!--UI-->
+	<string name="action_new">New TiddlyWiki file</string>
+	<string name="action_import">Import a TiddlyWiki file</string>
+	<string name="action_dir">Add a TiddlyWiki folder</string>
+	<string name="action_dav">WebDAV / Local (Legacy)</string>
+	<string name="action_about">About Tiddloid</string>
+	<string name="action_save_to">Save to Tiddloid</string>
+	<string name="action_save_to_file">Save as a new file</string>
+	<string name="action_save_to_link">Save as a bookmark</string>
+	<string name="action_save">Save changes</string>
+	<string name="context_new_tiddler">New Tiddler here</string>
+	<string name="context_find">Find</string>
+	<string name="context_save">Save</string>
+	<string name="dav_address">WebDAV address</string>
+	<string name="dav_username">Username</string>
+	<string name="dav_password">Password</string>
+	<string name="find_find">Find</string>
+	<string name="find_close">Close</string>
+	<string name="find_down">Down</string>
+	<string name="find_up">Up</string>
+	<string name="no_permission">Unable to get filesystem permissions</string>
+	<string name="no_wiki">There is nothing here</string>
+	<string name="no_file">No such file or directory</string>
+	<string name="provider">Source:&#160;</string>
+	<string name="pathDir">Path:&#160;</string>
+	<string name="internet">Internet</string>
+	<string name="webdav" translatable="false">WebDAV</string>
+	<string name="local_legacy">Local (Legacy)</string>
+	<string name="unknown">Unknown</string>
+	<string name="default_wiki">Default Wiki</string>
+	<string name="default_wiki_needed">Please set a default Wiki</string>
+	<string name="enable_backup">Enable backup</string>
+	<string name="no_backups">No backups</string>
+	<string name="create_shortcut">Create a shortcut</string>
+	<string name="shortcut_created">Shortcut successfully created</string>
+	<string name="shortcut_failed">Failed to create shortcut</string>
+	<string name="clone_wiki">Clone</string>
+	<string name="remove_wiki">Remove</string>
+	<string name="server_error">Unable to connect to the server</string>
+	<string name="download_failed">Download failed</string>
+	<string name="please_wait">Please wait&#8230;</string>
+	<string name="failed">Failed</string>
+	<string name="cancelled">Cancelled</string>
+	<string name="wiki_replaced">Existing Wiki Overwritten</string>
+	<string name="file_deleted">File deleted</string>
+	<string name="backup_failed">Backup failed</string>
+	<string name="delete_backups_as_well">Delete backups as well</string>
+	<string name="delete_the_html_file">Delete the HTML file (Can\'t be undone!)</string>
+	<string name="not_a_wiki_page">The page is not a TiddlyWiki.</string>
+	<string name="failed_creating_file">Failed creating the file</string>
+	<string name="failed_deleting_file">Failed deleting the file</string>
+	<string name="failed_writing_file">Failed writing the file</string>
+	<string name="error_loading_page">Error loading the page</string>
+	<string name="error_processing_file">Error processing the file</string>
+	<string name="wiki_not_exist">Wiki does not exist</string>
+	<string name="wiki_already_exists">The wiki already exists</string>
+	<string name="wiki_link_added">Bookmark successfully added</string>
+	<string name="data_error">Data error</string>
+	<string name="confirm_to_del_backup">Are you sure you want to delete this version?</string>
+	<string name="confirm_to_remove_wiki">Are you sure you want to remove this Wiki from Tiddloid?</string>
+	<string name="confirm_to_auto_remove_wiki">The wiki is no longer available. Do you want to remove it?</string>
+	<string name="confirm_to_rollback">Do you want to restore to the previous backup? A backup of the current version will be generated.</string>
+	<string name="confirm_to_exit_wiki">Unsaved changes detected. Are you sure you want to quit?</string>
+	<string name="wiki_rolled_back_successfully">Wiki rolled back successfully</string>
+	<string name="third_part_rising">The page is trying to start another application. Do you want to continue?</string>
+	<string name="backup_deleted">Backup deleted</string>
+	<string name="hint_login">Login to %1$s</string>
+	<string name="hint_username">Username</string>
+	<string name="hint_password">Password</string>
+	<string name="market">Rate This App</string>
+	<string name="about">
+		Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down so that you can access them anywhere. For more details of TiddlyWiki, please see https://tiddlywiki.com/ .\n
+		\n
+		This app is released under GPL v2 license with the help of these open source projects:\n
+		Json - https://json.org/ ,\n
+		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		License files provided with source codes.\n
+		\n
+		For more details about this app, please visit the project page ( https://github.com/donmor/Tiddloid/ ) or my homepage ( https://donmor.top/ ).
     </string>
-    <string name="about_title" translatable="false">Tiddloid - %s</string>
-    <string name="agreements_title">Terms of Use</string>
-    <string name="agreements_desc1">Tiddloid is published under GPL v2:</string>
-    <string name="agreements_desc2">Tiddloid require these permissions to work properly:</string>
-    <string name="agreements_privacy">
-        [Internet Connection]
-        \nFor fetching remote templates
-        \n[Writing External Storage]
-        \nOptional, for processing file in legacy way
-        \n[Camera]
-        \nOptional, for probable plugins that use camera
-        \n[Creating Shortcut]
-        \nOptional, for creating shortcuts
+	<string name="about_title" translatable="false">Tiddloid - %s</string>
+	<string name="agreements_title">Terms of Use</string>
+	<string name="agreements_desc1">Tiddloid is published under GPL v2:</string>
+	<string name="agreements_desc2">Tiddloid require these permissions to work properly:</string>
+	<string name="agreements_privacy">
+		[Internet Connection]
+		\nFor fetching remote templates
+		\n[Writing External Storage]
+		\nOptional, for processing file in legacy way
+		\n[Camera]
+		\nOptional, for probable plugins that use camera
+		\n[Creating Shortcut]
+		\nOptional, for creating shortcuts
     </string>
-    <string name="agreements_desc3">To continue, you have to accept the agreements above.</string>
-    <string name="agreements_accept">Accept</string>
-    <string name="agreements_decline">Decline</string>
+	<string name="agreements_desc3">To continue, you have to accept the agreements above.</string>
+	<string name="agreements_accept">Accept</string>
+	<string name="agreements_decline">Decline</string>
 </resources>

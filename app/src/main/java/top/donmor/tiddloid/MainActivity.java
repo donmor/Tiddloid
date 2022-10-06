@@ -809,8 +809,7 @@ public class MainActivity extends AppCompatActivity {
 				throw new JSONException(EXCEPTION_JSON_ID_NOT_FOUND);
 			Bundle bu = new Bundle();
 			bu.putString(KEY_ID, id);
-			Intent in = new Intent().putExtras(bu).setClass(this, TWEditorWV.class);
-			startActivity(in);
+			startActivity(new Intent().putExtras(bu).setClass(this, TWEditorWV.class));
 			return true;
 		} catch (JSONException e) {
 			e.printStackTrace();

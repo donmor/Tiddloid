@@ -63,7 +63,7 @@
 	<string name="error_loading_page">페이지를로드 오류</string>
 	<string name="error_processing_file">파일을 처리하는 중 오류가 발생했습니다</string>
 	<string name="wiki_already_exists">위키가 이미 있습니다</string>
-    <string name="wiki_not_exist">위키가 존재하지 않습니다</string>
+	<string name="wiki_not_exist">위키가 존재하지 않습니다</string>
 	<string name="wiki_link_added">북마크가 성공적으로 추가되었습니다.</string>
 	<string name="data_error">데이터 오류</string>
 	<string name="confirm_to_del_backup">이 버전을 삭제 하시겠습니까?</string>
@@ -71,7 +71,7 @@
 	<string name="confirm_to_auto_remove_wiki">위키는 더 이상 사용할 수 없습니다. 그것을 제거 하시겠습니까?</string>
 	<string name="confirm_to_rollback">이전 백업으로 복원 하시겠습니까? 이전 버전의 백업이 생성됩니다.</string>
 	<string name="confirm_to_exit_wiki">저장되지 않은 변경 사항이 감지되었습니다. 종료 하시겠습니까?</string>
-    <string name="wiki_rolled_back_successfully">위키가 성공적으로 롤백되었습니다</string>
+	<string name="wiki_rolled_back_successfully">위키가 성공적으로 롤백되었습니다</string>
 	<string name="third_part_rising">페이지가 다른 응용 프로그램을 열려고합니다. 계속 하시겠습니까?</string>
 	<string name="backup_deleted">백업이 삭제되었습니다</string>
 	<string name="hint_login">"%1$s에 로그인 "</string>
@@ -82,23 +82,23 @@
 		Tiddloid는 로컬에 저장된 TiddlyWiki와 함께 작동하는 앱입니다. 일단 아이디어가 있으면 즉시 적어두고 어디서나 액세스 할 수 있습니다. TiddlyWiki에 대한 자세한 내용은 https://tiddlywiki.com/을 참조하십시오.\n
 		\n
 		이 앱은 이러한 오픈 소스 프로젝트의 도움으로 GPLv2 라이선스로 출시되었습니다:\n
-        Json - https://json.org/ ,\n
-        sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		Json - https://json.org/ ,\n
+		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
 		라이센스 파일은 소스 코드와 함께 배포됩니다.\n
 		\n
 		이 응용 프로그램에 대한 자세한 내용은 프로젝트 페이지 ( https://github.com/donmor/Tiddloid/ ) 또는 내 홈페이지 ( https://donmor.top/ )를 방문하십시오.
 	</string>
-    <string name="agreements_title">사용 조건</string>
+	<string name="agreements_title">사용 조건</string>
 	<string name="agreements_desc1">이 애플리케이션은 GPLv2 라이선스에 따라 게시됩니다:</string>
 	<string name="agreements_desc2">Tiddloid가 제대로 작동하려면 다음 권한이 필요합니다:</string>
 	<string name="agreements_privacy">
 		[인터넷 연결]
-        \n원격 템플릿 가져오기
-        \n[외부 저장소 쓰기]
-        \n선택 사항, 레거시 방식으로 파일 처리
-        \n[카메라]
-        \n선택 사항, 카메라를 사용하는 플러그인의 경우
-        \n[바로가기 생성]
+		\n원격 템플릿 가져오기
+		\n[외부 저장소 쓰기]
+		\n선택 사항, 레거시 방식으로 파일 처리
+		\n[카메라]
+		\n선택 사항, 카메라를 사용하는 플러그인의 경우
+		\n[바로가기 생성]
 		\n선택 사항, 바로 가기 생성용
 	</string>
 	<string name="agreements_desc3">계속하려면 위의 계약에 동의해야 합니다.</string>

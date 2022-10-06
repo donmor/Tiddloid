@@ -63,7 +63,7 @@
 	<string name="error_loading_page">Error al cargar la página</string>
 	<string name="error_processing_file">Error al procesar el archivo</string>
 	<string name="wiki_already_exists">El wiki ya existe</string>
-    <string name="wiki_not_exist">Wiki no existe</string>
+	<string name="wiki_not_exist">Wiki no existe</string>
 	<string name="wiki_link_added">Favorito agregado correctamente</string>
 	<string name="data_error">Error de datos</string>
 	<string name="confirm_to_del_backup">¿Estás seguro de que quieres eliminar esta versión?</string>
@@ -71,7 +71,7 @@
 	<string name="confirm_to_auto_remove_wiki">La wiki ya no está disponible. ¿Quieres eliminarlo?</string>
 	<string name="confirm_to_rollback">¿Está seguro de que desea reemplazar este Wiki con la versión de respaldo? Se generará una copia de seguridad de la versión anterior.</string>
 	<string name="confirm_to_exit_wiki">Los cambios no se han guardado. ¿Estás seguro de que quieres dejar de fumar?</string>
-    <string name="wiki_rolled_back_successfully">Wiki revierte con éxito</string>
+	<string name="wiki_rolled_back_successfully">Wiki revierte con éxito</string>
 	<string name="third_part_rising">La página está intentando iniciar otra aplicación. ¿Quieres continuar?</string>
 	<string name="backup_deleted">Copia de seguridad ha sido eliminado</string>
 	<string name="hint_login">Iniciar sesión en %1$s</string>
@@ -79,26 +79,26 @@
 	<string name="hint_password">Contraseña</string>
 	<string name="market">Califica esta aplicación</string>
 	<string name="about">
-        Tiddloid es una aplicación para trabajar con TiddlyWikis almacenados localmente. Una vez que tenga algunas ideas, puede escribirlas inmediatamente para que pueda acceder a ellas desde cualquier lugar. Para obtener más detalles sobre TiddlyWiki, consulte https://tiddlywiki.com/ .\n
-        \n
-        Esta aplicación se lanza bajo la licencia GPLv2 con la ayuda de estos proyectos de código abierto:\n
-        Json - https://json.org/ ,\n
-        sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
-        El archivo de licencia se proporciona con el código fuente.\n
-        \n
-        Para obtener más detalles sobre esta aplicación, visite la página del proyecto ( https://github.com/donmor/Tiddloid/ ) o mi página de inicio ( https://donmor.top/ )..
+		Tiddloid es una aplicación para trabajar con TiddlyWikis almacenados localmente. Una vez que tenga algunas ideas, puede escribirlas inmediatamente para que pueda acceder a ellas desde cualquier lugar. Para obtener más detalles sobre TiddlyWiki, consulte https://tiddlywiki.com/ .\n
+		\n
+		Esta aplicación se lanza bajo la licencia GPLv2 con la ayuda de estos proyectos de código abierto:\n
+		Json - https://json.org/ ,\n
+		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		El archivo de licencia se proporciona con el código fuente.\n
+		\n
+		Para obtener más detalles sobre esta aplicación, visite la página del proyecto ( https://github.com/donmor/Tiddloid/ ) o mi página de inicio ( https://donmor.top/ )..
     </string>
-    <string name="agreements_title">Términos de Uso</string>
+	<string name="agreements_title">Términos de Uso</string>
 	<string name="agreements_desc1">"Esta aplicación se lanza bajo la licencia GPLv2\" "</string>
 	<string name="agreements_desc2">Tiddloid requiere estos permisos para funcionar correctamente:</string>
 	<string name="agreements_privacy">
 		[Conexión a Internet]
-        \nPara obtener plantillas remotas
-        \n[Escribir almacenamiento externo]
-        \nOpcional, para procesar archivos de forma heredada
-        \n[Cámara]
-        \nOpcional, para complementos probables que usan cámara
-        \n[Creando acceso directo]
+		\nPara obtener plantillas remotas
+		\n[Escribir almacenamiento externo]
+		\nOpcional, para procesar archivos de forma heredada
+		\n[Cámara]
+		\nOpcional, para complementos probables que usan cámara
+		\n[Creando acceso directo]
 		\nOpcional, para crear accesos directos
 	</string>
 	<string name="agreements_desc3">Para continuar, debe aceptar los acuerdos anteriores.</string>
