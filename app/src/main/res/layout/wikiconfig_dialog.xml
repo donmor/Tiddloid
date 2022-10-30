@@ -30,6 +30,12 @@
         android:text="@string/default_wiki" />
 
     <CheckBox
+        android:id="@+id/cbPluginAutoUpdate"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/plugin_auto_update" />
+
+    <CheckBox
         android:id="@+id/cbBackup"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"

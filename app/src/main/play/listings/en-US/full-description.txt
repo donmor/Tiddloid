@@ -14,7 +14,7 @@ Features
 - Convenient operations like Create shortcut, Clone and Delete
 - Importing or exporting wiki list data
 License
-  This app is under GPL v2 license. WebDAV function provided by `sardine-android` (https://github.com/thegrizzlylabs/sardine-android). License files provided in /lic.
+  This app is under GPL v2 license. License files provided along with the source code (including licence files of dependencies).
 Localization
   The localization of this app is currently provided by Google Translation. Pull requests are welcomed if you have better translations.
 For more details about this app, please visit the project page ( https://github.com/donmor/Tiddloid/ ) or my homepage ( https://donmor.top/ ).

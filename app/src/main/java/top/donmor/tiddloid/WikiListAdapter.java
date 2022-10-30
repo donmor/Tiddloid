@@ -32,6 +32,7 @@ import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
+import com.pixplicity.sharp.Sharp;
 import com.thegrizzlylabs.sardineandroid.DavResource;
 import com.thegrizzlylabs.sardineandroid.Sardine;
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
@@ -96,13 +97,22 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
 			holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			if (fib64.length() > 0) {
-				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
-				Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
-				if (favicon != null) {
-					int width = favicon.getWidth(), height = favicon.getHeight();
-					Matrix matrix = new Matrix();
-					matrix.postScale(scale * 24f / width, scale * 24f / height);
-					holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
+				try {
+					if (fib64.matches(MainActivity.REX_B64)) {	// Base64
+						byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
+						Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
+						if (favicon != null) {
+							int width = favicon.getWidth(), height = favicon.getHeight();
+							Matrix matrix = new Matrix();
+							matrix.postScale(scale * 24f / width, scale * 24f / height);
+							holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
+						}
+					} else {	// SVG
+						Sharp svg = Sharp.loadString(fib64);
+						holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(svg.getSharpPicture().getDrawable(), null, null, null);
+					}
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
 				}
 			}
 			// 调用接口

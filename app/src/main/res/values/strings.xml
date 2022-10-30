@@ -135,7 +135,7 @@
             var tl_tb_conf = $tw.wiki.getTiddlerText(\"$:/config/Tiddloid/HideToolbar\");
             var tl_tb_hide = tl_tb_conf != null ? tl_tb_conf : \"no\";
             var tl_apply_color = $tw.wiki.getTiddlerText(\"$:/config/Tiddloid/ApplyTheme\");;
-            if (\"yes\" == tl_apply_color) {
+            if (\"yes\" == tl_apply_color || \"l_d\" == tl_apply_color) {
                 var tl_c_map = $tw.utils.parseFields($tw.wiki.getTiddlerText($tw.wiki.getTiddlerText(\"$:/palette\")));
                 var tl_color = tl_c_map[\"page-background\"];
                 if (tl_color != undefined) {
@@ -158,7 +158,7 @@
                         tl_c_pre = \"#\";
                         tl_color = tl_c_pre.concat(Number.parseInt(tl_c_red).toString(16),Number.parseInt(tl_c_green).toString(16),Number.parseInt(tl_c_blue).toString(16));
                     }
-                    tl_c_hex = tl_color;
+                    tl_c_hex = \"l_d\" == tl_apply_color ? tl_color.replace(\"#\", \"$\") : tl_color;
                 }
             }
             var tl_fic = $tw.wiki.getTiddlerText(\"$:/favicon.ico\");
@@ -166,7 +166,9 @@
             var tl_ca = $tw.wiki.getTiddlerText(\"$:/config/Tiddloid/CustomActions.json\");
             var tl_mt = $tw.config.contentTypeInfo;
             var tl_dt = Object.keys($tw.Wiki.tiddlerDeserializerModules);
-            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon, tl_ca, tl_mt, tl_dt];
+            var tl_pv = $tw.wiki.getTiddler(\"$:/plugins/tiddlywiki/tiddloid-tweaks\");
+            tl_pv = tl_pv == undefined ? \"\" : tl_pv.fields.version;
+            return [tl_title, tl_sub, tl_tb_hide, tl_c_hex, tl_favicon, tl_ca, tl_mt, tl_dt, tl_pv];
         })();
     </string>
 	<string name="js_info_c" translatable="false">
@@ -182,6 +184,7 @@
 	<string name="app_name" translatable="false">Tiddloid</string>
 	<string name="entry_name">Add to Tiddloid</string>
 	<string name="tiddlywiki" translatable="false">TiddlyWiki</string>
+	<string name="plugin_version" translatable="false">1.2.0</string>
 	<string name="logo" translatable="false">logo</string>
 	<string name="path" translatable="false">path</string>
 	<string name="icon" translatable="false">icon</string>
@@ -222,6 +225,7 @@
 	<string name="unknown">Unknown</string>
 	<string name="default_wiki">Default Wiki</string>
 	<string name="default_wiki_needed">Please set a default Wiki</string>
+	<string name="plugin_auto_update">Tweaks plugin auto-update</string>
 	<string name="enable_backup">Enable backup</string>
 	<string name="no_backups">No backups</string>
 	<string name="create_shortcut">Create a shortcut</string>
@@ -265,8 +269,8 @@
 		Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down so that you can access them anywhere. For more details of TiddlyWiki, please see https://tiddlywiki.com/ .\n
 		\n
 		This app is released under GPL v2 license with the help of these open source projects:\n
-		Json - https://json.org/ ,\n
 		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		sharp - https://github.com/Pixplicity/sharp ,\n
 		License files provided with source codes.\n
 		\n
 		For more details about this app, please visit the project page ( https://github.com/donmor/Tiddloid/ ) or my homepage ( https://donmor.top/ ).

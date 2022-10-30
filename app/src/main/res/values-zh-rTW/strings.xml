@@ -39,6 +39,7 @@
 	<string name="unknown">不明</string>
 	<string name="default_wiki">默認維基</string>
 	<string name="default_wiki_needed">請設置默認維基</string>
+	<string name="plugin_auto_update">Tweaks插件自動更新</string>
 	<string name="enable_backup">啟用備份</string>
 	<string name="no_backups">沒有備份</string>
 	<string name="create_shortcut">在桌面上創建快捷方式</string>
@@ -82,8 +83,8 @@
 		Tiddloid是一款適用於本地存儲的TiddlyWiki的應用程序。一旦有了一些想法，您可以立即將它們寫下來，以便您可以隨時隨地訪問這些想法。有關TiddlyWiki的更多詳細信息，請參閱https://tiddlywiki.com/。 \n
 		\n
 		本應用程序遵循GPLv2許可發布，其完成離不開這些開源項目的幫助：\n
-		Json - https://json.org/ ,\n
 		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		sharp - https://github.com/Pixplicity/sharp ,\n
 		許可證文件與代碼一起提供。 \n
 		\n
 		有關本應用程式的更多詳細信息，請訪問項目頁面（ https://github.com/donmor/Tiddloid/ ）或我的主頁（ https://donmor.top/ ）。

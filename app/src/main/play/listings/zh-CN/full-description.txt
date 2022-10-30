@@ -14,7 +14,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 - 便捷的管理功能如创建快捷方式, 创建副本和移除等
 - 导入/导出Wiki列表
 许可
-  本应用程序遵循GPLv2许可发布。WebDAV功能使用了`sardine-android` (https://github.com/thegrizzlylabs/sardine-android)，许可证文件随源代码提供。
+  本应用程序遵循GPLv2许可发布，许可证文件随源代码提供（包括依赖的其他项目）。
 多语言
   此应用的翻译目前由Google翻译提供。如果您有更好的版本，欢迎在GitHub/Gitee上发起Pull Request。
 有关本应用程序的更多详细信息，请访问项目页面（https://github.com/donmor/Tiddloid）或我的主页（https://donmor.top/）。

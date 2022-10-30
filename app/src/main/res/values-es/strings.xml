@@ -39,6 +39,7 @@
 	<string name="unknown">Desconocido</string>
 	<string name="default_wiki">Wiki predeterminado</string>
 	<string name="default_wiki_needed">Establezca un Wiki predeterminado</string>
+	<string name="plugin_auto_update">Actualización automática del plugin Tweaks</string>
 	<string name="enable_backup">Habilitar copia de seguridad</string>
 	<string name="no_backups">No hay copias de seguridad</string>
 	<string name="create_shortcut">Crear un acceso directo en el escritorio</string>
@@ -82,8 +83,8 @@
 		Tiddloid es una aplicación para trabajar con TiddlyWikis almacenados localmente. Una vez que tenga algunas ideas, puede escribirlas inmediatamente para que pueda acceder a ellas desde cualquier lugar. Para obtener más detalles sobre TiddlyWiki, consulte https://tiddlywiki.com/ .\n
 		\n
 		Esta aplicación se lanza bajo la licencia GPLv2 con la ayuda de estos proyectos de código abierto:\n
-		Json - https://json.org/ ,\n
 		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		sharp - https://github.com/Pixplicity/sharp ,\n
 		El archivo de licencia se proporciona con el código fuente.\n
 		\n
 		Para obtener más detalles sobre esta aplicación, visite la página del proyecto ( https://github.com/donmor/Tiddloid/ ) o mi página de inicio ( https://donmor.top/ )..

@@ -39,6 +39,7 @@
 	<string name="unknown">불명</string>
 	<string name="default_wiki">기본 위키</string>
 	<string name="default_wiki_needed">기본 위키를 설정하세요</string>
+	<string name="plugin_auto_update">Tweaks 플러그인 자동 업데이트</string>
 	<string name="enable_backup">백업 사용</string>
 	<string name="no_backups">백업 없음</string>
 	<string name="create_shortcut">바탕 화면에 바로 가기 만들기</string>
@@ -82,8 +83,8 @@
 		Tiddloid는 로컬에 저장된 TiddlyWiki와 함께 작동하는 앱입니다. 일단 아이디어가 있으면 즉시 적어두고 어디서나 액세스 할 수 있습니다. TiddlyWiki에 대한 자세한 내용은 https://tiddlywiki.com/을 참조하십시오.\n
 		\n
 		이 앱은 이러한 오픈 소스 프로젝트의 도움으로 GPLv2 라이선스로 출시되었습니다:\n
-		Json - https://json.org/ ,\n
 		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
+		sharp - https://github.com/Pixplicity/sharp ,\n
 		라이센스 파일은 소스 코드와 함께 배포됩니다.\n
 		\n
 		이 응용 프로그램에 대한 자세한 내용은 프로젝트 페이지 ( https://github.com/donmor/Tiddloid/ ) 또는 내 홈페이지 ( https://donmor.top/ )를 방문하십시오.

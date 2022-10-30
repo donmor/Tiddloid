@@ -33,16 +33,20 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
     Wiki列表导入/导出属于极少用到的隐藏功能。
 
     * 导入：在第一次运行前复制`data.json`到`内部存储/Android/data/top.donmor.tiddloid/files/`。如果已经运行过了，则需要清除应用数据。
-    * 导出：导入随apk提供的插件,然后在`Control Panel/Appearance/Tiddloid Tweaks`中点击`Export Data`。生成的`data.json`可以在`内部存储/Android/data/top.donmor.tiddloid/files/`找到。
+    * 导出：安装`Tiddloid Tweaks`插件,然后在`Control Panel/Appearance/Tiddloid Tweaks`中点击`Export Data`。生成的`data.json`可以在`内部存储/Android/data/top.donmor.tiddloid/files/`找到。
 
 * 如何调整界面？
 
-    导入随apk提供的插件并： 
+    安装`Tiddloid Tweaks`插件并： 
 
-    * 应用主题色：选中`Control Panel/Appearance/Tiddloid Tweaks/Apply theme color to system bars`。
-    * 隐藏标题栏：选中`Control Panel/Appearance/Tiddloid Tweaks/Hide toolbar on loading complete`。
+    * 应用主题色：将`Control Panel/Appearance/Tiddloid Tweaks/Apply theme color to system bars`设为`Enabled`。如果设为`Light / Dark only`则只切换明亮/暗黑模式。
+    * 隐藏标题栏：将`Control Panel/Appearance/Tiddloid Tweaks/Hide toolbar on loading complete`设为`Enabled`。如果设为`Landscape only`则只在横屏模式隐藏标题栏。
     * 自定义菜单项：在`Control Panel/Appearance/Tiddloid Tweaks`中点击`Custom Actions`创建配置Tiddler，并按提示编辑。
-    
+
+* 如何安装`Tiddloid Tweaks`插件?
+    * 启用Wiki设置中的 `Tweaks插件自动更新`。插件将在页面加载完成时自动提示安装或更新。
+    * 或从release页面获取`.tid`文件并导入目标文件。
+
 * 从Google Drive导入的文件无法同步。
 
     尝试在Google Drive应用中将文件标记为“可离线使用”。（感谢@tedric42的反馈）
@@ -99,7 +103,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
 ### 许可
 
-本应用程序遵循GPLv2许可发布。WebDAV功能使用了`sardine-android` (https://github.com/thegrizzlylabs/sardine-android)，许可证文件随源代码提供。
+本应用程序遵循GPLv2许可发布，许可证文件随源代码提供（包括依赖的其他项目）。
 
 ### 多语言
 

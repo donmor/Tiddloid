@@ -21,6 +21,7 @@ import android.content.pm.PackageManager;
 import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Canvas;
 import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
@@ -38,6 +39,7 @@ import android.text.SpannableString;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.text.method.LinkMovementMethod;
+import android.text.method.ScrollingMovementMethod;
 import android.text.util.Linkify;
 import android.util.Base64;
 import android.view.Gravity;
@@ -52,7 +54,6 @@ import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
 import android.widget.CheckBox;
 import android.widget.EditText;
-import android.widget.HorizontalScrollView;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
 import android.widget.ProgressBar;
@@ -82,6 +83,7 @@ import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
+import com.pixplicity.sharp.Sharp;
 import com.thegrizzlylabs.sardineandroid.DavResource;
 import com.thegrizzlylabs.sardineandroid.Sardine;
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
@@ -150,11 +152,13 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_DEFAULT = "default",
 			DB_KEY_WIKI = "wiki",
 			DB_KEY_COLOR = "color",
+			DB_KEY_NO_TINT = "no_tint",
 			DB_KEY_URI = "uri",
 			DB_KEY_DAV_AUTH = "dav_username",
 			DB_KEY_DAV_TOKEN = "dav_password",
 			DB_KEY_SUBTITLE = "subtitle",
 			DB_KEY_BACKUP = "backup",
+			DB_KEY_PLUGIN_AUTO_UPDATE = "plugin_auto_update",
 			KEY_EX_HTML = ".html",
 			KEY_EX_HTM = ".htm",
 			KEY_EX_HTA = ".hta",
@@ -164,6 +168,7 @@ public class MainActivity extends AppCompatActivity {
 			KEY_FD_W = "w",
 			KEY_SLASH = "/",
 			KEY_URI_NOTCH = "://",
+			REX_B64 = "^[a-zA-Z0-9+/]*$",
 			MASK_SDF_BACKUP = "yyyyMMddHHmmssSSS",
 			SCH_CONTENT = "content",
 			SCH_FILE = "file",
@@ -303,9 +308,10 @@ public class MainActivity extends AppCompatActivity {
 						.append('\n')
 						.append(getString(R.string.pathDir))
 						.append(path));
-				final CheckBox cbDefault = view.findViewById(R.id.cbDefault), cbBackup = view.findViewById(R.id.cbBackup);
+				final CheckBox cbDefault = view.findViewById(R.id.cbDefault), cbPluginAutoUpdate = view.findViewById(R.id.cbPluginAutoUpdate), cbBackup = view.findViewById(R.id.cbBackup);
 				try {
 					cbDefault.setChecked(id.equals(db.optString(DB_KEY_DEFAULT)));
+					cbPluginAutoUpdate.setChecked(wa.optBoolean(DB_KEY_PLUGIN_AUTO_UPDATE));
 					cbBackup.setChecked(wa.getBoolean(DB_KEY_BACKUP));
 				} catch (JSONException e) {
 					e.printStackTrace();
@@ -320,6 +326,7 @@ public class MainActivity extends AppCompatActivity {
 					}
 				});
 				cbDefault.setEnabled(!iNet);
+				cbPluginAutoUpdate.setEnabled(!iNet);
 				cbBackup.setEnabled(!iNet);
 				final ConstraintLayout frmBackupList = view.findViewById(R.id.frmBackupList);
 				if (cbBackup.isChecked()) frmBackupList.setVisibility(View.VISIBLE);
@@ -329,12 +336,18 @@ public class MainActivity extends AppCompatActivity {
 				rvBackupList.setLayoutManager(new LinearLayoutManager(view.getContext()));
 				// 读图标
 				Drawable icon = null;
-				byte[] b = Base64.decode(wa.optString(KEY_FAVICON), Base64.NO_PADDING);
-				final Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
-				if (APIOver21) {
-					if (favicon != null) icon = new BitmapDrawable(getResources(), favicon);
-					else
-						icon = ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_description);
+				if (APIOver21) try {
+					String fib64 = wa.optString(KEY_FAVICON);
+					if (fib64.matches(REX_B64)) {    // Base64
+						byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
+						Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
+						if (favicon != null) icon = new BitmapDrawable(getResources(), favicon);
+					} else {    // SVG
+						Sharp svg = Sharp.loadString(fib64);
+						icon = svg.getSharpPicture().getDrawable();
+					}
+				} catch (IllegalArgumentException e) {
+					e.printStackTrace();
 				}
 				final Uri tu;
 				Uri tu1 = null;
@@ -370,9 +383,10 @@ public class MainActivity extends AppCompatActivity {
 				}
 				tu = tu1;    // 非null时为目录模式
 				// 构建dialog
+				Drawable finalIcon = icon;
 				final AlertDialog wikiConfigDialog = new AlertDialog.Builder(MainActivity.this)
 						.setTitle(name)
-						.setIcon(icon)
+						.setIcon(icon != null ? icon : ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_description))
 						.setView(view)
 						.setPositiveButton(R.string.remove_wiki, (dialog, which) -> {
 							dialog.dismiss();
@@ -463,7 +477,9 @@ public class MainActivity extends AppCompatActivity {
 									ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
 											.setShortLabel(name)
 											.setLongLabel(name + (sub.length() > 0 ? KEY_LBL + sub : sub))
-											.setIcon(favicon != null ? IconCompat.createWithBitmap(favicon) : IconCompat.createWithResource(MainActivity.this, APIOver21 ? R.drawable.ic_shortcut : R.mipmap.ic_shortcut))
+											.setIcon(finalIcon != null ? IconCompat.createWithBitmap(
+													finalIcon instanceof BitmapDrawable ? ((BitmapDrawable) finalIcon).getBitmap() : drawable2bitmap(finalIcon)
+											) : IconCompat.createWithResource(MainActivity.this, APIOver21 ? R.drawable.ic_shortcut : R.mipmap.ic_shortcut))
 											.setIntent(in)
 											.build();
 									if (ShortcutManagerCompat.requestPinShortcut(MainActivity.this, shortcut, null))
@@ -631,6 +647,15 @@ public class MainActivity extends AppCompatActivity {
 						Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
 					}
 				});
+				cbPluginAutoUpdate.setOnCheckedChangeListener((buttonView, isChecked) -> {
+					try {
+						wa.put(DB_KEY_PLUGIN_AUTO_UPDATE, isChecked);
+						writeJson(MainActivity.this, db);
+					} catch (JSONException e) {
+						e.printStackTrace();
+						Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
+					}
+				});
 				wikiConfigDialog.show();
 				wikiConfigDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(!iNet);
 			}
@@ -671,7 +696,6 @@ public class MainActivity extends AppCompatActivity {
 				e.printStackTrace();
 				try {
 					db = initJson(MainActivity.this);    // 初始化JSON数据，如果加载失败
-					writeJson(MainActivity.this, db);
 					firstRun = true;
 				} catch (JSONException e1) {
 					e1.printStackTrace();
@@ -704,7 +728,23 @@ public class MainActivity extends AppCompatActivity {
 					((ViewGroup) parent).removeView(splash);
 				w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 				if (firstRun)
-					firstRunReq(this);
+					firstRunReq(this, new OnFirstRun() {
+						@Override
+						public void onAgreed() {
+							try {
+								writeJson(MainActivity.this, db);
+							} catch (JSONException e) {
+								e.printStackTrace();
+								Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+							}
+						}
+
+						@Override
+						public void onDeclined() {
+							finishAffinity();
+							System.exit(0);
+						}
+					});
 			});
 			batchFix(MainActivity.this);
 		}).start();
@@ -1199,11 +1239,12 @@ public class MainActivity extends AppCompatActivity {
 					else {
 						wa = new JSONObject();
 						id = genId();
-						wa.put(KEY_NAME, KEY_TW);
-						wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
-						wa.put(DB_KEY_URI, ux);
-						wa.put(DB_KEY_BACKUP, false);
-						wa.put(DB_KEY_DAV_AUTH, un);
+						wa.put(KEY_NAME, KEY_TW)
+								.put(DB_KEY_SUBTITLE, STR_EMPTY)
+								.put(DB_KEY_URI, ux)
+								.put(DB_KEY_PLUGIN_AUTO_UPDATE, false)
+								.put(DB_KEY_BACKUP, false)
+								.put(DB_KEY_DAV_AUTH, un);
 						wl.put(id, wa);
 					}
 					wa.put(DB_KEY_DAV_TOKEN, tok);
@@ -1384,10 +1425,11 @@ public class MainActivity extends AppCompatActivity {
 					else {
 						wa = new JSONObject();
 						id = genId();
-						wa.put(KEY_NAME, KEY_TW);
-						wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
-						wa.put(DB_KEY_URI, ux);
-						wa.put(DB_KEY_BACKUP, false);
+						wa.put(KEY_NAME, KEY_TW)
+								.put(DB_KEY_SUBTITLE, STR_EMPTY)
+								.put(DB_KEY_URI, ux)
+								.put(DB_KEY_PLUGIN_AUTO_UPDATE, false)
+								.put(DB_KEY_BACKUP, false);
 						wl.put(id, wa);
 					}
 					writeJson(MainActivity.this, db);
@@ -1444,6 +1486,7 @@ public class MainActivity extends AppCompatActivity {
 					} else {
 						wa = new JSONObject()
 								.put(DB_KEY_URI, uri.toString())
+								.put(DB_KEY_PLUGIN_AUTO_UPDATE, false)
 								.put(DB_KEY_BACKUP, false);
 						id = genId();
 						wl.put(id, wa);
@@ -1492,6 +1535,7 @@ public class MainActivity extends AppCompatActivity {
 						.put(KEY_NAME, KEY_TW)
 						.put(DB_KEY_SUBTITLE, STR_EMPTY)
 						.put(DB_KEY_URI, uri.toString())
+						.put(DB_KEY_PLUGIN_AUTO_UPDATE, false)
 						.put(DB_KEY_BACKUP, false);
 				wl.put(id, wa);
 			}
@@ -1553,10 +1597,11 @@ public class MainActivity extends AppCompatActivity {
 			} else {
 				wa = new JSONObject();
 				id = genId();
-				wa.put(KEY_NAME, KEY_TW);
-				wa.put(DB_KEY_SUBTITLE, STR_EMPTY);
-				wa.put(DB_KEY_URI, uri.toString());
-				wa.put(DB_KEY_BACKUP, false);
+				wa.put(KEY_NAME, KEY_TW)
+						.put(DB_KEY_SUBTITLE, STR_EMPTY)
+						.put(DB_KEY_URI, uri.toString())
+						.put(DB_KEY_PLUGIN_AUTO_UPDATE, false)
+						.put(DB_KEY_BACKUP, false);
 				wl.put(id, wa);
 			}
 			writeJson(this, db);
@@ -1871,6 +1916,15 @@ public class MainActivity extends AppCompatActivity {
 		return '.' + format.format(new Date(time));
 	}
 
+	private static Bitmap drawable2bitmap(Drawable drawable) {
+		int w = drawable.getIntrinsicWidth(), h = drawable.getIntrinsicHeight();
+		Bitmap.Config config = drawable.getOpacity() != PixelFormat.OPAQUE ? Bitmap.Config.ARGB_8888 : Bitmap.Config.RGB_565;
+		Bitmap bitmap = Bitmap.createBitmap(w, h, config);
+		drawable.setBounds(0, 0, w, h);
+		drawable.draw(new Canvas(bitmap));
+		return bitmap;
+	}
+
 	static byte[] fc2ba(@NonNull FileChannel ic) throws IOException, NonReadableChannelException {
 		if (ic.size() > Integer.MAX_VALUE) throw new IOException();
 		ByteBuffer buffer = ByteBuffer.allocate((int) ic.size());
@@ -1900,9 +1954,9 @@ public class MainActivity extends AppCompatActivity {
 			for (int i = 0; i < wl.length(); i++) {
 				JSONObject wiki = new JSONObject(), w0 = wl.optJSONObject(i);
 				if (w0 == null) continue;
-				wiki.put(KEY_NAME, w0.optString(KEY_NAME, KEY_TW));
-				wiki.put(DB_KEY_SUBTITLE, w0.optString(DB_KEY_SUBTITLE));
-				wiki.put(DB_KEY_URI, Uri.fromFile(new File(w0.optString(DB_KEY_PATH))).toString());
+				wiki.put(KEY_NAME, w0.optString(KEY_NAME, KEY_TW))
+						.put(DB_KEY_SUBTITLE, w0.optString(DB_KEY_SUBTITLE))
+						.put(DB_KEY_URI, Uri.fromFile(new File(w0.optString(DB_KEY_PATH))).toString());
 				wl2.put(w0.optString(KEY_ID, genId()), wiki);
 			}
 			db.remove(DB_KEY_WIKI);
@@ -1913,7 +1967,13 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	static void firstRunReq(Activity context) {
+	interface OnFirstRun {
+		void onAgreed();
+
+		void onDeclined();
+	}
+
+	static void firstRunReq(Activity context, OnFirstRun cb) {
 		LinearLayout layout = new LinearLayout(context);
 		layout.setOrientation(LinearLayout.VERTICAL);
 		int dialogPadding2 = (int) (context.getResources().getDisplayMetrics().density * 12),
@@ -1923,7 +1983,7 @@ public class MainActivity extends AppCompatActivity {
 		lbl1.setText(R.string.agreements_desc1);
 		lbl1.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
 		layout.addView(lbl1);
-		LinearLayout.LayoutParams agl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.WRAP_CONTENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+		LinearLayout.LayoutParams agl = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
 		TextView ag1 = new TextView(context);
 		ag1.setLayoutParams(agl);
 		ag1.setPadding(4, 0, 4, 0);
@@ -1941,17 +2001,15 @@ public class MainActivity extends AppCompatActivity {
 		}
 		ag1.setText(sb);
 		ag1.setHorizontallyScrolling(true);
+		ag1.setMovementMethod(ScrollingMovementMethod.getInstance());
 		ag1.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
 		ag1.setTypeface(Typeface.MONOSPACE);
 		ag1.setTextSize(12);
 		ag1.setBackgroundColor(context.getResources().getColor(R.color.content_back_dec));
-		HorizontalScrollView agh1 = new HorizontalScrollView(context);
-		agh1.setHorizontalScrollBarEnabled(false);
-		agh1.addView(ag1);
 		ScrollView agc1 = new ScrollView(context);
 		LinearLayout.LayoutParams agl1 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (context.getResources().getDisplayMetrics().density * 80));
 		agc1.setLayoutParams(agl1);
-		agc1.addView(agh1);
+		agc1.addView(ag1);
 		layout.addView(agc1);
 		TextView lbl2 = new TextView(context);
 		lbl2.setText(R.string.agreements_desc2);
@@ -1962,17 +2020,15 @@ public class MainActivity extends AppCompatActivity {
 		ag2.setPadding(4, 0, 4, 0);
 		ag2.setText(R.string.agreements_privacy);
 		ag2.setHorizontallyScrolling(true);
+		ag2.setMovementMethod(ScrollingMovementMethod.getInstance());
 		ag2.setTextAppearance(context, android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
 		ag2.setTypeface(Typeface.MONOSPACE);
 		ag2.setTextSize(12);
 		ag2.setBackgroundColor(context.getResources().getColor(R.color.content_back_dec));
-		HorizontalScrollView agh2 = new HorizontalScrollView(context);
-		agh2.setHorizontalScrollBarEnabled(false);
-		agh2.addView(ag2);
 		ScrollView agc2 = new ScrollView(context);
 		LinearLayout.LayoutParams agl2 = new LinearLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, (int) (context.getResources().getDisplayMetrics().density * 40));
 		agc2.setLayoutParams(agl2);
-		agc2.addView(agh2);
+		agc2.addView(ag2);
 		layout.addView(agc2);
 		TextView lbl3 = new TextView(context);
 		lbl3.setText(R.string.agreements_desc3);
@@ -1981,13 +2037,8 @@ public class MainActivity extends AppCompatActivity {
 		AlertDialog firstRunDialog = new AlertDialog.Builder(context)
 				.setTitle(R.string.agreements_title)
 				.setView(layout)
-				.setPositiveButton(R.string.agreements_accept, null)
-				.setNegativeButton(R.string.agreements_decline, (dialog, which) -> {
-					File dir = context.getFilesDir(), file = new File(dir, DB_FILE_NAME);
-					file.delete();
-					context.finishAffinity();
-					System.exit(0);
-				})
+				.setPositiveButton(R.string.agreements_accept, (dialog, which) -> cb.onAgreed())
+				.setNegativeButton(R.string.agreements_decline, (dialog, which) -> cb.onDeclined())
 				.create();
 		firstRunDialog.setCanceledOnTouchOutside(false);
 		firstRunDialog.show();

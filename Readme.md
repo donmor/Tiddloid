@@ -33,15 +33,19 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
     The wiki list importing/exporting are hidden features since it's seldom used.
 
     * To import: Copy `data.json` to `INTERNAL/Android/data/top.donmor.tiddloid/files/` before running for the first time. If you have previously run the program, clear the data in `Settings/Apps` and copy the file.
-    * To export: Install the plugin provided along with the apk, then Click `Export Data` in `Control Panel/Appearance/Tiddloid Tweaks`. A `data.json` will be generated under `INTERNAL/Android/data/top.donmor.tiddloid/files/`.
+    * To export: Install `Tiddloid Tweaks` plugin, then Click `Export Data` in `Control Panel/Appearance/Tiddloid Tweaks`. A `data.json` will be generated under `INTERNAL/Android/data/top.donmor.tiddloid/files/`.
 
 * How to apply UI tweaks?
 
-    Install the plugin provided along with the apk and: 
+    Install `Tiddloid Tweaks` plugin and: 
 
-    * Apply theme color: Check `Control Panel/Appearance/Tiddloid Tweaks/Apply theme color to system bars`.
-    * Hide toolbar: Check `Control Panel/Appearance/Tiddloid Tweaks/Hide toolbar on loading complete`.
+    * Apply theme color: Select `Enabled ` in `Control Panel/Appearance/Tiddloid Tweaks/Apply theme color to system bars`. If `Light / Dark only` is selected, only light/dark mode is switched.
+    * Hide toolbar: Select `Enabled ` in  `Control Panel/Appearance/Tiddloid Tweaks/Hide toolbar on loading complete`. If `Landscape only` is selected, the toolbar will be hidden only if in landscape mode.
     * Custom actions:  to create a config tiddler and edit it following the instructions.
+
+* How to get `Tiddloid Tweaks` installed?
+  * Enable `Tweaks plugin auto-update` in per-wiki settings. The plugin will be prepared for installation/update as soon as the page loaded.
+  * Or fetch the `.tid` file from releases page and import it.
     
 * The file imported from Google Drive won't sync with other devices.
 
@@ -113,7 +117,7 @@ is permitted UNDER THESE CONDITIONS:
 3. Disclose source under
 4. Same license.
 
-WebDAV function provided by `sardine-android` (https://github.com/thegrizzlylabs/sardine-android). License files provided in /lic.
+License files provided along with the source code (including licence files of dependencies).
 
 ### Localization
 

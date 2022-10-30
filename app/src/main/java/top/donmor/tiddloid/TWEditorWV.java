@@ -85,6 +85,8 @@ import androidx.core.view.WindowInsetsCompat;
 import androidx.core.view.WindowInsetsControllerCompat;
 import androidx.documentfile.provider.DocumentFile;
 
+import com.pixplicity.sharp.Sharp;
+import com.pixplicity.sharp.SvgParseException;
 import com.thegrizzlylabs.sardineandroid.DavResource;
 import com.thegrizzlylabs.sardineandroid.Sardine;
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
@@ -124,7 +126,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private WebChromeClient wcc;
 	private View mCustomView;
 	private WebChromeClient.CustomViewCallback mCustomViewCallback;
-	private int mOriginalOrientation, dialogPadding;
+	private int mOriginalOrientation, dialogPadding, hideAppbar = 0;
 	private Integer themeColor = null;
 	private float scale;
 	private ValueCallback<Uri[]> uploadMessage;
@@ -132,7 +134,8 @@ public class TWEditorWV extends AppCompatActivity {
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private Uri uri = null, cachedUri;
-	private boolean isWiki, isClassic, hideAppbar = false, ready = false, failed = false, firstRun;
+	private boolean isWiki, isClassic, noTint = false, ready = false, failed = false;
+	private static boolean firstRun;
 	private Charset overrodeCharset = null;
 	private byte[] exData = null;
 	private Menu optMenu;
@@ -150,6 +153,7 @@ public class TWEditorWV extends AppCompatActivity {
 			EXT_HTA = ".hta",
 			MIME_ANY = "*/*",
 			MIME_TEXT = "text/plain",
+			MIME_TID = "application/x-tiddler",
 			REX_SP_CHR = "\\s",
 			KEY_ACTION = "action",
 			KEY_ALG = "MD5",
@@ -160,9 +164,11 @@ public class TWEditorWV extends AppCompatActivity {
 			KEY_FIND_IND = "%1$d/%2$d",
 			KEY_ICON = "icon",
 			KEY_YES = "yes",
+			KEY_LAND = "land",
 			KEY_TEXT = "text",
 			KEY_TITLE = "title",
 			KEY_TYPE = "type",
+			PLUGIN_FILE_NAME = "tiddloid-tweaks-plugin.tid",
 			SCH_ABOUT = "about",
 			SCH_TEL = "tel",
 			SCH_MAILTO = "mailto",
@@ -353,9 +359,9 @@ public class TWEditorWV extends AppCompatActivity {
 						wl.put(id, wa);
 						wa.put(MainActivity.DB_KEY_BACKUP, false);
 					}
-					wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
-					wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
-					wa.put(MainActivity.DB_KEY_URI, u.toString());
+					wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW)
+							.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY)
+							.put(MainActivity.DB_KEY_URI, u.toString());
 					MainActivity.writeJson(this, db);
 					MainActivity.ba2fc(exData, oc);
 					Bundle bu = new Bundle();
@@ -381,7 +387,7 @@ public class TWEditorWV extends AppCompatActivity {
 			@Override
 			public void onProgressChanged(WebView view, int newProgress) {
 				ready = newProgress == 100;
-				toolbar.setVisibility(hideAppbar && ready ? View.GONE : View.VISIBLE);
+				toolbar.setVisibility(wApp != null && (hideAppbar == 1 || hideAppbar == 2 && Configuration.ORIENTATION_LANDSCAPE == getResources().getConfiguration().orientation) && ready ? View.GONE : View.VISIBLE);
 				wvProgress.setVisibility(ready ? View.GONE : View.VISIBLE);
 				wvProgress.setProgress(newProgress);
 				super.onProgressChanged(view, newProgress);
@@ -440,8 +446,9 @@ public class TWEditorWV extends AppCompatActivity {
 							nwv.destroy();
 						})
 						.create();
-				if (themeColor != null && dialog.getWindow() != null)
+				if (!noTint && themeColor != null && dialog.getWindow() != null)
 					dialog.getWindow().getDecorView().setBackgroundColor(themeColor);
+				if (MainActivity.APIOver29) nwv.getSettings().setForceDark(wv.getSettings().getForceDark());
 				nwv.setWebViewClient(new WebViewClient() {
 					@Override
 					public void onPageFinished(WebView view, String url) {
@@ -700,7 +707,6 @@ public class TWEditorWV extends AppCompatActivity {
 			e.printStackTrace();
 			try {
 				db = MainActivity.initJson(TWEditorWV.this);    // 初始化JSON数据，如果加载失败
-				MainActivity.writeJson(TWEditorWV.this, db);
 				firstRun = true;
 			} catch (JSONException e1) {
 				e1.printStackTrace();
@@ -744,7 +750,22 @@ public class TWEditorWV extends AppCompatActivity {
 		// 加载数据
 		nextWiki(getIntent());
 		if (firstRun)
-			MainActivity.firstRunReq(this);
+			MainActivity.firstRunReq(this, new MainActivity.OnFirstRun() {
+				@Override
+				public void onAgreed() {
+					try {
+						MainActivity.writeJson(TWEditorWV.this, db);
+					} catch (JSONException e) {
+						e.printStackTrace();
+						Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+					}
+				}
+
+				@Override
+				public void onDeclined() {
+
+				}
+			});
 	}
 
 	private JSONArray getExDataSingle(final Intent intent) {
@@ -963,33 +984,52 @@ public class TWEditorWV extends AppCompatActivity {
 				TWEditorWV.this.setTitle(title);
 				toolbar.setSubtitle(subtitle);
 				// appbar隐藏
-				hideAppbar = KEY_YES.equals(array.getString(2));
+				hideAppbar = KEY_YES.equals(array.getString(2)) ? 1 : KEY_LAND.equals(array.getString(2)) ? 2 : 0;
 				Configuration newConfig = getResources().getConfiguration();
-				toolbar.setVisibility(hideAppbar && ready ? View.GONE : View.VISIBLE);
 				// 解取主题色
 				String color = array.getString(3);
 				float[] l = new float[3];
 				if (color.length() == 7) {
-					themeColor = Color.parseColor(color);
-					Color.colorToHSV(themeColor, l);
+					if (color.charAt(0) == '$') {
+						themeColor = Color.parseColor(color.replace('$', '#'));
+						Color.colorToHSV(themeColor, l);
+						noTint = true;
+					} else if (color.charAt(0) == '#') {
+						themeColor = Color.parseColor(color);
+						Color.colorToHSV(themeColor, l);
+						noTint = false;
+					} else themeColor = null;
 				} else themeColor = null;
 				getDelegate().setLocalNightMode(themeColor == null ? AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM : l[2] > 0.75 ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES);   // 系统栏模式 根据主题色灰度/日夜模式
 				// 解取favicon
 				String fib64 = array.getString(4);
-				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
-				Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
-				toolbar.setLogo(favicon != null ? cIcon(favicon) : null);
+				try {
+					if (fib64.matches(MainActivity.REX_B64)) {    // Base64
+						byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
+						Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
+						toolbar.setLogo(favicon != null ? cIcon(favicon) : null);
+					} else {    // SVG
+						Sharp svg = Sharp.loadString(fib64);
+						toolbar.setLogo(svg.getSharpPicture().getDrawable());
+					}
+				} catch (IllegalArgumentException | SvgParseException e) {
+					e.printStackTrace();
+				}
 				if (wApp != null) {
 					// 写Json
-					wApp.put(MainActivity.KEY_NAME, title).put(MainActivity.DB_KEY_SUBTITLE, subtitle).put(MainActivity.DB_KEY_COLOR, themeColor).put(MainActivity.KEY_FAVICON, fib64.length() > 0 ? fib64 : null);
+					wApp.put(MainActivity.KEY_NAME, title)
+							.put(MainActivity.DB_KEY_SUBTITLE, subtitle)
+							.put(MainActivity.DB_KEY_COLOR, themeColor)
+							.put(MainActivity.DB_KEY_NO_TINT, noTint)
+							.put(MainActivity.KEY_FAVICON, fib64.length() > 0 ? fib64 : null);
 					MainActivity.writeJson(TWEditorWV.this, db);
 				}
 				if (optMenu != null) {
 					optMenu.findItem(R.id.action_save_c).setVisible(wApp == null && uri != null);
 					optMenu.findItem(R.id.action_save).setVisible(wApp != null || uri == null);
 				}
-				String v = array.optString(5);
-				customActions = v.length() > 8 ? new JSONArray(v) : null;
+				String ca = array.optString(5);
+				customActions = ca.length() > 8 ? new JSONArray(ca) : null;
 				JSONObject mt = array.optJSONObject(6);
 				if (mt != null) {
 					final Iterator<String> keys = mt.keys();
@@ -1007,6 +1047,25 @@ public class TWEditorWV extends AppCompatActivity {
 							if ((o = mt.optJSONObject(e)) != null)
 								TW_TYPE_EXT_D.put(o.getString(KEY_EXTENSION), e);
 						}
+					}
+				}
+				String v = array.optString(8);
+				if (wApp != null && wApp.optBoolean(MainActivity.DB_KEY_PLUGIN_AUTO_UPDATE) && !v.equals(getString(R.string.plugin_version))) {
+					if (isClassic) {
+						return;
+					}
+					JSONArray arr;
+					try (InputStream is = getAssets().open(PLUGIN_FILE_NAME)) {
+						int len = is.available();
+						byte[] buf = new byte[len];
+						is.read(buf, 0, len);
+						is.close();
+						arr = new JSONArray().put(new JSONObject().put(KEY_TITLE, PLUGIN_FILE_NAME)
+								.put(KEY_TYPE, MIME_TID)
+								.put(KEY_TEXT, new String(buf)));
+						wv.evaluateJavascript(getString(R.string.js_import, arr.toString()), null);
+					} catch (IOException e) {
+						e.printStackTrace();
 					}
 				}
 				onConfigurationChanged(newConfig);
@@ -1197,10 +1256,10 @@ public class TWEditorWV extends AppCompatActivity {
 					} else {    // 添加到列表
 						wa = new JSONObject();
 						nextWikiId = MainActivity.genId();
-						wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
-						wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
-						wa.put(MainActivity.DB_KEY_URI, u.toString());
-						wa.put(MainActivity.DB_KEY_BACKUP, false);
+						wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW)
+								.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY)
+								.put(MainActivity.DB_KEY_URI, u.toString())
+								.put(MainActivity.DB_KEY_BACKUP, false);
 						wl.put(nextWikiId, wa);
 					}
 					MainActivity.writeJson(this, db);
@@ -1276,10 +1335,10 @@ public class TWEditorWV extends AppCompatActivity {
 							} else {    // 添加到列表
 								wa = new JSONObject();
 								nextWikiId = MainActivity.genId();
-								wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
-								wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
-								wa.put(MainActivity.DB_KEY_URI, u.toString());
-								wa.put(MainActivity.DB_KEY_BACKUP, false);
+								wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW)
+										.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY)
+										.put(MainActivity.DB_KEY_URI, u.toString())
+										.put(MainActivity.DB_KEY_BACKUP, false);
 								wl.put(nextWikiId, wa);
 							}
 							MainActivity.writeJson(this, db);
@@ -1377,7 +1436,8 @@ public class TWEditorWV extends AppCompatActivity {
 			customActions = null;
 			wv.loadUrl(URL_BLANK);
 			themeColor = null;
-			hideAppbar = false;
+			noTint = false;
+			hideAppbar = 0;
 			onConfigurationChanged(getResources().getConfiguration());
 			overrodeCharset = null;
 			hashes = null;
@@ -1429,10 +1489,17 @@ public class TWEditorWV extends AppCompatActivity {
 			String fib64 = wApp.optString(MainActivity.KEY_FAVICON);
 			this.setTitle(wvTitle);
 			toolbar.setSubtitle(wvSubTitle.length() > 0 ? wvSubTitle : null);
-			if (fib64.length() > 0) {
-				byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
-				Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
-				toolbar.setLogo(favicon != null ? cIcon(favicon) : null);
+			if (fib64.length() > 0) try {
+				if (fib64.matches(MainActivity.REX_B64)) {    // Base64
+					byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
+					Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
+					toolbar.setLogo(favicon != null ? cIcon(favicon) : null);
+				} else {    // SVG
+					Sharp svg = Sharp.loadString(fib64);
+					toolbar.setLogo(svg.getSharpPicture().getDrawable());
+				}
+			} catch (IllegalArgumentException e) {
+				e.printStackTrace();
 			}
 			float[] l = new float[3];
 			try {
@@ -1442,6 +1509,7 @@ public class TWEditorWV extends AppCompatActivity {
 				themeColor = null;
 			}
 			getDelegate().setLocalNightMode(themeColor == null ? AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM : l[2] > 0.75 ? AppCompatDelegate.MODE_NIGHT_NO : AppCompatDelegate.MODE_NIGHT_YES);   // 系统栏模式 根据主题色灰度/日夜模式
+			noTint = wApp.optBoolean(MainActivity.DB_KEY_NO_TINT);
 			onConfigurationChanged(getResources().getConfiguration());
 		}
 		wv.getSettings().setJavaScriptEnabled(true);
@@ -1731,10 +1799,10 @@ public class TWEditorWV extends AppCompatActivity {
 			} else {
 				wa = new JSONObject();
 				String id = MainActivity.genId();
-				wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW);
-				wa.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
-				wa.put(MainActivity.DB_KEY_URI, u.toString());
-				wa.put(MainActivity.DB_KEY_BACKUP, false);
+				wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW)
+						.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY)
+						.put(MainActivity.DB_KEY_URI, u.toString())
+						.put(MainActivity.DB_KEY_BACKUP, false);
 				wl.put(id, wa);
 				MainActivity.writeJson(this, db);
 			}
@@ -1787,11 +1855,11 @@ public class TWEditorWV extends AppCompatActivity {
 	@Override
 	public void onConfigurationChanged(@NonNull Configuration newConfig) {
 		super.onConfigurationChanged(newConfig);
-		int primColor = themeColor != null ? themeColor : getResources().getColor(R.color.design_default_color_primary);    // 优先主题色 >> 自动色
+		int primColor = themeColor != null && !noTint ? themeColor : getResources().getColor(R.color.design_default_color_primary);    // 优先主题色 >> 自动色
 		float[] l = new float[3];
 		if (themeColor != null) Color.colorToHSV(themeColor, l);
 		boolean lightBar = themeColor != null ? l[2] > 0.75 : (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;    // 系统栏模式 根据主题色灰度/日夜模式
-		toolbar.setVisibility(wApp != null && hideAppbar && ready ? View.GONE : View.VISIBLE);
+		toolbar.setVisibility(wApp != null && (hideAppbar == 1 || hideAppbar == 2 && Configuration.ORIENTATION_LANDSCAPE == newConfig.orientation) && ready ? View.GONE : View.VISIBLE);
 		Window window = getWindow();
 		WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(window, window.getDecorView());
 		if (MainActivity.APIOver23)
@@ -1833,11 +1901,19 @@ public class TWEditorWV extends AppCompatActivity {
 						MenuItem si = optMenu.add(CA_GRP_ID, id, 0, vn);
 						si.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 						String fib64 = item.optString(KEY_ICON);
-						if (fib64.length() > 0) {
-							byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
-							Bitmap icon = BitmapFactory.decodeByteArray(b, 0, b.length);
-							si.setIcon(cIcon(icon));
-						} else si.setIcon(MainActivity.APIOver24 ? R.drawable.ic_menu : lightBar ? R.drawable.ic_menu_l : R.drawable.ic_menu_d);
+						if (fib64.length() > 0) try {
+							if (fib64.matches(MainActivity.REX_B64)) {    // Base64
+								byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
+								Bitmap icon = BitmapFactory.decodeByteArray(b, 0, b.length);
+								si.setIcon(cIcon(icon));
+							} else {    // SVG
+								Sharp svg = Sharp.loadString(fib64);
+								si.setIcon(svg.getSharpPicture().getDrawable());
+							}
+						} catch (IllegalArgumentException e) {
+							e.printStackTrace();
+						}
+						else si.setIcon(MainActivity.APIOver24 ? R.drawable.ic_menu : lightBar ? R.drawable.ic_menu_l : R.drawable.ic_menu_d);
 						customActionsMap.put(id, vc);
 					}
 				}
