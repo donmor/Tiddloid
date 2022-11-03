@@ -1498,7 +1498,7 @@ public class TWEditorWV extends AppCompatActivity {
 					Sharp svg = Sharp.loadString(fib64);
 					toolbar.setLogo(svg.getSharpPicture().getDrawable());
 				}
-			} catch (IllegalArgumentException e) {
+			} catch (IllegalArgumentException | SvgParseException e) {
 				e.printStackTrace();
 			}
 			float[] l = new float[3];
@@ -1910,7 +1910,7 @@ public class TWEditorWV extends AppCompatActivity {
 								Sharp svg = Sharp.loadString(fib64);
 								si.setIcon(svg.getSharpPicture().getDrawable());
 							}
-						} catch (IllegalArgumentException e) {
+						} catch (IllegalArgumentException | SvgParseException e) {
 							e.printStackTrace();
 						}
 						else si.setIcon(MainActivity.APIOver24 ? R.drawable.ic_menu : lightBar ? R.drawable.ic_menu_l : R.drawable.ic_menu_d);

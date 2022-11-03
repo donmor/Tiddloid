@@ -33,6 +33,7 @@ import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
 import com.pixplicity.sharp.Sharp;
+import com.pixplicity.sharp.SvgParseException;
 import com.thegrizzlylabs.sardineandroid.DavResource;
 import com.thegrizzlylabs.sardineandroid.Sardine;
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
@@ -111,7 +112,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 						Sharp svg = Sharp.loadString(fib64);
 						holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(svg.getSharpPicture().getDrawable(), null, null, null);
 					}
-				} catch (IllegalArgumentException e) {
+				} catch (IllegalArgumentException | SvgParseException e) {
 					e.printStackTrace();
 				}
 			}

@@ -1,4 +1,2 @@
 Update details:
-- Now Tiddloid Tweaks plugin can be installed/updated automatically
-- Add support for SVG favicons
-- Minor tweaks and fixes
+- Fixed the bug in 2.4.0 causing crash using wikis with no favicon

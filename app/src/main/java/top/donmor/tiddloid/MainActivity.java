@@ -84,6 +84,7 @@ import androidx.recyclerview.widget.RecyclerView;
 import androidx.swiperefreshlayout.widget.SwipeRefreshLayout;
 
 import com.pixplicity.sharp.Sharp;
+import com.pixplicity.sharp.SvgParseException;
 import com.thegrizzlylabs.sardineandroid.DavResource;
 import com.thegrizzlylabs.sardineandroid.Sardine;
 import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
@@ -346,7 +347,7 @@ public class MainActivity extends AppCompatActivity {
 						Sharp svg = Sharp.loadString(fib64);
 						icon = svg.getSharpPicture().getDrawable();
 					}
-				} catch (IllegalArgumentException e) {
+				} catch (IllegalArgumentException | SvgParseException e) {
 					e.printStackTrace();
 				}
 				final Uri tu;
