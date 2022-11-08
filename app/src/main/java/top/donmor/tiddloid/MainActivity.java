@@ -169,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
 			KEY_FD_W = "w",
 			KEY_SLASH = "/",
 			KEY_URI_NOTCH = "://",
-			REX_B64 = "^[a-zA-Z0-9+/]*$",
+			REX_B64 = "^[a-zA-Z0-9+/=]*$",
 			MASK_SDF_BACKUP = "yyyyMMddHHmmssSSS",
 			SCH_CONTENT = "content",
 			SCH_FILE = "file",

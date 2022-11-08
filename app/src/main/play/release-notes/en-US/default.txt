@@ -1,2 +1,2 @@
 Update details:
-- Fixed the bug in 2.4.0 causing crash using wikis with no favicon
+- Fixed the bug in 2.4.1 causing bitmap favicon not shown
