@@ -287,6 +287,15 @@ public class TWEditorWV extends AppCompatActivity {
 		onConfigurationChanged(getResources().getConfiguration());
 		wvProgress = findViewById(R.id.progressBar);
 		wvProgress.setMax(100);
+		// 准备后台运行
+		// Create an intent to start the foreground service
+		Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
+		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+			Log.d("TWEditorWV", "onCreate: keepAliveService");
+			startForegroundService(keepAliveServiceIntent);
+		} else {
+			startService(keepAliveServiceIntent);
+		}
 		// 初始化WebView
 		LinearLayout wrapper = findViewById(R.id.wv_wrapper);
 		wv = new WebView(this);
