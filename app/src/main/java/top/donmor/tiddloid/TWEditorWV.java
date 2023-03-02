@@ -287,14 +287,6 @@ public class TWEditorWV extends AppCompatActivity {
 		onConfigurationChanged(getResources().getConfiguration());
 		wvProgress = findViewById(R.id.progressBar);
 		wvProgress.setMax(100);
-		// 准备后台运行
-		// Create an intent to start the foreground service
-		Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			startForegroundService(keepAliveServiceIntent);
-		} else {
-			startService(keepAliveServiceIntent);
-		}
 		// 初始化WebView
 		LinearLayout wrapper = findViewById(R.id.wv_wrapper);
 		wv = new WebView(this);
@@ -774,6 +766,46 @@ public class TWEditorWV extends AppCompatActivity {
 
 				}
 			});
+		this.startKeepAliveService();
+	}
+
+	private void startKeepAliveService() {
+		final JSONObject wl, wa;
+		try {
+			wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
+			wa = wl.getJSONObject(id);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+			return;
+		}
+		// 准备后台运行
+		if (wa.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE)) {
+			// Create an intent to start the foreground service
+			Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				startForegroundService(keepAliveServiceIntent);
+			} else {
+				startService(keepAliveServiceIntent);
+			}
+		}
+	}
+	private void stopKeepAliveService() {
+		final JSONObject wl, wa;
+		try {
+			wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
+			wa = wl.getJSONObject(id);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+			return;
+		}
+		// 准备后台运行
+		if (wa.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE)) {
+			// Create an intent to start the foreground service
+			Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
+			stopService(keepAliveServiceIntent);
+		}
 	}
 
 	private JSONArray getExDataSingle(final Intent intent) {
@@ -1945,6 +1977,7 @@ public class TWEditorWV extends AppCompatActivity {
 	// WebView清理
 	@Override
 	protected void onDestroy() {
+		this.stopKeepAliveService();
 		if (wv != null) {
 			ViewParent parent = wv.getParent();
 			if (parent != null) ((ViewGroup) parent).removeView(wv);
