@@ -104,5 +104,5 @@
 	<string name="agreements_desc3">続行するには、上記の契約に同意する必要があります。</string>
 	<string name="agreements_accept">承認</string>
 	<string name="agreements_decline">断る</string>
-    <string name="force_keep_alive">プロセスキルされ防止</string>
+    <string name="force_keep_alive">アプリを存続させる</string>
 </resources>

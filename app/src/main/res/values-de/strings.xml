@@ -104,5 +104,5 @@
 	<string name="agreements_desc3">Um fortzufahren, müssen Sie die obigen Vereinbarungen akzeptieren.</string>
 	<string name="agreements_accept">Annehmen</string>
 	<string name="agreements_decline">Ablehnen</string>
-    <string name="force_keep_alive">Verhinderung von Prozessbeendigung</string>
+    <string name="force_keep_alive">App am Leben erhalten</string>
 </resources>

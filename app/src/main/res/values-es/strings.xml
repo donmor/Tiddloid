@@ -105,5 +105,5 @@
 	<string name="agreements_desc3">Para continuar, debe aceptar los acuerdos anteriores.</string>
 	<string name="agreements_accept">Aceptar</string>
 	<string name="agreements_decline">Rechazar</string>
-    <string name="force_keep_alive">Evitar que el proceso sea eliminado</string>
+    <string name="force_keep_alive">Mantener viva la aplicación</string>
 </resources>
