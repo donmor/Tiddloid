@@ -18,3 +18,4 @@
 /app/release
 .cxx
 /app/src/main/lint.xml
+devkey.jks
