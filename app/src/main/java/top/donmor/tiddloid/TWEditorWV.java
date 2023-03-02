@@ -291,7 +291,6 @@ public class TWEditorWV extends AppCompatActivity {
 		// Create an intent to start the foreground service
 		Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
 		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-			Log.d("TWEditorWV", "onCreate: keepAliveService");
 			startForegroundService(keepAliveServiceIntent);
 		} else {
 			startService(keepAliveServiceIntent);

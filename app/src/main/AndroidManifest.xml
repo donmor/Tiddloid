@@ -45,6 +45,7 @@
 			android:hardwareAccelerated="true"
 			android:launchMode="singleTask"
 			android:theme="@style/AppTheme.NoActionBar" />
+		<service android:name=".KeepAliveService" />
 		<activity
 			android:name=".HandlerActivity"
 			android:exported="true"

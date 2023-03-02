@@ -13,7 +13,6 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
 import android.os.IBinder;
-import android.util.Log;
 
 import androidx.core.app.NotificationCompat;
 
@@ -48,7 +47,6 @@ public class KeepAliveService extends Service {
                 .setCategory(NotificationCompat.CATEGORY_SERVICE)
                 .build();
 
-        Log.d("TAG", "onCreate: startForeground");
         startForeground(NOTIFICATION_ID, notification);
     }
 
