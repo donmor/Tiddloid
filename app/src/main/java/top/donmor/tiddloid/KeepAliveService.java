@@ -9,6 +9,7 @@ package top.donmor.tiddloid;
 import android.app.Notification;
 import android.app.NotificationChannel;
 import android.app.NotificationManager;
+import android.app.PendingIntent;
 import android.app.Service;
 import android.content.Intent;
 import android.os.Build;
@@ -27,6 +28,9 @@ public class KeepAliveService extends Service {
     public void onCreate() {
         super.onCreate();
 
+        Intent notificationIntent = new Intent(this, TWEditorWV.class);
+        notificationIntent.setFlags(Intent.FLAG_ACTIVITY_BROUGHT_TO_FRONT);
+        PendingIntent pendingIntent;
         // 创建通知对象
         if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
             NotificationChannel channel = new NotificationChannel(
@@ -36,18 +40,20 @@ public class KeepAliveService extends Service {
             );
             NotificationManager manager = getSystemService(NotificationManager.class);
             manager.createNotificationChannel(channel);
+            pendingIntent = PendingIntent.getActivity(this, 0, notificationIntent, PendingIntent.FLAG_IMMUTABLE);
+            Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
+                    .setContentTitle("Tiddloid")
+                    .setContentText("Wiki await in background...")
+                    .setSmallIcon(R.drawable.ic_launcher_foreground)
+                    .setContentIntent(pendingIntent) // Add the intent to the notification
+                    // The notification's priority is set to PRIORITY_HIGH to satisfy the system's requirements for foreground service notifications.
+                    .setPriority(NotificationCompat.FOREGROUND_SERVICE_DEFAULT)
+                    .setCategory(NotificationCompat.CATEGORY_SERVICE)
+                    .build();
+
+            startForeground(NOTIFICATION_ID, notification);
         }
 
-        Notification notification = new NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-                .setContentTitle("Tiddloid")
-                .setContentText("Wiki await in background...")
-                .setSmallIcon(R.drawable.ic_launcher_foreground)
-                // The notification's priority is set to PRIORITY_HIGH to satisfy the system's requirements for foreground service notifications.
-                .setPriority(NotificationCompat.FOREGROUND_SERVICE_DEFAULT)
-                .setCategory(NotificationCompat.CATEGORY_SERVICE)
-                .build();
-
-        startForeground(NOTIFICATION_ID, notification);
     }
 
     @Override
