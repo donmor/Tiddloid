@@ -105,4 +105,5 @@
 	<string name="agreements_desc3">계속하려면 위의 계약에 동의해야 합니다.</string>
 	<string name="agreements_accept">동의하기</string>
 	<string name="agreements_decline">거절하다</string>
+    <string name="force_keep_alive">앱 활성화 유지</string>
 </resources>

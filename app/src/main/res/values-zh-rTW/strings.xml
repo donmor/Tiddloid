@@ -104,4 +104,5 @@
 	<string name="agreements_desc3">要繼續，您必須接受上述協議。</string>
 	<string name="agreements_accept">接受</string>
 	<string name="agreements_decline">拒絕</string>
+    <string name="force_keep_alive">防止進程被殺</string>
 </resources>

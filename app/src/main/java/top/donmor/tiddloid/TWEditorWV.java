@@ -768,6 +768,36 @@ public class TWEditorWV extends AppCompatActivity {
 			});
 	}
 
+	private void startKeepAliveService(JSONObject wa) {
+		// 准备后台运行
+		if (wa.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE)) {
+			// Create an intent to start the foreground service
+			Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
+			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
+				startForegroundService(keepAliveServiceIntent);
+			} else {
+				startService(keepAliveServiceIntent);
+			}
+		}
+	}
+	private void stopKeepAliveService() {
+		final JSONObject wl, wa;
+		try {
+			wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
+			wa = wl.getJSONObject(id);
+		} catch (JSONException e) {
+			e.printStackTrace();
+			Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
+			return;
+		}
+		// 准备后台运行
+		if (wa.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE)) {
+			// Create an intent to start the foreground service
+			Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
+			stopService(keepAliveServiceIntent);
+		}
+	}
+
 	private JSONArray getExDataSingle(final Intent intent) {
 		Uri uri;
 		try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM), MainActivity.KEY_FD_R));
@@ -1556,6 +1586,7 @@ public class TWEditorWV extends AppCompatActivity {
 				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 			}
 		} else wv.loadUrl(actualUri != null ? actualUri.toString() : URL_BLANK);
+		this.startKeepAliveService(wApp);
 	}
 
 	@NonNull
@@ -1937,6 +1968,7 @@ public class TWEditorWV extends AppCompatActivity {
 	// WebView清理
 	@Override
 	protected void onDestroy() {
+		this.stopKeepAliveService();
 		if (wv != null) {
 			ViewParent parent = wv.getParent();
 			if (parent != null) ((ViewGroup) parent).removeView(wv);

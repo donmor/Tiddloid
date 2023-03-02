@@ -104,4 +104,5 @@
 	<string name="agreements_desc3">Pour continuer, vous devez accepter les accords ci-dessus.</string>
 	<string name="agreements_accept">Accepter</string>
 	<string name="agreements_decline">Déclin</string>
+    <string name="force_keep_alive">Maintenir l\'app en vie</string>
 </resources>

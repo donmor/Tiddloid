@@ -160,6 +160,7 @@ public class MainActivity extends AppCompatActivity {
 			DB_KEY_SUBTITLE = "subtitle",
 			DB_KEY_BACKUP = "backup",
 			DB_KEY_PLUGIN_AUTO_UPDATE = "plugin_auto_update",
+			DB_KEY_KEEP_ALIVE = "keep_alive",
 			KEY_EX_HTML = ".html",
 			KEY_EX_HTM = ".htm",
 			KEY_EX_HTA = ".hta",
@@ -309,9 +310,10 @@ public class MainActivity extends AppCompatActivity {
 						.append('\n')
 						.append(getString(R.string.pathDir))
 						.append(path));
-				final CheckBox cbDefault = view.findViewById(R.id.cbDefault), cbPluginAutoUpdate = view.findViewById(R.id.cbPluginAutoUpdate), cbBackup = view.findViewById(R.id.cbBackup);
+				final CheckBox cbDefault = view.findViewById(R.id.cbDefault), cbForceKeepAlive = view.findViewById(R.id.cbForceKeepAlive), cbPluginAutoUpdate = view.findViewById(R.id.cbPluginAutoUpdate), cbBackup = view.findViewById(R.id.cbBackup);
 				try {
 					cbDefault.setChecked(id.equals(db.optString(DB_KEY_DEFAULT)));
+					cbForceKeepAlive.setChecked(wa.optBoolean(DB_KEY_KEEP_ALIVE));
 					cbPluginAutoUpdate.setChecked(wa.optBoolean(DB_KEY_PLUGIN_AUTO_UPDATE));
 					cbBackup.setChecked(wa.getBoolean(DB_KEY_BACKUP));
 				} catch (JSONException e) {
@@ -651,6 +653,15 @@ public class MainActivity extends AppCompatActivity {
 				cbPluginAutoUpdate.setOnCheckedChangeListener((buttonView, isChecked) -> {
 					try {
 						wa.put(DB_KEY_PLUGIN_AUTO_UPDATE, isChecked);
+						writeJson(MainActivity.this, db);
+					} catch (JSONException e) {
+						e.printStackTrace();
+						Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
+					}
+				});
+				cbForceKeepAlive.setOnCheckedChangeListener((buttonView, isChecked) -> {
+					try {
+						wa.put(DB_KEY_KEEP_ALIVE, isChecked);
 						writeJson(MainActivity.this, db);
 					} catch (JSONException e) {
 						e.printStackTrace();
