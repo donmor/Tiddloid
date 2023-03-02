@@ -766,19 +766,9 @@ public class TWEditorWV extends AppCompatActivity {
 
 				}
 			});
-		this.startKeepAliveService();
 	}
 
-	private void startKeepAliveService() {
-		final JSONObject wl, wa;
-		try {
-			wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
-			wa = wl.getJSONObject(id);
-		} catch (JSONException e) {
-			e.printStackTrace();
-			Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-			return;
-		}
+	private void startKeepAliveService(JSONObject wa) {
 		// 准备后台运行
 		if (wa.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE)) {
 			// Create an intent to start the foreground service
@@ -1596,6 +1586,7 @@ public class TWEditorWV extends AppCompatActivity {
 				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 			}
 		} else wv.loadUrl(actualUri != null ? actualUri.toString() : URL_BLANK);
+		this.startKeepAliveService(wApp);
 	}
 
 	@NonNull
