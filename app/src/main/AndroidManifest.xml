@@ -42,6 +42,7 @@
 		<activity
 			android:name=".TWEditorWV"
 			android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
+			android:alwaysRetainTaskState="true"
 			android:hardwareAccelerated="true"
 			android:launchMode="singleTask"
 			android:theme="@style/AppTheme.NoActionBar" />
