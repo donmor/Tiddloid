@@ -39,7 +39,7 @@
 	<string name="unknown">未知</string>
 	<string name="default_wiki">默认Wiki</string>
 	<string name="default_wiki_needed">请设置默认Wiki</string>
-	<string name="force_keep_alive">防止进程被杀</string>
+	<string name="stay_in_background">保持后台运行</string>
 	<string name="plugin_auto_update">Tweaks插件自动更新</string>
 	<string name="enable_backup">启用备份</string>
 	<string name="no_backups">没有备份</string>

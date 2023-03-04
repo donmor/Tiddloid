@@ -39,6 +39,7 @@
 	<string name="unknown">Inconnu</string>
 	<string name="default_wiki">Wiki par défaut</string>
 	<string name="default_wiki_needed">Veuillez définir un wiki par défaut</string>
+	<string name="stay_in_background">Continuez à courir en arrière-plan</string>
 	<string name="plugin_auto_update">Mise à jour automatique du plugin Tweaks</string>
 	<string name="enable_backup">Activer la sauvegarde</string>
 	<string name="no_backups">Aucune sauvegarde</string>
@@ -104,5 +105,4 @@
 	<string name="agreements_desc3">Pour continuer, vous devez accepter les accords ci-dessus.</string>
 	<string name="agreements_accept">Accepter</string>
 	<string name="agreements_decline">Déclin</string>
-    <string name="force_keep_alive">Maintenir l\'app en vie</string>
 </resources>

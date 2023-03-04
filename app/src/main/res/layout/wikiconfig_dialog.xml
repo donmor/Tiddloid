@@ -33,7 +33,7 @@
         android:id="@+id/cbForceKeepAlive"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="@string/force_keep_alive" />
+        android:text="@string/stay_in_background" />
 
     <CheckBox
         android:id="@+id/cbPluginAutoUpdate"

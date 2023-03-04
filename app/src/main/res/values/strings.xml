@@ -225,6 +225,7 @@
 	<string name="unknown">Unknown</string>
 	<string name="default_wiki">Default Wiki</string>
 	<string name="default_wiki_needed">Please set a default Wiki</string>
+	<string name="stay_in_background">Stay in background</string>
 	<string name="plugin_auto_update">Tweaks plugin auto-update</string>
 	<string name="enable_backup">Enable backup</string>
 	<string name="no_backups">No backups</string>
@@ -292,5 +293,4 @@
 	<string name="agreements_desc3">To continue, you have to accept the agreements above.</string>
 	<string name="agreements_accept">Accept</string>
 	<string name="agreements_decline">Decline</string>
-    <string name="force_keep_alive">Keep App Alive</string>
 </resources>

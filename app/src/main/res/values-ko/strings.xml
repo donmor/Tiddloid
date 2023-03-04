@@ -39,6 +39,7 @@
 	<string name="unknown">불명</string>
 	<string name="default_wiki">기본 위키</string>
 	<string name="default_wiki_needed">기본 위키를 설정하세요</string>
+	<string name="stay_in_background">백그라운드에서 계속 실행</string>
 	<string name="plugin_auto_update">Tweaks 플러그인 자동 업데이트</string>
 	<string name="enable_backup">백업 사용</string>
 	<string name="no_backups">백업 없음</string>
@@ -105,5 +106,4 @@
 	<string name="agreements_desc3">계속하려면 위의 계약에 동의해야 합니다.</string>
 	<string name="agreements_accept">동의하기</string>
 	<string name="agreements_decline">거절하다</string>
-    <string name="force_keep_alive">앱 활성화 유지</string>
 </resources>
