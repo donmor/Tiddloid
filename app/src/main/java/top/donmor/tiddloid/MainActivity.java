@@ -19,6 +19,7 @@ import android.content.Intent;
 import android.content.pm.ApplicationInfo;
 import android.content.pm.PackageManager;
 import android.content.res.Configuration;
+import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Canvas;
@@ -139,6 +140,7 @@ public class MainActivity extends AppCompatActivity {
 	private boolean acquiringStorage = false;
 	private int dialogPadding;
 	private static boolean firstRun = false;
+	private String latestVersion = null;
 
 	// CONSTANT
 	static final int TAKE_FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION, BUF_SIZE = 4096;
@@ -182,17 +184,21 @@ public class MainActivity extends AppCompatActivity {
 	private static final String
 			DB_FILE_NAME = "data.json",
 			DB_KEY_PATH = "path",
+			KEY_HDR_LOC = "Location",
 			KEY_PATCH1 = "</html>\n",    // Random char workaround
 			KEY_URI_RATE = "market://details?id=",
 			LICENSE_FILE_NAME = "LICENSE",
 			SCH_PACKAGES = "package",
 			TEMPLATE_FILE_NAME = "template.html",
 			CLONING_FILE_NAME = "cloning.html";
+	@SuppressWarnings("WeakerAccess")
 	static final boolean APIOver21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP,
 			APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
 			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
-			APIOver29 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q;
+			APIOver29 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
+			APIOver30 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R,
+			APIOver33 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU;
 	static final String
 			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
 			EXCEPTION_DOCUMENT_IO_ERROR = "Document IO Error",
@@ -310,10 +316,13 @@ public class MainActivity extends AppCompatActivity {
 						.append('\n')
 						.append(getString(R.string.pathDir))
 						.append(path));
-				final CheckBox cbDefault = view.findViewById(R.id.cbDefault), cbForceKeepAlive = view.findViewById(R.id.cbForceKeepAlive), cbPluginAutoUpdate = view.findViewById(R.id.cbPluginAutoUpdate), cbBackup = view.findViewById(R.id.cbBackup);
+				final CheckBox cbDefault = view.findViewById(R.id.cbDefault),
+						cbStayBackground = view.findViewById(R.id.cbStayBackground),
+						cbPluginAutoUpdate = view.findViewById(R.id.cbPluginAutoUpdate),
+						cbBackup = view.findViewById(R.id.cbBackup);
 				try {
 					cbDefault.setChecked(id.equals(db.optString(DB_KEY_DEFAULT)));
-					cbForceKeepAlive.setChecked(wa.optBoolean(DB_KEY_KEEP_ALIVE));
+					cbStayBackground.setChecked(wa.optBoolean(DB_KEY_KEEP_ALIVE));
 					cbPluginAutoUpdate.setChecked(wa.optBoolean(DB_KEY_PLUGIN_AUTO_UPDATE));
 					cbBackup.setChecked(wa.getBoolean(DB_KEY_BACKUP));
 				} catch (JSONException e) {
@@ -659,7 +668,7 @@ public class MainActivity extends AppCompatActivity {
 						Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
 					}
 				});
-				cbForceKeepAlive.setOnCheckedChangeListener((buttonView, isChecked) -> {
+				cbStayBackground.setOnCheckedChangeListener((buttonView, isChecked) -> {
 					try {
 						wa.put(DB_KEY_KEEP_ALIVE, isChecked);
 						writeJson(MainActivity.this, db);
@@ -695,7 +704,7 @@ public class MainActivity extends AppCompatActivity {
 			}
 		});
 		getPermissionRequest = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.R && !Environment.isExternalStorageManager())
+			if (APIOver30 && !Environment.isExternalStorageManager())
 				Toast.makeText(this, R.string.no_permission, Toast.LENGTH_SHORT).show();
 			acquiringStorage = false;
 		});
@@ -724,7 +733,7 @@ public class MainActivity extends AppCompatActivity {
 				runOnUiThread(() -> Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show());
 				return;
 			}
-			if (APIOver21) wikiListAdapter.notifyDataSetChanged();    // Poor performance but needed by API119
+			if (APIOver21) runOnUiThread(() -> wikiListAdapter.notifyDataSetChanged());    // Poor performance but needed by API119
 			else runOnUiThread(() -> rvWikiList.setAdapter(wikiListAdapter));
 			runOnUiThread(() -> noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE));
 			while ((System.nanoTime() - time0) / 1000000 < 1000) try {
@@ -760,6 +769,8 @@ public class MainActivity extends AppCompatActivity {
 			});
 			batchFix(MainActivity.this);
 		}).start();
+		// 检查更新
+		new Thread(this::checkUpdate).start();
 	}
 
 	private interface OnGetSrc {
@@ -1039,6 +1050,11 @@ public class MainActivity extends AppCompatActivity {
 			menu.getItem(3).setTitle(R.string.local_legacy);    // API19暂不支持WebDAV
 			menu.getItem(3).setIcon(R.drawable.ic_storage);
 		}
+		if (!BuildConfig.DEBUG && !BuildConfig.VERSION_NAME.equals(latestVersion)) {
+			MenuItem item = menu.getItem(5);
+			item.setTitle(getString(R.string.action_update,latestVersion));
+			item.setVisible(true);
+		}
 		return super.onPrepareOptionsMenu(menu);
 	}
 
@@ -1049,7 +1065,8 @@ public class MainActivity extends AppCompatActivity {
 				idImport = R.id.action_file_import,
 				idDir = R.id.action_add_dir,
 				idDav = R.id.action_add_dav,
-				idAbout = R.id.action_about;
+				idAbout = R.id.action_about,
+				idUpdate = R.id.action_update;
 		switch (id) {
 			case idNew:
 				getChooserCreate.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
@@ -1084,8 +1101,36 @@ public class MainActivity extends AppCompatActivity {
 				if (APIOver23)
 					((TextView) aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
 				break;
+			case idUpdate:
+				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.update_url)));
+				try {
+					startActivity(intent);
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
+				break;
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void checkUpdate() {
+		try {
+			URL url = new URL(getString(R.string.update_url));
+			HttpsURLConnection httpURLConnection = (HttpsURLConnection) url.openConnection();
+			if (!APIOver21)
+				httpURLConnection.setSSLSocketFactory(new TLSSocketFactory());
+			httpURLConnection.setReadTimeout(10000);
+			httpURLConnection.setInstanceFollowRedirects(false);
+			httpURLConnection.connect();
+			int status = httpURLConnection.getResponseCode();
+			if (status != HttpsURLConnection.HTTP_MOVED_TEMP
+					&& status != HttpsURLConnection.HTTP_MOVED_PERM
+					&& status != HttpsURLConnection.HTTP_SEE_OTHER)
+				return;
+			latestVersion = Uri.parse(httpURLConnection.getHeaderField(KEY_HDR_LOC)).getLastPathSegment();
+		} catch (NoSuchAlgorithmException | KeyManagementException | IOException | NullPointerException e) {
+			e.printStackTrace();
+		}
 	}
 
 	@SuppressLint("NotifyDataSetChanged")
@@ -1769,11 +1814,7 @@ public class MainActivity extends AppCompatActivity {
 	@TargetApi(23)
 	private static boolean checkPermission(Context context) {
 		boolean havePerms = false;
-		if (Build.VERSION.SDK_INT < Build.VERSION_CODES.R) {
-			if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
-				ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
-			else havePerms = true;
-		} else {
+		if (APIOver30) {
 			if (!Environment.isExternalStorageManager()) {
 				Intent intent = new Intent(Settings.ACTION_MANAGE_APP_ALL_FILES_ACCESS_PERMISSION)
 						.setData(Uri.parse(SCH_PACKAGES + ':' + context.getPackageName()));
@@ -1783,7 +1824,9 @@ public class MainActivity extends AppCompatActivity {
 					activity.getPermissionRequest.launch(intent);
 				}
 			} else havePerms = true;
-		}
+		} else if (ContextCompat.checkSelfPermission(context, Manifest.permission.WRITE_EXTERNAL_STORAGE) != PackageManager.PERMISSION_GRANTED)
+			ActivityCompat.requestPermissions((Activity) context, new String[]{Manifest.permission.WRITE_EXTERNAL_STORAGE}, 1);
+		else havePerms = true;
 		return havePerms;
 	}
 
@@ -1956,6 +1999,14 @@ public class MainActivity extends AppCompatActivity {
 		oc.truncate(len);
 		ic.force(true);
 		oc.force(true);
+	}
+
+	static Drawable svg2bmp(@NonNull Drawable d, int b, Resources cRes) {
+		Bitmap bitmap = Bitmap.createBitmap(b, b, Bitmap.Config.ARGB_8888);
+		Canvas canvas = new Canvas(bitmap);
+		d.setBounds(0, 0, canvas.getWidth(), canvas.getHeight());
+		d.draw(canvas);
+		return new BitmapDrawable(cRes, bitmap);
 	}
 
 	static void trimDB140(Context context, JSONObject db) {

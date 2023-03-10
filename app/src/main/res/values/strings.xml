@@ -192,6 +192,7 @@
 	<string name="dav_legacy" translatable="false">dav_local</string>
 	<string name="rollback" translatable="false">rollback</string>
 	<string name="del_backup" translatable="false">del_backup</string>
+	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/empty.html</string>
 	<!--UI-->
@@ -200,6 +201,7 @@
 	<string name="action_dir">Add a TiddlyWiki folder</string>
 	<string name="action_dav">WebDAV / Local (Legacy)</string>
 	<string name="action_about">About Tiddloid</string>
+	<string name="action_update">Update available: %1$s</string>
 	<string name="action_save_to">Save to Tiddloid</string>
 	<string name="action_save_to_file">Save as a new file</string>
 	<string name="action_save_to_link">Save as a bookmark</string>
@@ -266,6 +268,7 @@
 	<string name="hint_username">Username</string>
 	<string name="hint_password">Password</string>
 	<string name="market">Rate This App</string>
+	<string name="acquire_permission_notification">Tiddloid requires permission to send notifications.</string>
 	<string name="about">
 		Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down so that you can access them anywhere. For more details of TiddlyWiki, please see https://tiddlywiki.com/ .\n
 		\n

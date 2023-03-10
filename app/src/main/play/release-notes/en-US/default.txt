@@ -1,2 +1,6 @@
 Update details:
-- Fixed the bug in 2.4.1 causing bitmap favicon not shown
+- Wikis can stay in background now
+- Added update checker (shows up in menu when update is available)
+- Fixed the bug causing failure on saving a bookmarked wiki
+- Fixed the bug causing SVG icons not properly scaled
+-Minor tweaks

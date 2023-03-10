@@ -6,6 +6,8 @@
 
 package top.donmor.tiddloid;
 
+import static android.Manifest.permission.POST_NOTIFICATIONS;
+
 import android.Manifest;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
@@ -26,6 +28,7 @@ import android.graphics.Color;
 import android.graphics.Matrix;
 import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -35,6 +38,7 @@ import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
 import android.provider.DocumentsContract;
+import android.provider.Settings;
 import android.text.Editable;
 import android.text.InputType;
 import android.text.SpannableString;
@@ -78,6 +82,7 @@ import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.view.menu.MenuBuilder;
 import androidx.appcompat.widget.Toolbar;
 import androidx.core.app.ActivityCompat;
+import androidx.core.app.NotificationManagerCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.content.res.ResourcesCompat;
 import androidx.core.view.WindowCompat;
@@ -134,7 +139,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
 	private Uri uri = null, cachedUri;
-	private boolean isWiki, isClassic, noTint = false, ready = false, failed = false;
+	private boolean isWiki, isClassic, noTint = false, ready = false, failed = false, acc_notification = true;
 	private static boolean firstRun;
 	private Charset overrodeCharset = null;
 	private byte[] exData = null;
@@ -168,6 +173,9 @@ public class TWEditorWV extends AppCompatActivity {
 			KEY_TEXT = "text",
 			KEY_TITLE = "title",
 			KEY_TYPE = "type",
+			KEY_PACKAGE = "package",
+			KEY_APP_PACKAGE = "app_package",
+			KEY_APP_UID = "app_uid",
 			PLUGIN_FILE_NAME = "tiddloid-tweaks-plugin.tid",
 			SCH_ABOUT = "about",
 			SCH_TEL = "tel",
@@ -530,7 +538,7 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@JavascriptInterface
 			public void saveWiki(final String data) {
-				if (wApp == null || (MainActivity.SCH_HTTP.equals(uri.getScheme()) || MainActivity.SCH_HTTPS.equals(uri.getScheme())) && !(cachedUri == null)) {
+				if (wApp == null || (MainActivity.SCH_HTTP.equals(uri.getScheme()) || MainActivity.SCH_HTTPS.equals(uri.getScheme())) && cachedUri == null) {
 					exData = data.getBytes(StandardCharsets.UTF_8);
 					getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT)
 							.addCategory(Intent.CATEGORY_OPENABLE)
@@ -696,6 +704,9 @@ public class TWEditorWV extends AppCompatActivity {
 						}
 					}
 				});
+				if (wApp != null && wApp.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE)) {
+					startBackgroundService();
+				}
 				view.clearHistory();
 			}
 		});
@@ -768,34 +779,80 @@ public class TWEditorWV extends AppCompatActivity {
 			});
 	}
 
-	private void startKeepAliveService(JSONObject wa) {
-		// 准备后台运行
-		if (wa.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE)) {
-			// Create an intent to start the foreground service
-			Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
-			if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-				startForegroundService(keepAliveServiceIntent);
-			} else {
-				startService(keepAliveServiceIntent);
-			}
+	@Override
+	protected void onPause() {
+		super.onPause();
+		if (wApp != null && wApp.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE) && wv != null && wv.getProgress() == 100) {
+			startBackgroundService();
 		}
 	}
-	private void stopKeepAliveService() {
-		final JSONObject wl, wa;
-		try {
-			wl = db.getJSONObject(MainActivity.DB_KEY_WIKI);
-			wa = wl.getJSONObject(id);
-		} catch (JSONException e) {
-			e.printStackTrace();
-			Toast.makeText(TWEditorWV.this, R.string.data_error, Toast.LENGTH_SHORT).show();
-			return;
+
+	@Override
+	protected void onResume() {
+		super.onResume();
+		if (wApp != null && wApp.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE) && wv != null && wv.getProgress() == 100) {
+			startBackgroundService();
 		}
-		// 准备后台运行
-		if (wa.optBoolean(MainActivity.DB_KEY_KEEP_ALIVE)) {
-			// Create an intent to start the foreground service
-			Intent keepAliveServiceIntent = new Intent(this, KeepAliveService.class);
-			stopService(keepAliveServiceIntent);
+	}
+
+	private void checkNotificationPerms() {
+		if (MainActivity.APIOver33) {
+			if (ActivityCompat.checkSelfPermission(this, POST_NOTIFICATIONS) == PackageManager.PERMISSION_DENIED) {
+				// 如果上次申请权限被用户选择了禁止
+				if (!ActivityCompat.shouldShowRequestPermissionRationale(this, POST_NOTIFICATIONS)) {
+					enableNotifications();
+				} else {
+					ActivityCompat.requestPermissions(this, new String[]{POST_NOTIFICATIONS}, 100);
+				}
+			}
+		} else {
+			boolean enabled = NotificationManagerCompat.from(this).areNotificationsEnabled();
+			if (!enabled) {
+				enableNotifications();
+			}
 		}
+		acc_notification = false;
+	}
+
+	private void enableNotifications() {
+		new AlertDialog.Builder(this)
+				.setTitle(android.R.string.dialog_alert_title)
+				.setMessage(R.string.acquire_permission_notification)
+				.setNegativeButton(android.R.string.cancel, null)
+				.setPositiveButton(android.R.string.ok, (dialog, which) -> startActivity(MainActivity.APIOver33
+						// Android 13的Settings有专门针对Notification的页面
+						? new Intent()
+						.setAction(Settings.ACTION_APP_NOTIFICATION_SETTINGS)
+						.putExtra(Settings.EXTRA_APP_PACKAGE, getPackageName())
+						.putExtra(Settings.EXTRA_CHANNEL_ID, getApplicationInfo().uid)
+						.putExtra(KEY_APP_PACKAGE, getPackageName())
+						.putExtra(KEY_APP_UID, getApplicationInfo().uid)
+						// Android 13之前只要打开Settings
+						: new Intent()
+						.setAction(Settings.ACTION_APPLICATION_DETAILS_SETTINGS)
+						.setData(Uri.fromParts(KEY_PACKAGE, getPackageName(), null))))
+				.show();
+	}
+
+	// 挂入通知区域
+	private void startBackgroundService() {
+		if (acc_notification)
+			checkNotificationPerms();
+		// Create an intent to start the foreground service
+		Intent BGServiceIntent = new Intent(this, StayBackgroundService.class);
+		if (wv != null)
+			BGServiceIntent.putExtra(MainActivity.KEY_NAME, wv.getTitle());
+		if (MainActivity.APIOver26) {
+			startForegroundService(BGServiceIntent);
+		} else {
+			startService(BGServiceIntent);
+		}
+	}
+
+	// 清除通知
+	private void stopBackgroundService() {
+		Intent BGServiceIntent = new Intent(this, StayBackgroundService.class);
+		stopService(BGServiceIntent);
 	}
 
 	private JSONArray getExDataSingle(final Intent intent) {
@@ -1040,7 +1097,9 @@ public class TWEditorWV extends AppCompatActivity {
 						toolbar.setLogo(favicon != null ? cIcon(favicon) : null);
 					} else {    // SVG
 						Sharp svg = Sharp.loadString(fib64);
-						toolbar.setLogo(svg.getSharpPicture().getDrawable());
+						Drawable drawable = svg.getSharpPicture().getDrawable();
+						int bound = Math.round(scale * 24);
+						toolbar.setLogo(MainActivity.svg2bmp(drawable, bound, getResources()));
 					}
 				} catch (IllegalArgumentException | SvgParseException e) {
 					e.printStackTrace();
@@ -1473,6 +1532,7 @@ public class TWEditorWV extends AppCompatActivity {
 			hashes = null;
 			tree = null;
 			treeIndex = null;
+			stopBackgroundService();
 		}
 		// 解取Title/Subtitle/favicon
 		wApp = wa;    // nonnull: normal/file/content/url; null: http(s)/html
@@ -1526,7 +1586,10 @@ public class TWEditorWV extends AppCompatActivity {
 					toolbar.setLogo(favicon != null ? cIcon(favicon) : null);
 				} else {    // SVG
 					Sharp svg = Sharp.loadString(fib64);
-					toolbar.setLogo(svg.getSharpPicture().getDrawable());
+					Drawable drawable = svg.getSharpPicture().getDrawable();
+					int bound = Math.round(scale * 24);
+					toolbar.setLogo(MainActivity.svg2bmp(drawable, bound, getResources()));
+//					toolbar.setLogo(svg.getSharpPicture().getDrawable());
 				}
 			} catch (IllegalArgumentException | SvgParseException e) {
 				e.printStackTrace();
@@ -1586,7 +1649,6 @@ public class TWEditorWV extends AppCompatActivity {
 				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 			}
 		} else wv.loadUrl(actualUri != null ? actualUri.toString() : URL_BLANK);
-		this.startKeepAliveService(wApp);
 	}
 
 	@NonNull
@@ -1939,7 +2001,9 @@ public class TWEditorWV extends AppCompatActivity {
 								si.setIcon(cIcon(icon));
 							} else {    // SVG
 								Sharp svg = Sharp.loadString(fib64);
-								si.setIcon(svg.getSharpPicture().getDrawable());
+								Drawable drawable = svg.getSharpPicture().getDrawable();
+								int bound = Math.round(scale * 24);
+								si.setIcon(MainActivity.svg2bmp(drawable, bound, getResources()));
 							}
 						} catch (IllegalArgumentException | SvgParseException e) {
 							e.printStackTrace();
@@ -1968,7 +2032,7 @@ public class TWEditorWV extends AppCompatActivity {
 	// WebView清理
 	@Override
 	protected void onDestroy() {
-		this.stopKeepAliveService();
+		stopBackgroundService();
 		if (wv != null) {
 			ViewParent parent = wv.getParent();
 			if (parent != null) ((ViewGroup) parent).removeView(wv);

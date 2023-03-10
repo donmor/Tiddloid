@@ -15,6 +15,7 @@ import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.graphics.Matrix;
 import android.graphics.drawable.BitmapDrawable;
+import android.graphics.drawable.Drawable;
 import android.net.Uri;
 import android.os.Vibrator;
 import android.text.SpannableStringBuilder;
@@ -99,7 +100,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
 			if (fib64.length() > 0) {
 				try {
-					if (fib64.matches(MainActivity.REX_B64)) {	// Base64
+					if (fib64.matches(MainActivity.REX_B64)) {    // Base64
 						byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
 						Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
 						if (favicon != null) {
@@ -108,9 +109,11 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 							matrix.postScale(scale * 24f / width, scale * 24f / height);
 							holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(new BitmapDrawable(context.getResources(), Bitmap.createBitmap(favicon, 0, 0, width, height, matrix, true)), null, null, null);
 						}
-					} else {	// SVG
+					} else {    // SVG
 						Sharp svg = Sharp.loadString(fib64);
-						holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(svg.getSharpPicture().getDrawable(), null, null, null);
+						Drawable drawable = svg.getSharpPicture().getDrawable();
+						int bound = Math.round(scale * 24);
+						holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(MainActivity.svg2bmp(drawable, bound, context.getResources()), null, null, null);
 					}
 				} catch (IllegalArgumentException | SvgParseException e) {
 					e.printStackTrace();

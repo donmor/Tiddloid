@@ -9,12 +9,14 @@
 	<string name="entry_name">Zu Tiddloid hinzufügen</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/de-DE/empty.html</string>
+	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
 	<!--UI-->
 	<string name="action_new">Erstellen Sie eine neue TiddlyWiki-Datei</string>
 	<string name="action_import">Importieren Sie eine TiddlyWiki-Datei</string>
 	<string name="action_dir">Einen TiddlyWiki-Ordner hinzufügen</string>
 	<string name="action_dav">WebDAV / Local (Vermächtnis)</string>
 	<string name="action_about">Über Tiddloid</string>
+	<string name="action_update">Update ist verfügbar: %1$s</string>
 	<string name="action_save_to">Im Tiddloid speichern</string>
 	<string name="action_save_to_file">Speicher als neue Datei</string>
 	<string name="action_save_to_link">Als Lesezeichen speichern</string>
@@ -80,6 +82,7 @@
 	<string name="hint_username">Nutzername</string>
 	<string name="hint_password">Passwort</string>
 	<string name="market">Bewerte diese App</string>
+	<string name="acquire_permission_notification">Tiddloid benötigt die Erlaubnis, Benachrichtigungen zu senden.</string>
 	<string name="about">
 		Tiddloid ist eine App zum Arbeiten mit lokal gespeicherten TiddlyWikis. Sobald einige Ideen haben, können Sie sie sofort aufschreiben, damit Sie sie überall zugreifen können. Weitere Informationen zu TiddlyWiki finden Sie unter https://tiddlywiki.com/ .\n
 		\n

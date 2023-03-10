@@ -9,12 +9,14 @@
 	<string name="entry_name">添加到 Tiddloid</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/zh-Hant/empty.html</string>
+	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
 	<!--UI-->
 	<string name="action_new">創建一個新的 TiddlyWiki 文件</string>
 	<string name="action_import">導入現有TiddlyWiki文件</string>
 	<string name="action_dir">添加 TiddlyWiki 文件夾</string>
 	<string name="action_dav">WebDAV / 本地（傳統）</string>
 	<string name="action_about">關於Tiddloid</string>
+	<string name="action_update">更新可用：%1$s</string>
 	<string name="action_save_to">保存到 Tiddloid</string>
 	<string name="action_save_to_file">保存到新文件</string>
 	<string name="action_save_to_link">存為書籤</string>
@@ -80,6 +82,7 @@
 	<string name="hint_username">用戶名</string>
 	<string name="hint_password">密碼</string>
 	<string name="market">為此應用評分</string>
+	<string name="acquire_permission_notification">Tiddloid 需要權限才能發送通知。</string>
 	<string name="about">
 		Tiddloid是一款適用於本地存儲的TiddlyWiki的應用程序。一旦有了一些想法，您可以立即將它們寫下來，以便您可以隨時隨地訪問這些想法。有關TiddlyWiki的更多詳細信息，請參閱https://tiddlywiki.com/。 \n
 		\n

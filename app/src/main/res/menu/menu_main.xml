@@ -5,33 +5,38 @@
   -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:layoutDirection="inherit"
-    tools:context="top.donmor.tiddloid.MainActivity">
-    <item
-        android:id="@+id/action_new"
-        android:icon="@drawable/ic_note_add"
-        android:title="@string/action_new"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_file_import"
-        android:icon="@drawable/ic_folder_open"
-        android:title="@string/action_import"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_add_dir"
-        android:icon="@drawable/ic_folder_add"
-        android:title="@string/action_dir"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_add_dav"
-        android:icon="@drawable/ic_dav"
-        android:title="@string/action_dav"
-        app:showAsAction="never" />
-    <item
-        android:id="@+id/action_about"
-        android:icon="@drawable/ic_info_outline"
-        android:title="@string/action_about"
-        app:showAsAction="never" />
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:layoutDirection="inherit"
+	tools:context="top.donmor.tiddloid.MainActivity">
+	<item
+		android:id="@+id/action_new"
+		android:icon="@drawable/ic_note_add"
+		android:title="@string/action_new"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/action_file_import"
+		android:icon="@drawable/ic_folder_open"
+		android:title="@string/action_import"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/action_add_dir"
+		android:icon="@drawable/ic_folder_add"
+		android:title="@string/action_dir"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/action_add_dav"
+		android:icon="@drawable/ic_dav"
+		android:title="@string/action_dav"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/action_about"
+		android:icon="@drawable/ic_info_outline"
+		android:title="@string/action_about"
+		app:showAsAction="never" />
+	<item
+		android:id="@+id/action_update"
+		android:icon="@drawable/ic_update"
+		android:visible="false"
+		app:showAsAction="never" />
 </menu>

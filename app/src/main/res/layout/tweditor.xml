@@ -1,93 +1,92 @@
-<?xml version="1.0" encoding="utf-8"?>
-<!--
+<?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/layout/tweditor.xml <= [P|Tiddloid]
   ~ Last modified: 21:27:10 2022/03/12
   ~ Copyright (c) 2022 donmor
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/wv_wrapper"
-    android:layout_width="match_parent"
-    android:layout_height="match_parent"
-    android:background="@color/design_default_color_primary"
-    android:configChanges="keyboardHidden|orientation|screenSize"
-    android:layoutDirection="locale"
-    android:orientation="vertical"
-    android:textDirection="locale"
-    tools:context=".TWEditorWV">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
+	android:id="@+id/wv_wrapper"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:background="@color/design_default_color_primary"
+	android:configChanges="keyboardHidden|orientation|screenSize"
+	android:layoutDirection="locale"
+	android:orientation="vertical"
+	android:textDirection="locale"
+	tools:context=".TWEditorWV">
 
-    <com.google.android.material.appbar.AppBarLayout
-        android:id="@+id/wv_appbar"
-        android:layout_width="match_parent"
-        android:layout_height="wrap_content"
-        android:animateLayoutChanges="true"
-        android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
+	<com.google.android.material.appbar.AppBarLayout
+		android:id="@+id/wv_appbar"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:animateLayoutChanges="true"
+		android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
-        <androidx.appcompat.widget.Toolbar
-            android:id="@+id/wv_toolbar"
-            style="@style/NoSpaceActionBarTheme"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent"
-            app:navigationIcon="@drawable/ic_arrow_back"
-            app:subtitleTextAppearance="@style/TextAppearance.AppCompat.Small"
-            app:titleTextAppearance="@style/Toolbar.TitleText" />
+		<androidx.appcompat.widget.Toolbar
+			android:id="@+id/wv_toolbar"
+			style="@style/NoSpaceActionBarTheme"
+			android:layout_width="match_parent"
+			android:layout_height="match_parent"
+			app:navigationIcon="@drawable/ic_arrow_back"
+			app:subtitleTextAppearance="@style/TextAppearance.AppCompat.Small"
+			app:titleTextAppearance="@style/Toolbar.TitleText" />
 
-        <LinearLayout
-            android:id="@+id/find_bar"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content"
-            android:animateLayoutChanges="true"
-            android:visibility="gone">
+		<LinearLayout
+			android:id="@+id/find_bar"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:animateLayoutChanges="true"
+			android:visibility="gone">
 
-            <EditText
-                android:id="@+id/find_edit_find"
-                android:layout_width="0dp"
-                android:layout_height="wrap_content"
-                android:layout_weight="1"
-                android:hint="@string/find_find"
-                android:importantForAutofill="no"
-                android:inputType="text"
-                android:selectAllOnFocus="true"
-                android:textColor="@color/content"
-                android:textColorHint="@color/content_sub" />
+			<EditText
+				android:id="@+id/find_edit_find"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:hint="@string/find_find"
+				android:importantForAutofill="no"
+				android:inputType="text"
+				android:selectAllOnFocus="true"
+				android:textColor="@color/content"
+				android:textColorHint="@color/content_sub" />
 
-            <TextView
-                android:id="@+id/find_indicator"
-                android:layout_width="wrap_content"
-                android:layout_height="wrap_content" />
+			<TextView
+				android:id="@+id/find_indicator"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content" />
 
-            <ImageButton
-                android:id="@+id/find_up"
-                style="@style/Widget.AppCompat.ActionButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:contentDescription="@string/find_up"
-                app:srcCompat="@drawable/ic_arrow_up" />
+			<ImageButton
+				android:id="@+id/find_up"
+				style="@style/Widget.AppCompat.ActionButton"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:contentDescription="@string/find_up"
+				app:srcCompat="@drawable/ic_arrow_up" />
 
-            <ImageButton
-                android:id="@+id/find_down"
-                style="@style/Widget.AppCompat.ActionButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:contentDescription="@string/find_down"
-                app:srcCompat="@drawable/ic_arrow_down" />
+			<ImageButton
+				android:id="@+id/find_down"
+				style="@style/Widget.AppCompat.ActionButton"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:contentDescription="@string/find_down"
+				app:srcCompat="@drawable/ic_arrow_down" />
 
-            <ImageButton
-                android:id="@+id/find_close"
-                style="@style/Widget.AppCompat.ActionButton"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:contentDescription="@string/find_close"
-                app:srcCompat="@drawable/ic_close" />
+			<ImageButton
+				android:id="@+id/find_close"
+				style="@style/Widget.AppCompat.ActionButton"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:contentDescription="@string/find_close"
+				app:srcCompat="@drawable/ic_close" />
 
-        </LinearLayout>
+		</LinearLayout>
 
-        <ProgressBar
-            android:id="@+id/progressBar"
-            style="@style/Widget.AppCompat.ProgressBar.Horizontal"
-            android:layout_width="match_parent"
-            android:layout_height="wrap_content" />
-    </com.google.android.material.appbar.AppBarLayout>
+		<ProgressBar
+			android:id="@+id/progressBar"
+			style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content" />
+	</com.google.android.material.appbar.AppBarLayout>
 </LinearLayout>

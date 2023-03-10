@@ -7,7 +7,6 @@
 package top.donmor.tiddloid;
 
 import android.content.Context;
-import android.os.Build;
 import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
@@ -109,7 +108,7 @@ public class LocalDirAdapter extends RecyclerView.Adapter<LocalDirAdapter.LocalD
 
 	void reload(List<File> dir, boolean canBack) {
 		localItems = dir;
-		if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.N && localItems != null) {
+		if (MainActivity.APIOver24 && localItems != null) {
 			localItems.sort((file, t1) -> {
 				if (t1.isDirectory() && file.isFile()) return 1;
 				return file.getName().compareToIgnoreCase(t1.getName());
