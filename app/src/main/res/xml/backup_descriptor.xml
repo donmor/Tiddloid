@@ -5,7 +5,7 @@
   -->
 
 <full-backup-content>
-    <include
-        domain="file"
-        path="data.json" />
+	<include
+		domain="file"
+		path="data.json" />
 </full-backup-content>

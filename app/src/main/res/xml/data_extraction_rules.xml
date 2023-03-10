@@ -5,9 +5,9 @@
   -->
 
 <data-extraction-rules>
-    <cloud-backup>
-        <include
-            domain="file"
-            path="data.json" />
-    </cloud-backup>
+	<cloud-backup>
+		<include
+			domain="file"
+			path="data.json" />
+	</cloud-backup>
 </data-extraction-rules>

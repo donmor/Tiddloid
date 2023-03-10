@@ -7,45 +7,45 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
-    xmlns:app="http://schemas.android.com/apk/res-auto"
-    android:layout_width="match_parent"
-    android:layout_height="wrap_content"
-    android:gravity="center"
-    android:layoutDirection="inherit"
-    android:orientation="horizontal"
-    android:textDirection="inherit">
+	xmlns:app="http://schemas.android.com/apk/res-auto"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content"
+	android:gravity="center"
+	android:layoutDirection="inherit"
+	android:orientation="horizontal"
+	android:textDirection="inherit">
 
-    <ImageView
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:contentDescription="@string/icon"
-        app:srcCompat="@drawable/ic_description" />
+	<ImageView
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_weight="0"
+		android:contentDescription="@string/icon"
+		app:srcCompat="@drawable/ic_description" />
 
-    <TextView
-        android:id="@+id/lblBackupFile"
-        android:layout_width="0dp"
-        android:layout_height="wrap_content"
-        android:layout_weight="1"
-        android:textDirection="inherit" />
+	<TextView
+		android:id="@+id/lblBackupFile"
+		android:layout_width="0dp"
+		android:layout_height="wrap_content"
+		android:layout_weight="1"
+		android:textDirection="inherit" />
 
-    <ImageButton
-        android:id="@+id/btnRollBack"
-        style="@style/Widget.AppCompat.ActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/rollback"
-        app:srcCompat="@drawable/ic_reply" />
+	<ImageButton
+		android:id="@+id/btnRollBack"
+		style="@style/Widget.AppCompat.ActionButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_weight="0"
+		android:adjustViewBounds="true"
+		android:contentDescription="@string/rollback"
+		app:srcCompat="@drawable/ic_reply" />
 
-    <ImageButton
-        android:id="@+id/btnDelBackup"
-        style="@style/Widget.AppCompat.ActionButton"
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:layout_weight="0"
-        android:adjustViewBounds="true"
-        android:contentDescription="@string/del_backup"
-        app:srcCompat="@drawable/ic_delete" />
+	<ImageButton
+		android:id="@+id/btnDelBackup"
+		style="@style/Widget.AppCompat.ActionButton"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:layout_weight="0"
+		android:adjustViewBounds="true"
+		android:contentDescription="@string/del_backup"
+		app:srcCompat="@drawable/ic_delete" />
 </LinearLayout>

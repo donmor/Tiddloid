@@ -5,11 +5,11 @@
   -->
 
 <resources>
-    <color name="content">@android:color/white</color>
-    <color name="content_tint">#CCFFFFFF</color>
-    <color name="content_sub">#8AFFFFFF</color>
-    <color name="content_back_dec">#303030</color>
-    <color name="design_default_color_primary">@color/cardview_dark_background</color>
-    <color name="design_default_color_primary_dark">@android:color/darker_gray</color>
-    <color name="design_default_color_accent">#72CEED</color>
+	<color name="content">@android:color/white</color>
+	<color name="content_tint">#CCFFFFFF</color>
+	<color name="content_sub">#8AFFFFFF</color>
+	<color name="content_back_dec">#303030</color>
+	<color name="design_default_color_primary">@color/cardview_dark_background</color>
+	<color name="design_default_color_primary_dark">@android:color/darker_gray</color>
+	<color name="design_default_color_accent">#72CEED</color>
 </resources>
