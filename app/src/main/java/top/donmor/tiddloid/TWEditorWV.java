@@ -1125,8 +1125,10 @@ public class TWEditorWV extends AppCompatActivity {
 					while (keys.hasNext()) {
 						String i = keys.next();
 						JSONObject object = mt.getJSONObject(i);
-						TW_TYPES.put(i, TW_TYPE_MAP.get(object.getString(KEY_ENCODING)));
-						TW_TYPE_EXT.put(object.getString(KEY_EXTENSION), i);
+						String enc = object.optString(KEY_ENCODING), ext = object.optString(KEY_EXTENSION);
+						if (enc.length() == 0 || ext.length() == 0) continue;
+						TW_TYPES.put(i, TW_TYPE_MAP.get(enc));
+						TW_TYPE_EXT.put(ext, i);
 					}
 					JSONArray dt = array.optJSONArray(7);
 					if (dt != null) {

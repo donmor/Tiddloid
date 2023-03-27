@@ -3,4 +3,5 @@ Update details:
 - Added update checker (shows up in menu when update is available)
 - Fixed the bug causing failure on saving a bookmarked wiki
 - Fixed the bug causing SVG icons not properly scaled
+- Fixed the bug that breaks the tweaks plugin when used with TiddlyWiki 5.2.6+
 -Minor tweaks
