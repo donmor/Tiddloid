@@ -28,7 +28,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
 ### Frequently Asked Questions
 
-* I can't find where to importing/exporting wiki list data.
+* I can't find where to import/export wiki list data.
 
     The wiki list importing/exporting are hidden features since it's seldom used.
 
