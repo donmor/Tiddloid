@@ -20,6 +20,7 @@ import android.net.Uri;
 import android.os.Vibrator;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.style.BackgroundColorSpan;
 import android.text.style.ForegroundColorSpan;
 import android.text.style.LeadingMarginSpan;
 import android.text.style.RelativeSizeSpan;
@@ -58,6 +59,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 	private JSONObject db, wl;
 	private ArrayList<String> ids;
 	private ItemClickListener mItemClickListener;
+	private ItemFilter mItemFilter;
 	private ReloadListener mReloadListener;
 	private final LayoutInflater inflater;
 	private final Vibrator vibrator;
@@ -80,7 +82,20 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		WikiListHolder(View itemView) {
 			super(itemView);
 			btnWiki = itemView.findViewById(R.id.btnWiki);
-			btnWiki.setVisibility(View.GONE);
+			setVisibility(View.GONE);
+		}
+
+		private void setVisibility(int visibility) {
+			itemView.setVisibility(visibility);
+			RecyclerView.LayoutParams params = (RecyclerView.LayoutParams) itemView.getLayoutParams();
+			if (visibility == View.VISIBLE) {
+				params.width = RecyclerView.LayoutParams.MATCH_PARENT;
+				params.height = RecyclerView.LayoutParams.WRAP_CONTENT;
+			} else {
+				params.width = 0;
+				params.height = 0;
+			}
+			itemView.setLayoutParams(params);
 		}
 	}
 
@@ -129,19 +144,45 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			// 条目显示
 			boolean iDav = wa.has(MainActivity.DB_KEY_DAV_AUTH);
 			if (!MainActivity.APIOver21 && iDav) return;
+			boolean fTextA = mItemFilter.fTextActive(), fText = mItemFilter.fText(n, s);
+			if (fTextA && !fText) {
+				holder.setVisibility(View.GONE);
+				return;
+			}
+			String fKeyword = mItemFilter.fKeyword();
 			SpannableStringBuilder builder = new SpannableStringBuilder(n);
-			builder.setSpan(new LeadingMarginSpan.Standard(Math.round(scale * 8f)), 0, builder.length(), Spanned.SPAN_INCLUSIVE_INCLUSIVE);
+			builder.setSpan(new LeadingMarginSpan.Standard(Math.round(scale * 8f)), 0, builder.length(), Spanned.SPAN_MARK_POINT);
 			try {
 				builder.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.content_sub)), builder.length(), builder.length(), Spanned.SPAN_MARK_POINT);
+				if (fTextA) {
+					int pkw = n.indexOf(fKeyword);
+					while (pkw >= 0 && pkw < builder.length()) {
+						builder.setSpan(new BackgroundColorSpan(context.getResources().getColor(R.color.content_back_fil)), pkw, pkw + fKeyword.length(), Spanned.SPAN_POINT_MARK);
+						pkw = n.indexOf(fKeyword, pkw + 1);
+					}
+				}
 			} catch (Resources.NotFoundException e) {
 				e.printStackTrace();
 			}
-			builder.append(s.length() > 0 ? MainActivity.KEY_LBL + s : s);
+			if (s.length() > 0) {
+				builder.append(MainActivity.KEY_LBL);
+				int ps = builder.length();
+				builder.append(s);
+				if (fTextA) {
+					int pkw = s.indexOf(fKeyword);
+					while (pkw >= 0 && pkw < builder.length()) {
+						builder.setSpan(new BackgroundColorSpan(context.getResources().getColor(R.color.content_back_fil)), ps + pkw, ps + pkw + fKeyword.length(), Spanned.SPAN_POINT_MARK);
+						pkw = n.indexOf(fKeyword, pkw + 1);
+					}
+				}
+			}
 			builder.setSpan(new RelativeSizeSpan(0.8f), builder.length(), builder.length(), Spanned.SPAN_MARK_POINT);
 			Uri u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI));
 			boolean legacy = MainActivity.SCH_FILE.equals(u.getScheme());
 			DocumentFile df = null;
 			final DavResource[] vf = new DavResource[1];
+			int pTimeSubBgn = 0, pTimeSubEnd = 0;
+			Date mt = null;
 			try {
 				if (iDav) {
 					final IOException[] e0 = new IOException[1];
@@ -187,7 +228,11 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 				if (iDav) {
 					if (vf[0] != null) {
 						builder.append('\n');
-						builder.append(SimpleDateFormat.getDateTimeInstance().format(vf[0].getModified())).append(formatSize(vf[0].getContentLength()));
+						pTimeSubBgn = builder.length();
+						mt = vf[0].getModified();
+						builder.append(SimpleDateFormat.getDateTimeInstance().format(mt));
+						pTimeSubEnd = builder.length();
+						builder.append(formatSize(vf[0].getContentLength()));
 						builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.webdav));
 					}
 				} else if (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme())) {
@@ -196,7 +241,11 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 					builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.internet));
 				} else if ((f = legacy ? DocumentFile.fromFile(new File(u.getPath())) : df != null ? df : DocumentFile.fromSingleUri(context, u)) != null && f.exists()) {
 					builder.append('\n');
-					builder.append(SimpleDateFormat.getDateTimeInstance().format(new Date(f.lastModified()))).append(formatSize(f.length()));
+					pTimeSubBgn = builder.length();
+					mt = new Date(f.lastModified());
+					builder.append(SimpleDateFormat.getDateTimeInstance().format(mt));
+					pTimeSubEnd = builder.length();
+					builder.append(formatSize(f.length()));
 					if (legacy) builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.local_legacy));
 					else {
 						// 获取来源名
@@ -215,8 +264,17 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 				e.printStackTrace();
 			}
 
+			boolean fTimeA = mItemFilter.fTimeActive(), fTime = mItemFilter.fTime(mt);
+			if (fTimeA && !fTime) {
+				holder.setVisibility(View.GONE);
+				return;
+			}
+			if (fTimeA && pTimeSubBgn > 0 && pTimeSubEnd > 0)
+				builder.setSpan(new BackgroundColorSpan(context.getResources().getColor(R.color.content_back_fil)),
+						pTimeSubBgn, pTimeSubEnd, Spanned.SPAN_POINT_MARK);
+
 			holder.btnWiki.setText(builder);
-			holder.btnWiki.setVisibility(View.VISIBLE);
+			holder.setVisibility(View.VISIBLE);
 		} catch (JSONException e) {
 			e.printStackTrace();
 		}
@@ -233,8 +291,24 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		void onItemLongClick(int pos, String id);
 	}
 
+	interface ItemFilter {
+		boolean fTextActive();
+
+		boolean fText(String title, String sub);
+
+		String fKeyword();
+
+		boolean fTimeActive();
+
+		boolean fTime(Date time);
+	}
+
 	void setOnItemClickListener(ItemClickListener itemClickListener) {
 		this.mItemClickListener = itemClickListener;
+	}
+
+	void setItemFilter(ItemFilter itemFilter) {
+		this.mItemFilter = itemFilter;
 	}
 
 	interface ReloadListener {

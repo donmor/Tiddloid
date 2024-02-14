@@ -17,7 +17,10 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.pm.ApplicationInfo;
+import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
+import android.content.pm.ShortcutInfo;
+import android.content.pm.ShortcutManager;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -27,6 +30,7 @@ import android.graphics.PixelFormat;
 import android.graphics.Typeface;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
+import android.graphics.drawable.Icon;
 import android.net.Uri;
 import android.os.Build;
 import android.os.Bundle;
@@ -53,7 +57,9 @@ import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.view.inputmethod.EditorInfo;
+import android.widget.Button;
 import android.widget.CheckBox;
+import android.widget.DatePicker;
 import android.widget.EditText;
 import android.widget.ImageButton;
 import android.widget.LinearLayout;
@@ -68,6 +74,7 @@ import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
 import androidx.appcompat.view.menu.MenuBuilder;
+import androidx.appcompat.widget.AppCompatCheckBox;
 import androidx.appcompat.widget.Toolbar;
 import androidx.constraintlayout.widget.ConstraintLayout;
 import androidx.core.app.ActivityCompat;
@@ -107,6 +114,7 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
 import java.net.URI;
 import java.net.URL;
 import java.nio.ByteBuffer;
@@ -120,6 +128,7 @@ import java.security.NoSuchAlgorithmException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Calendar;
 import java.util.Date;
 import java.util.Iterator;
 import java.util.List;
@@ -139,8 +148,15 @@ public class MainActivity extends AppCompatActivity {
 	private ActivityResultLauncher<Intent> getChooserClone, getChooserCreate, getChooserImport, getChooserTree, getPermissionRequest;
 	private boolean acquiringStorage = false;
 	private int dialogPadding;
-	private static boolean firstRun = false;
-	private String latestVersion = null;
+	private static boolean firstRun = false, isDebug = true;
+	private static String version = null, latestVersion = null;
+	private LinearLayout filterBar, filterBar2;
+	private ImageButton btnFilterClose;
+	//	private ImageButton btnFilterClose, btnFilterDT;
+	private AppCompatCheckBox btnFilterDT;
+	private Button btnFilterDTBgn, btnFilterDTEnd;
+	private EditText txtFilter;
+	private Date dtFilterBgn = null, dtFilterEnd = null;
 
 	// CONSTANT
 	static final int TAKE_FLAGS = Intent.FLAG_GRANT_READ_URI_PERMISSION | Intent.FLAG_GRANT_WRITE_URI_PERMISSION, BUF_SIZE = 4096;
@@ -152,6 +168,9 @@ public class MainActivity extends AppCompatActivity {
 			KEY_FAVICON = "favicon",
 			KEY_ID = "id",
 			KEY_TZ_UTC = "UTC",
+			KEY_DATE_SHORT_PF = "%tF",
+			KEY_DS_NEW = "new",
+			KEY_DS_DEFAULT = "default",
 			DB_KEY_DEFAULT = "default",
 			DB_KEY_WIKI = "wiki",
 			DB_KEY_COLOR = "color",
@@ -174,6 +193,7 @@ public class MainActivity extends AppCompatActivity {
 			KEY_URI_NOTCH = "://",
 			REX_B64 = "^[a-zA-Z0-9+/=]*$",
 			MASK_SDF_BACKUP = "yyyyMMddHHmmssSSS",
+			TEMPLATE_FILE_NAME = "template.html",
 			SCH_CONTENT = "content",
 			SCH_FILE = "file",
 			SCH_HTTP = "http",
@@ -189,12 +209,12 @@ public class MainActivity extends AppCompatActivity {
 			KEY_URI_RATE = "market://details?id=",
 			LICENSE_FILE_NAME = "LICENSE",
 			SCH_PACKAGES = "package",
-			TEMPLATE_FILE_NAME = "template.html",
 			CLONING_FILE_NAME = "cloning.html";
 	@SuppressWarnings("WeakerAccess")
 	static final boolean APIOver21 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.LOLLIPOP,
 			APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
+			APIOver25 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N_MR1,
 			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
 			APIOver29 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
 			APIOver30 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R,
@@ -205,12 +225,12 @@ public class MainActivity extends AppCompatActivity {
 			EXCEPTION_FILE_NOT_FOUND = "File not present",
 			EXCEPTION_TREE_INDEX_NOT_FOUND = "File index.htm(l) not present",
 			EXCEPTION_TREE_NOT_A_DIRECTORY = "File passed in is not a directory",
+			EXCEPTION_INTERRUPTED = "Interrupted by user",
 			EXCEPTION_SAF_FILE_NOT_EXISTS = "Chosen file no longer exists";
 	private static final String
 			EXCEPTION_JSON_ID_NOT_FOUND = "Cannot find this id in the JSON data file",
 			EXCEPTION_SHORTCUT_NOT_SUPPORTED = "Invoking a function that is not supported by the current system",
 			EXCEPTION_NO_INTERNET = "No Internet connection",
-			EXCEPTION_INTERRUPTED = "Interrupted by user",
 			EXCEPTION_TRANSFER_CORRUPTED = "Transfer dest file corrupted: hash or size not match";
 	private static final String[] TYPE_FILTERS = {TYPE_HTA, TYPE_HTML};
 
@@ -229,6 +249,106 @@ public class MainActivity extends AppCompatActivity {
 		// 加载UI
 		Toolbar toolbar = findViewById(R.id.toolbar);
 		setSupportActionBar(toolbar);
+		filterBar = findViewById(R.id.filter_bar);
+		filterBar2 = findViewById(R.id.filter_bar2);
+		txtFilter = findViewById(R.id.filter_text);
+		txtFilter.addTextChangedListener(new TextWatcher() {
+			@Override
+			public void beforeTextChanged(CharSequence s, int start, int count, int after) {
+			}
+
+			@Override
+			public void onTextChanged(CharSequence s, int start, int before, int count) {
+			}
+
+			@Override
+			public void afterTextChanged(Editable s) {
+				if (filterBar.getVisibility() == View.VISIBLE)
+					wikiListAdapter.notifyDataSetChanged();
+			}
+		});
+		btnFilterClose = findViewById(R.id.filter_close);
+		btnFilterClose.setOnClickListener(v -> {
+			filterBar.setVisibility(View.GONE);
+			filterBar2.setVisibility(View.GONE);
+			btnFilterDT.setChecked(false);
+			txtFilter.getEditableText().clear();
+			dtFilterBgn = null;
+			dtFilterEnd = null;
+			btnFilterDTBgn.setText(R.string.filter_time_init);
+			btnFilterDTEnd.setText(R.string.filter_time_init);
+			wikiListAdapter.notifyDataSetChanged();
+		});
+		btnFilterDT = findViewById(R.id.filter_date);
+		btnFilterDT.setOnCheckedChangeListener((buttonView, isChecked) -> {
+			filterBar2.setVisibility(isChecked ? View.VISIBLE : View.GONE);
+			if (!isChecked) {
+				dtFilterBgn = null;
+				dtFilterEnd = null;
+				btnFilterDTBgn.setText(R.string.filter_time_init);
+				btnFilterDTEnd.setText(R.string.filter_time_init);
+				wikiListAdapter.notifyDataSetChanged();
+			}
+
+		});
+		btnFilterDTBgn = findViewById(R.id.filter_date_bgn);
+		btnFilterDTBgn.setOnClickListener(v -> {
+			DatePicker dp = new DatePicker(MainActivity.this);
+			if (dtFilterBgn != null) {
+				Calendar ref = Calendar.getInstance();
+				ref.setTime(dtFilterBgn);
+				dp.updateDate(ref.get(Calendar.YEAR), ref.get(Calendar.MONTH), ref.get(Calendar.DATE));
+			}
+			new AlertDialog.Builder(MainActivity.this)
+					.setView(dp)
+					.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+						Calendar calendar = Calendar.getInstance();
+						calendar.set(dp.getYear(), dp.getMonth(), dp.getDayOfMonth(), 0, 0, 0);
+						dtFilterBgn = calendar.getTime();
+						btnFilterDTBgn.setText(String.format(KEY_DATE_SHORT_PF, dtFilterBgn));
+						if (dtFilterEnd != null && dtFilterEnd.before(dtFilterBgn)) {
+							Calendar calendar1 = Calendar.getInstance();
+							calendar1.set(dp.getYear(), dp.getMonth(), dp.getDayOfMonth(), 23, 59, 59);
+							dtFilterEnd = calendar1.getTime();
+							btnFilterDTEnd.setText(String.format(KEY_DATE_SHORT_PF, dtFilterEnd));
+						}
+						wikiListAdapter.notifyDataSetChanged();
+					})
+					.setNegativeButton(android.R.string.cancel, null)
+					.setNeutralButton(android.R.string.cancel, (dialog, which) -> {
+						dtFilterBgn = null;
+						btnFilterDTBgn.setText(R.string.filter_time_init);
+					}).show();
+		});
+		btnFilterDTEnd = findViewById(R.id.filter_date_end);
+		btnFilterDTEnd.setOnClickListener(v -> {
+			DatePicker dp = new DatePicker(MainActivity.this);
+			if (dtFilterEnd != null) {
+				Calendar ref = Calendar.getInstance();
+				ref.setTime(dtFilterEnd);
+				dp.updateDate(ref.get(Calendar.YEAR), ref.get(Calendar.MONTH), ref.get(Calendar.DATE));
+			}
+			new AlertDialog.Builder(MainActivity.this)
+					.setView(dp)
+					.setPositiveButton(android.R.string.ok, (dialog, which) -> {
+						Calendar calendar = Calendar.getInstance();
+						calendar.set(dp.getYear(), dp.getMonth(), dp.getDayOfMonth(), 23, 59, 59);
+						dtFilterEnd = calendar.getTime();
+						btnFilterDTEnd.setText(String.format(KEY_DATE_SHORT_PF, dtFilterEnd));
+						if (dtFilterBgn != null && dtFilterBgn.after(dtFilterEnd)) {
+							Calendar calendar1 = Calendar.getInstance();
+							calendar1.set(dp.getYear(), dp.getMonth(), dp.getDayOfMonth(), 0, 0, 0);
+							dtFilterBgn = calendar1.getTime();
+							btnFilterDTBgn.setText(String.format(KEY_DATE_SHORT_PF, dtFilterBgn));
+						}
+						wikiListAdapter.notifyDataSetChanged();
+					})
+					.setNegativeButton(android.R.string.cancel, null)
+					.setNeutralButton(android.R.string.cancel, (dialog, which) -> {
+						dtFilterEnd = null;
+						btnFilterDTEnd.setText(R.string.filter_time_init);
+					}).show();
+		});
 		noWiki = findViewById(R.id.t_noWiki);
 		final SwipeRefreshLayout refreshLayout = findViewById(R.id.refresh);
 		refreshLayout.setOnRefreshListener(() -> {
@@ -240,6 +360,32 @@ public class MainActivity extends AppCompatActivity {
 		rvWikiList.setItemAnimator(new DefaultItemAnimator());
 		wikiListAdapter = new WikiListAdapter(this);
 		wikiListAdapter.setReloadListener(count -> runOnUiThread(() -> noWiki.setVisibility(count > 0 ? View.GONE : View.VISIBLE)));
+		wikiListAdapter.setItemFilter(new WikiListAdapter.ItemFilter() {
+			@Override
+			public boolean fTextActive() {
+				return filterBar.getVisibility() == View.VISIBLE && txtFilter.getEditableText().length() > 0;
+			}
+
+			@Override
+			public boolean fText(String title, String sub) {
+				return fTextActive() && (title.contains(txtFilter.getEditableText().toString()) || sub.contains(txtFilter.getEditableText().toString()));
+			}
+
+			@Override
+			public String fKeyword() {
+				return fTextActive() ? txtFilter.getEditableText().toString() : STR_EMPTY;
+			}
+
+			@Override
+			public boolean fTimeActive() {
+				return filterBar.getVisibility() == View.VISIBLE && btnFilterDT.isChecked() && (dtFilterBgn != null || dtFilterEnd != null);
+			}
+
+			@Override
+			public boolean fTime(Date time) {
+				return fTimeActive() && !(dtFilterBgn != null && time.before(new Date(dtFilterBgn.getTime())) || dtFilterEnd != null && time.after(dtFilterEnd));
+			}
+		});
 		wikiListAdapter.setOnItemClickListener(new WikiListAdapter.ItemClickListener() {
 			// 点击打开
 			@Override
@@ -473,7 +619,8 @@ public class MainActivity extends AppCompatActivity {
 									fc2fc(ic, oc);
 								}
 								getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
-							} catch (IOException | IllegalArgumentException | ArrayIndexOutOfBoundsException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
+							} catch (IOException | IllegalArgumentException | ArrayIndexOutOfBoundsException | NullPointerException |
+									 NonReadableChannelException | NonWritableChannelException e) {
 								e.printStackTrace();
 								Toast.makeText(MainActivity.this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 							}
@@ -677,6 +824,7 @@ public class MainActivity extends AppCompatActivity {
 						Toast.makeText(wikiConfigDialog.getContext(), R.string.data_error, Toast.LENGTH_SHORT).show();
 					}
 				});
+				wikiConfigDialog.setOnDismissListener(dialog -> MainActivity.this.onResume());
 				wikiConfigDialog.show();
 				wikiConfigDialog.getButton(DialogInterface.BUTTON_NEGATIVE).setEnabled(!iNet);
 			}
@@ -754,6 +902,7 @@ public class MainActivity extends AppCompatActivity {
 						public void onAgreed() {
 							try {
 								writeJson(MainActivity.this, db);
+								runOnUiThread(() -> refreshDynamicShortcuts());
 							} catch (JSONException e) {
 								e.printStackTrace();
 								Toast.makeText(MainActivity.this, R.string.data_error, Toast.LENGTH_SHORT).show();
@@ -766,6 +915,7 @@ public class MainActivity extends AppCompatActivity {
 							System.exit(0);
 						}
 					});
+				else runOnUiThread(this::refreshDynamicShortcuts);
 			});
 			batchFix(MainActivity.this);
 		}).start();
@@ -777,13 +927,13 @@ public class MainActivity extends AppCompatActivity {
 		void run(File file);
 	}
 
-	private static InputStream getAdaptiveUriInputStream(Uri uri, final long[] lastModified) throws NetworkErrorException, InterruptedIOException {
+	static InputStream getAdaptiveUriInputStream(Uri uri, final long[] lastModified) throws NetworkErrorException, InterruptedIOException {
 		try {
-			HttpsURLConnection httpURLConnection;
+			HttpURLConnection httpURLConnection;
 			URL url = new URL(uri.normalizeScheme().toString());
-			httpURLConnection = (HttpsURLConnection) url.openConnection();
-			if (!APIOver21)
-				httpURLConnection.setSSLSocketFactory(new TLSSocketFactory());
+			httpURLConnection = (HttpURLConnection) url.openConnection();
+			if (!APIOver21 && SCH_HTTPS.equals(url.getProtocol()) && httpURLConnection instanceof HttpsURLConnection)
+				((HttpsURLConnection) httpURLConnection).setSSLSocketFactory(new TLSSocketFactory());
 			httpURLConnection.connect();
 			lastModified[0] = httpURLConnection.getLastModified();
 			return httpURLConnection.getInputStream();
@@ -822,8 +972,8 @@ public class MainActivity extends AppCompatActivity {
 				osw.flush();
 				if (interrupted) throw new InterruptedException(EXCEPTION_INTERRUPTED);
 				fc2fc(ic, oc);
+				dest.setLastModified(lastModified[0]);
 			}
-			dest.setLastModified(lastModified[0]);
 			if (progressDialog != null) progressDialog.dismiss();
 		} catch (InterruptedException | InterruptedIOException ignored) {
 			interrupted = true;
@@ -860,7 +1010,7 @@ public class MainActivity extends AppCompatActivity {
 				.setNegativeButton(android.R.string.cancel, (dialog, which) -> dialog.cancel())
 				.create();
 		progressDialog.setCanceledOnTouchOutside(false);
-		final Thread thread = new Thread(() -> fetchInThread(file -> runOnUiThread(() -> cb.run(file)), progressDialog));
+		final Thread thread = new Thread(() -> fetchInThread(file -> MainActivity.this.runOnUiThread(() -> cb.run(file)), progressDialog));
 		progressDialog.setOnShowListener(dialog -> thread.start());
 		progressDialog.setOnCancelListener(dialogInterface -> thread.interrupt());
 		progressDialog.show();
@@ -872,7 +1022,7 @@ public class MainActivity extends AppCompatActivity {
 				throw new JSONException(EXCEPTION_JSON_ID_NOT_FOUND);
 			Bundle bu = new Bundle();
 			bu.putString(KEY_ID, id);
-			startActivity(new Intent().putExtras(bu).setClass(this, TWEditorWV.class));
+			startActivity(new Intent(this, TWEditorWV.class).putExtras(bu).setAction(Intent.ACTION_MAIN));
 			return true;
 		} catch (JSONException e) {
 			e.printStackTrace();
@@ -1050,9 +1200,9 @@ public class MainActivity extends AppCompatActivity {
 			menu.getItem(3).setTitle(R.string.local_legacy);    // API19暂不支持WebDAV
 			menu.getItem(3).setIcon(R.drawable.ic_storage);
 		}
-		if (!BuildConfig.DEBUG && !BuildConfig.VERSION_NAME.equals(latestVersion)) {
+		if (!isDebug(this) && !getVersion(this).equals(latestVersion)) {
 			MenuItem item = menu.getItem(5);
-			item.setTitle(getString(R.string.action_update,latestVersion));
+			item.setTitle(getString(R.string.action_update, latestVersion));
 			item.setVisible(true);
 		}
 		return super.onPrepareOptionsMenu(menu);
@@ -1065,52 +1215,69 @@ public class MainActivity extends AppCompatActivity {
 				idImport = R.id.action_file_import,
 				idDir = R.id.action_add_dir,
 				idDav = R.id.action_add_dav,
+				idFilter = R.id.action_filter,
 				idAbout = R.id.action_about,
 				idUpdate = R.id.action_update;
-		switch (id) {
-			case idNew:
-				getChooserCreate.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
-				break;
-			case idImport:
-				getChooserImport.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML).putExtra(Intent.EXTRA_MIME_TYPES, TYPE_FILTERS));
-				break;
-			case idDir:
-				if (APIOver21)
-					getChooserTree.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
-				break;
-			case idDav:
-				browseDav();
-				break;
-			case idAbout:
-				SpannableString spannableString = new SpannableString(getString(R.string.about));
-				Linkify.addLinks(spannableString, Linkify.ALL);
-				AlertDialog aboutDialog = new AlertDialog.Builder(this)
-						.setTitle(getString(R.string.about_title, BuildConfig.VERSION_NAME))
-						.setMessage(spannableString)
-						.setPositiveButton(android.R.string.ok, null)
-						.setNeutralButton(R.string.market, (dialog, which) -> {
-							try {
-								startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(KEY_URI_RATE + getPackageName())));
-							} catch (ActivityNotFoundException e) {
-								e.printStackTrace();
-							}
-						}).create();
-				aboutDialog.setOnShowListener(dialog -> aboutDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
-				aboutDialog.show();
-				((TextView) aboutDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
-				if (APIOver23)
-					((TextView) aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
-				break;
-			case idUpdate:
-				Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.update_url)));
-				try {
-					startActivity(intent);
-				} catch (RuntimeException e) {
-					e.printStackTrace();
-				}
-				break;
+		if (id == idNew) {
+			getChooserCreate.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
+		} else if (id == idImport) {
+			getChooserImport.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML).putExtra(Intent.EXTRA_MIME_TYPES, TYPE_FILTERS));
+		} else if (id == idDir) {
+			if (APIOver21)
+				getChooserTree.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
+		} else if (id == idDav) {
+			browseDav();
+		} else if (id == idFilter) {
+			filterBar.setVisibility(View.VISIBLE);
+		} else if (id == idAbout) {
+			SpannableString spannableString = new SpannableString(getString(R.string.about));
+			Linkify.addLinks(spannableString, Linkify.ALL);
+			AlertDialog aboutDialog = new AlertDialog.Builder(this)
+					.setTitle(getString(R.string.about_title, getVersion(this)))
+					.setMessage(spannableString)
+					.setPositiveButton(android.R.string.ok, null)
+					.setNeutralButton(R.string.market, (dialog, which) -> {
+						try {
+							startActivity(new Intent(Intent.ACTION_VIEW, Uri.parse(KEY_URI_RATE + getPackageName())));
+						} catch (ActivityNotFoundException e) {
+							e.printStackTrace();
+						}
+					}).create();
+			aboutDialog.setOnShowListener(dialog -> aboutDialog.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+			aboutDialog.show();
+			((TextView) aboutDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
+			if (APIOver23)
+				((TextView) aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
+		} else if (id == idUpdate) {
+			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.update_url)));
+			try {
+				startActivity(intent);
+			} catch (RuntimeException e) {
+				e.printStackTrace();
+			}
 		}
 		return super.onOptionsItemSelected(item);
+	}
+
+	private void refreshDynamicShortcuts() {
+		if (APIOver25) {
+			ShortcutManager shortcutManager = getSystemService(ShortcutManager.class);
+			Intent newWikiIntent = new Intent(this, TWEditorWV.class).setAction(Intent.ACTION_CREATE_DOCUMENT);
+			ShortcutInfo newWikiShortcut = new ShortcutInfo.Builder(this, KEY_DS_NEW)
+					.setShortLabel(getString(R.string.action_new))    // TODO
+					.setLongLabel(getString(R.string.action_new))
+					.setIcon(Icon.createWithResource(this, R.drawable.ic_description))
+					.setIntent(newWikiIntent).build();
+			Bundle bundle = new Bundle();
+			bundle.putString(KEY_ID, TWEditorWV.ID_DEFAULT);
+			Intent defaultWikiIntent = new Intent(this, TWEditorWV.class).setAction(Intent.ACTION_MAIN).putExtras(bundle);
+			ShortcutInfo defaultWikiShortcut = new ShortcutInfo.Builder(this, KEY_DS_DEFAULT)
+					.setShortLabel(getString(R.string.default_wiki))    // TODO
+					.setLongLabel(getString(R.string.default_wiki))
+					.setIcon(Icon.createWithResource(this, R.drawable.ic_description))
+					.setIntent(defaultWikiIntent).build();
+			shortcutManager.setDynamicShortcuts(Arrays.asList(newWikiShortcut, defaultWikiShortcut));
+		}
 	}
 
 	private void checkUpdate() {
@@ -1989,16 +2156,24 @@ public class MainActivity extends AppCompatActivity {
 
 	static void ba2fc(byte[] bytes, @NonNull FileChannel oc) throws IOException, NonWritableChannelException {
 		oc.write(ByteBuffer.wrap(bytes));
-		oc.truncate(bytes.length);
-		oc.force(true);
+		try {
+			oc.truncate(bytes.length);
+			oc.force(true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	static void fc2fc(@NonNull FileChannel ic, @NonNull FileChannel oc) throws IOException, NonReadableChannelException, NonWritableChannelException {
 		long len = ic.size();
 		ic.transferTo(0, len, oc);
-		oc.truncate(len);
-		ic.force(true);
-		oc.force(true);
+		try {
+			oc.truncate(len);
+			ic.force(true);
+			oc.force(true);
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 	static Drawable svg2bmp(@NonNull Drawable d, int b, Resources cRes) {
@@ -2027,6 +2202,27 @@ public class MainActivity extends AppCompatActivity {
 			writeJson(context, db);
 		} catch (JSONException e) {
 			e.printStackTrace();
+		}
+	}
+	@NonNull
+	private static String getVersion(Context context) {
+		if (version != null) return version;
+		try {
+			PackageManager manager = context.getPackageManager();
+			PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
+			return version = info.versionName;
+		} catch (PackageManager.NameNotFoundException e) {
+			e.printStackTrace();
+		}
+		return STR_EMPTY;
+	}
+	public static boolean isDebug(Context context) {
+		if (!isDebug) return false;
+		try {
+			ApplicationInfo info = context.getApplicationInfo();
+			return (isDebug = (info.flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0);
+		} catch (Exception e) {
+			return false;
 		}
 	}
 

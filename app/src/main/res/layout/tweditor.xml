@@ -87,6 +87,15 @@
 			android:id="@+id/progressBar"
 			style="@style/Widget.AppCompat.ProgressBar.Horizontal"
 			android:layout_width="match_parent"
-			android:layout_height="wrap_content" />
+			android:layout_height="wrap_content"
+			android:visibility="gone" />
+
+		<ProgressBar
+			android:id="@+id/progressBar2"
+			style="@style/Widget.AppCompat.ProgressBar.Horizontal"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:indeterminate="true"
+			android:visibility="gone" />
 	</com.google.android.material.appbar.AppBarLayout>
 </LinearLayout>

@@ -30,6 +30,11 @@
 		android:title="@string/action_dav"
 		app:showAsAction="never" />
 	<item
+		android:id="@+id/action_filter"
+		android:icon="@drawable/ic_folder_add"
+		android:title="TODO: FILTER"
+		app:showAsAction="never" /><!--TODO-->
+	<item
 		android:id="@+id/action_about"
 		android:icon="@drawable/ic_info_outline"
 		android:title="@string/action_about"

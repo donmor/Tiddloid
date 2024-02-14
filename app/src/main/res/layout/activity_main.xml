@@ -5,6 +5,7 @@
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	xmlns:app="http://schemas.android.com/apk/res-auto"
 	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="match_parent"
@@ -19,18 +20,89 @@
 		android:id="@+id/splash_layout"
 		layout="@layout/splash"
 		android:layout_width="match_parent"
-		android:layout_height="match_parent" />
+		android:layout_height="match_parent"
+		android:visibility="gone" />
 
 	<com.google.android.material.appbar.AppBarLayout
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_weight="0"
+		android:animateLayoutChanges="true"
 		android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
 		<androidx.appcompat.widget.Toolbar
 			android:id="@+id/toolbar"
 			android:layout_width="match_parent"
 			android:layout_height="?attr/actionBarSize" />
+
+		<LinearLayout
+			android:id="@+id/filter_bar"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:animateLayoutChanges="true"
+			android:orientation="horizontal"
+			android:visibility="gone">
+
+			<EditText
+				android:id="@+id/filter_text"
+				android:layout_width="0dp"
+				android:layout_height="wrap_content"
+				android:layout_marginStart="16dp"
+				android:layout_weight="1"
+				android:autofillHints="@string/filter"
+				android:hint="@string/filter"
+				android:inputType="text" />
+
+			<androidx.appcompat.widget.AppCompatCheckBox
+				android:id="@+id/filter_date"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_gravity="center_vertical"
+				android:contentDescription="TODO"
+				app:buttonCompat="@drawable/ani_ic_date" />
+
+			<ImageButton
+				android:id="@+id/filter_close"
+				style="@style/Widget.AppCompat.ActionButton"
+				android:layout_width="wrap_content"
+				android:layout_height="match_parent"
+				android:contentDescription="@string/find_close"
+				app:srcCompat="@drawable/ic_close" />
+
+		</LinearLayout>
+
+		<LinearLayout
+			android:id="@+id/filter_bar2"
+			android:layout_width="match_parent"
+			android:layout_height="wrap_content"
+			android:animateLayoutChanges="true"
+			android:orientation="horizontal"
+			android:visibility="gone">
+
+			<Button
+				android:id="@+id/filter_date_bgn"
+				style="@style/Widget.AppCompat.ActionButton"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="@string/filter_time_init" />
+
+			<TextView
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:text="@string/filter_time_sep"
+				android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+			<Button
+				android:id="@+id/filter_date_end"
+				style="@style/Widget.AppCompat.ActionButton"
+				android:layout_width="wrap_content"
+				android:layout_height="wrap_content"
+				android:layout_weight="1"
+				android:text="@string/filter_time_init" />
+
+		</LinearLayout>
+
 	</com.google.android.material.appbar.AppBarLayout>
 
 	<androidx.swiperefreshlayout.widget.SwipeRefreshLayout

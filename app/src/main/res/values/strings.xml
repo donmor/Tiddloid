@@ -186,6 +186,9 @@
 	<string name="tiddlywiki" translatable="false">TiddlyWiki</string>
 	<string name="plugin_version" translatable="false">1.2.0</string>
 	<string name="logo" translatable="false">logo</string>
+	<string name="filter" translatable="false">filter</string>
+	<string name="filter_time_init" translatable="false">...</string>
+	<string name="filter_time_sep" translatable="false">-</string>
 	<string name="path" translatable="false">path</string>
 	<string name="icon" translatable="false">icon</string>
 	<string name="dav_go" translatable="false">dav_enter</string>

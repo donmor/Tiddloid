@@ -6,6 +6,8 @@
 
 package top.donmor.tiddloid;
 
+import android.content.Intent;
+import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -15,7 +17,14 @@ public class HandlerActivity extends AppCompatActivity {
 	@Override
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		startActivity(getIntent().setClass(this, TWEditorWV.class));
+		Intent i;
+		Uri u;
+		String a;
+		if ((i = getIntent()) == null || (u = i.getData()) == null || (a = i.getAction()) == null) {
+			finish();
+			return;
+		}
+		startActivity(new Intent(this, TWEditorWV.class).setData(u).setAction(a));
 		finish();
 	}
 }

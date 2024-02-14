@@ -7,8 +7,15 @@
 package top.donmor.tiddloid;
 
 import static android.Manifest.permission.POST_NOTIFICATIONS;
+import static top.donmor.tiddloid.MainActivity.APIOver21;
+import static top.donmor.tiddloid.MainActivity.APIOver33;
+import static top.donmor.tiddloid.MainActivity.KEY_FD_R;
+import static top.donmor.tiddloid.MainActivity.KEY_FD_W;
+import static top.donmor.tiddloid.MainActivity.KEY_ID;
+import static top.donmor.tiddloid.MainActivity.SCH_HTTPS;
 
 import android.Manifest;
+import android.accounts.NetworkErrorException;
 import android.annotation.SuppressLint;
 import android.annotation.TargetApi;
 import android.app.Activity;
@@ -34,6 +41,7 @@ import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
+import android.os.PowerManager;
 import android.print.PrintAttributes;
 import android.print.PrintDocumentAdapter;
 import android.print.PrintManager;
@@ -72,6 +80,7 @@ import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
@@ -101,19 +110,24 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.net.HttpURLConnection;
+import java.net.URL;
 import java.nio.channels.FileChannel;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
+import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -125,6 +139,10 @@ import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
+
+import javax.net.ssl.HttpsURLConnection;
+
+import top.donmor.tiddloid.utils.TLSSocketFactory;
 
 public class TWEditorWV extends AppCompatActivity {
 	private JSONObject db, wApp;
@@ -148,9 +166,10 @@ public class TWEditorWV extends AppCompatActivity {
 	private CharSequence extraContent;
 	private HashMap<String, byte[]> hashes = null;
 	private DocumentFile tree = null, treeIndex = null;
-	private ActivityResultLauncher<Intent> getChooserDL, getChooserImport, getChooserClone;
+	private ActivityResultLauncher<Intent> getChooserCreate, getChooserDL, getChooserImport, getChooserClone;
 	private JSONArray customActions, extraContent2 = null;
 	private final HashMap<Integer, String> customActionsMap = new HashMap<>();
+	private Thread wt;
 
 	// CONSTANT
 	private static final String
@@ -167,6 +186,14 @@ public class TWEditorWV extends AppCompatActivity {
 			KEY_ENCODING = "encoding",
 			KEY_EXTENSION = "extension",
 			KEY_FIND_IND = "%1$d/%2$d",
+			KEY_HD_METHOD = "GET",
+			KEY_HD_AUTH = "Authorization",
+			KEY_HD_AUTH_LD = "Basic ",
+			KEY_HD_HOST = "Host",
+			KEY_HD_UA = "User-Agent",
+			KEY_HD_ACC = "Accept",
+			KEY_HD_TYPE = "Content-Type",
+			KEY_HD_LEN = "Content-Length",
 			KEY_ICON = "icon",
 			KEY_YES = "yes",
 			KEY_LAND = "land",
@@ -180,7 +207,9 @@ public class TWEditorWV extends AppCompatActivity {
 			SCH_ABOUT = "about",
 			SCH_TEL = "tel",
 			SCH_MAILTO = "mailto",
+			SCH_PACKAGE = "package",
 			URL_BLANK = "about:blank";
+	static final String ID_DEFAULT = "<default>";
 	private static final int CA_GRP_ID = 999;
 	static final byte[]
 			HEADER_U16BE_BOM = "\n<!doctype html".getBytes(StandardCharsets.UTF_16),
@@ -290,7 +319,7 @@ public class TWEditorWV extends AppCompatActivity {
 		// 初始化顶栏
 		toolbar = findViewById(R.id.wv_toolbar);
 		setSupportActionBar(toolbar);
-		toolbar.setNavigationOnClickListener(v -> onBackPressed());
+		toolbar.setNavigationOnClickListener(v -> getOnBackPressedDispatcher().onBackPressed());
 		this.setTitle(R.string.app_name);
 		onConfigurationChanged(getResources().getConfiguration());
 		wvProgress = findViewById(R.id.progressBar);
@@ -316,12 +345,37 @@ public class TWEditorWV extends AppCompatActivity {
 		scale = getResources().getDisplayMetrics().density;
 		if ((getApplicationInfo().flags & ApplicationInfo.FLAG_DEBUGGABLE) != 0) WebView.setWebContentsDebuggingEnabled(true);    // 在debug环境启用调试
 		// 注册SAF回调
+		getChooserCreate = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
+			if (result.getData() != null) {
+				if (wv.getUrl() != null) {
+					toolbar.setLogo(null);
+					wv.getSettings().setBuiltInZoomControls(false);
+					wv.getSettings().setDisplayZoomControls(false);
+					setTitle(R.string.app_name);
+					toolbar.setSubtitle(null);
+					wv.getSettings().setJavaScriptEnabled(false);
+					customActionsMap.clear();
+					customActions = null;
+					wv.loadUrl(URL_BLANK);
+					themeColor = null;
+					noTint = false;
+					hideAppbar = 0;
+					onConfigurationChanged(getResources().getConfiguration());
+					overrodeCharset = null;
+					hashes = null;
+					tree = null;
+					treeIndex = null;
+					stopBackgroundService();
+				}
+				createWiki(result.getData().getData());
+			} else finish();
+		});
 		getChooserDL = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
 			if (exData == null) return;
 			if (result.getData() != null) {
 				uri = result.getData().getData();
 				if (uri == null) return;
-				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_W));
+				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
 					MainActivity.ba2fc(exData, oc);
@@ -346,7 +400,7 @@ public class TWEditorWV extends AppCompatActivity {
 			if (exData == null) return;
 			if (result.getData() != null) {
 				Uri u = result.getData().getData();
-				if (u != null) try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u, MainActivity.KEY_FD_W));
+				if (u != null) try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u, KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
 					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
@@ -538,13 +592,54 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@JavascriptInterface
 			public void saveWiki(final String data) {
-				if (wApp == null || (MainActivity.SCH_HTTP.equals(uri.getScheme()) || MainActivity.SCH_HTTPS.equals(uri.getScheme())) && cachedUri == null) {
+				if (wApp == null || (MainActivity.SCH_HTTP.equals(uri.getScheme()) || SCH_HTTPS.equals(uri.getScheme())) && cachedUri == null) {
 					exData = data.getBytes(StandardCharsets.UTF_8);
 					getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT)
 							.addCategory(Intent.CATEGORY_OPENABLE)
 							.setType(MainActivity.TYPE_HTML));
 					return;
 				}
+				// TODO: test PUT========
+				new Thread(() -> {
+					try {
+						URL url = new URL(uri.toString());
+						HttpURLConnection connection = (HttpURLConnection) url.openConnection();
+						if (!APIOver21 && SCH_HTTPS.equals(url.getProtocol()) && connection instanceof HttpsURLConnection)
+							((HttpsURLConnection) connection).setSSLSocketFactory(new TLSSocketFactory());
+						connection.setDoOutput(true);
+						connection.setDoInput(true);
+						connection.setRequestMethod(KEY_HD_METHOD);
+						String authU, authP;
+						if ((authU = wApp.optString(MainActivity.DB_KEY_DAV_AUTH)).length() > 0 && (authP = wApp.optString(MainActivity.DB_KEY_DAV_TOKEN)).length() > 0)
+							connection.setRequestProperty(KEY_HD_AUTH,
+									KEY_HD_AUTH_LD + Base64.encodeToString((authU + ':' + authP).getBytes(StandardCharsets.UTF_8), Base64.DEFAULT));
+						connection.setRequestProperty(KEY_HD_HOST, url.getHost());
+						connection.setRequestProperty(KEY_HD_UA, getString(R.string.app_name) + '/' + MainActivity.getVersion(TWEditorWV.this));
+						connection.setRequestProperty(KEY_HD_ACC, MIME_ANY);
+						connection.setRequestProperty(KEY_HD_TYPE, MIME_PUT);
+						ByteArrayInputStream is = new ByteArrayInputStream(data.getBytes(overrodeCharset != null ? overrodeCharset : StandardCharsets.UTF_8));
+						connection.setRequestProperty(KEY_HD_LEN, String.valueOf(is.available()));
+						connection.setConnectTimeout(60000);
+						connection.setReadTimeout(60000);
+						connection.connect();
+						OutputStream os = connection.getOutputStream();
+						int length;
+						byte[] bytes = new byte[MainActivity.BUF_SIZE];
+						while ((length = is.read(bytes)) > -1) {
+							os.write(bytes, 0, length);
+						}
+						os.flush();
+						is.close();
+						os.close();
+						int rc = connection.getResponseCode();
+						System.out.println(rc);
+						connection.disconnect();
+						if (rc != 200 && rc != 204) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
+					} catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+						e.printStackTrace();
+					}
+				}).start();
+				// TODO: test put========
 				Sardine davClient = null;
 				String auth = wApp.optString(MainActivity.DB_KEY_DAV_AUTH), tok = wApp.optString(MainActivity.DB_KEY_DAV_TOKEN);
 				if (cachedUri != null) {//	DAV
@@ -559,7 +654,7 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				Uri ux = cachedUri != null ? cachedUri : uri;
 				String lt = null;
-				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, MainActivity.KEY_FD_W));
+				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
 					MainActivity.ba2fc(data.getBytes(overrodeCharset != null ? overrodeCharset : StandardCharsets.UTF_8), oc);
@@ -619,7 +714,7 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 
 			@Override
-			public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+			public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {    // TODO: Saved creds
 				LinearLayout layout = new LinearLayout(TWEditorWV.this);
 				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 				params.setMarginStart(dialogPadding);
@@ -708,6 +803,16 @@ public class TWEditorWV extends AppCompatActivity {
 					startBackgroundService();
 				}
 				view.clearHistory();
+			}
+		});
+		// 关闭/返回
+		getOnBackPressedDispatcher().addCallback(this, new OnBackPressedCallback(true) {
+			@Override
+			public void handleOnBackPressed() {
+				if (mCustomView != null)
+					wcc.onHideCustomView();
+				else
+					wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), null));
 			}
 		});
 		// 初始化db
@@ -835,6 +940,7 @@ public class TWEditorWV extends AppCompatActivity {
 	}
 
 	// 挂入通知区域
+	@SuppressLint("BatteryLife")
 	private void startBackgroundService() {
 		if (acc_notification)
 			checkNotificationPerms();
@@ -847,6 +953,16 @@ public class TWEditorWV extends AppCompatActivity {
 		} else {
 			startService(BGServiceIntent);
 		}
+		if (MainActivity.APIOver23) {
+			PowerManager pm = (PowerManager) getSystemService(POWER_SERVICE);
+			if (!pm.isIgnoringBatteryOptimizations(getPackageName())) try {
+				startActivity(new Intent()
+						.setAction(Settings.ACTION_REQUEST_IGNORE_BATTERY_OPTIMIZATIONS)
+						.setData(Uri.parse(SCH_PACKAGE + ':' + getPackageName())));
+			} catch (ActivityNotFoundException e) {
+				e.printStackTrace();
+			}
+		}
 	}
 
 	// 清除通知
@@ -857,7 +973,7 @@ public class TWEditorWV extends AppCompatActivity {
 
 	private JSONArray getExDataSingle(final Intent intent) {
 		Uri uri;
-		try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM), MainActivity.KEY_FD_R));
+		try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM), KEY_FD_R));
 				FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 				FileChannel ic = is.getChannel()) {
 			String path = Uri.decode(uri.toString()), type = intent.getType();
@@ -884,9 +1000,12 @@ public class TWEditorWV extends AppCompatActivity {
 
 	private JSONArray getExDataMultiple(final Intent intent) {
 		JSONArray array = new JSONArray();
-		ArrayList<Uri> files = intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+		ArrayList<Uri> files = APIOver33
+				? intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri.class)
+				: intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
+		if (files == null) return array;
 		for (Uri uri : files)
-			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_R));
+			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, KEY_FD_R));
 					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 					FileChannel ic = is.getChannel()) {
 				String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
@@ -910,6 +1029,115 @@ public class TWEditorWV extends AppCompatActivity {
 				e.printStackTrace();
 			}
 		return array;
+	}
+
+	private void createWiki(Uri uri) {
+		wt = new Thread(() -> {
+			final ProgressBar[] pBar = new ProgressBar[1];
+			runOnUiThread(() -> {
+				pBar[0] = findViewById(R.id.progressBar2);
+				pBar[0].setVisibility(View.VISIBLE);
+			});
+			boolean interrupted = false;
+			File cache = new File(getCacheDir(), MainActivity.genId()), dest = new File(getCacheDir(), MainActivity.TEMPLATE_FILE_NAME);
+			long pModified = dest.lastModified();
+			final long[] lastModified = new long[]{0L};
+			try (InputStream isw = MainActivity.getAdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo)), lastModified);
+					OutputStream osw = Objects.requireNonNull(getContentResolver().openOutputStream(Uri.fromFile(cache)));
+					ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(cache), KEY_FD_R));
+					ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
+					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+					FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+					FileChannel ic = is.getChannel();
+					FileChannel oc = os.getChannel()) {
+				// 下载到缓存
+				if (lastModified[0] != pModified) {
+					int length;
+					byte[] bytes = new byte[MainActivity.BUF_SIZE];
+					while ((length = isw.read(bytes)) > -1) {
+						osw.write(bytes, 0, length);
+						if (Thread.currentThread().isInterrupted()) {
+							interrupted = true;
+							break;
+						}
+					}
+					osw.flush();
+					if (interrupted) throw new InterruptedException(MainActivity.EXCEPTION_INTERRUPTED);
+					MainActivity.fc2fc(ic, oc);
+					dest.setLastModified(lastModified[0]);
+				}
+			} catch (InterruptedException | InterruptedIOException ignored) {
+				runOnUiThread(() -> Toast.makeText(this, R.string.cancelled, Toast.LENGTH_SHORT).show());
+				finish();
+			} catch (NetworkErrorException e) {
+				e.printStackTrace();
+				runOnUiThread(() -> Toast.makeText(this, R.string.server_error, Toast.LENGTH_SHORT).show());
+				finish();
+			} catch (IOException | SecurityException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
+				e.printStackTrace();
+				runOnUiThread(() -> Toast.makeText(this, R.string.download_failed, Toast.LENGTH_SHORT).show());
+				finish();
+			} finally {
+				cache.delete();
+			}
+			if (!dest.exists()) {
+				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
+				finish();
+			}
+			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_R));
+					ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, KEY_FD_W));
+					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
+					FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
+					FileChannel ic = is.getChannel();
+					FileChannel oc = os.getChannel()) {
+				// 查重
+				String id = null;
+				JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
+				boolean exist = false;
+				Iterator<String> iterator = wl.keys();
+				while (iterator.hasNext()) {
+					if ((wa = wl.getJSONObject(id = iterator.next())).has(MainActivity.DB_KEY_DAV_AUTH)) continue;
+					exist = uri.toString().equals(wa.optString(MainActivity.DB_KEY_URI));
+					if (exist) break;
+				}
+				if (exist) {
+					Toast.makeText(this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
+					if (wa.optBoolean(MainActivity.DB_KEY_BACKUP)) MainActivity.backup(this, uri, null);
+				} else {
+					wa = new JSONObject()
+							.put(MainActivity.DB_KEY_URI, uri.toString())
+							.put(MainActivity.DB_KEY_PLUGIN_AUTO_UPDATE, false)
+							.put(MainActivity.DB_KEY_BACKUP, false);
+					id = MainActivity.genId();
+					wl.put(id, wa);
+				}
+				wa.put(MainActivity.KEY_NAME, MainActivity.KEY_TW)
+						.put(MainActivity.DB_KEY_SUBTITLE, MainActivity.STR_EMPTY);
+				MainActivity.writeJson(this, db);
+				MainActivity.fc2fc(ic, oc);
+				try {
+					getContentResolver().takePersistableUriPermission(uri, MainActivity.TAKE_FLAGS);
+				} catch (RuntimeException e) {
+					e.printStackTrace();
+				}
+				Bundle bu = new Bundle();
+				bu.putString(KEY_ID, id);
+				runOnUiThread(() -> {
+					pBar[0].setVisibility(View.GONE);
+					nextWiki(new Intent(Intent.ACTION_MAIN).putExtras(bu));
+				});
+			} catch (IOException | NullPointerException | NonReadableChannelException | NonWritableChannelException e) {
+				e.printStackTrace();
+				Toast.makeText(this, R.string.failed_creating_file, Toast.LENGTH_SHORT).show();
+				finish();
+			} catch (JSONException e) {
+				e.printStackTrace();
+				Toast.makeText(this, R.string.data_error, Toast.LENGTH_SHORT).show();
+				finish();
+			}
+			wt = null;
+		});
+		wt.start();
 	}
 
 	// 热启动
@@ -968,10 +1196,24 @@ public class TWEditorWV extends AppCompatActivity {
 			} catch (JSONException e) {
 				e.printStackTrace();
 			}
+		} else if (Intent.ACTION_CREATE_DOCUMENT.equals(action)) {
+			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), intent));
 		} else {    // MA/Shortcut
 			if ((bu = intent.getExtras()) == null || (fid = bu.getString(MainActivity.KEY_ID)) == null)
 				return;
-			if ((wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null || (wa = wl.optJSONObject(fid)) == null) {
+			if ((wl = db.optJSONObject(MainActivity.DB_KEY_WIKI)) == null) {
+				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+				return;
+			}
+			if (ID_DEFAULT.equals(fid)) {
+				if ((fid = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(fid)) == null) {
+					Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
+					finish();
+					return;
+				}
+				bu.putString(MainActivity.KEY_ID, fid);
+				intent.putExtras(bu);
+			} else if ((wa = wl.optJSONObject(fid)) == null) {
 				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 				return;
 			}
@@ -1187,18 +1429,15 @@ public class TWEditorWV extends AppCompatActivity {
 		final int idSaveFile = R.id.action_save_file,
 				idSaveLink = R.id.action_save_link,
 				idSave = R.id.action_save;
-		switch (id) {
-			case idSaveLink:
-				addLink(uri);
-				break;
-			case idSaveFile:
-			case idSave:
-				wv.evaluateJavascript(getString(isClassic ? R.string.js_save_c : R.string.js_save), null);
-				break;
-			default:
-				if (item.getGroupId() == CA_GRP_ID) {
-					wv.evaluateJavascript(customActionsMap.get(item.getItemId()), null);
-				}
+		if (id == idSaveLink) {
+			addLink(uri);
+		} else if (id == idSaveFile || id == idSave) {
+			wv.evaluateJavascript(getString(isClassic ? R.string.js_save_c : R.string.js_save), null);
+		} else {
+			if (item.getGroupId() == CA_GRP_ID) {
+				String vjs = customActionsMap.get(item.getItemId());
+				if (vjs != null) wv.evaluateJavascript(vjs, null);
+			}
 		}
 		return super.onOptionsItemSelected(item);
 	}
@@ -1327,7 +1566,34 @@ public class TWEditorWV extends AppCompatActivity {
 		final Uri u;
 		String nextWikiId = null;
 		final String action = nextWikiIntent.getAction();
-		if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式，scheme -> content/file/http(s)
+		if (Intent.ACTION_CREATE_DOCUMENT.equals(action)) {
+			// 重置
+//			if (wv.getUrl() != null) {
+//				toolbar.setLogo(null);
+//				wv.getSettings().setBuiltInZoomControls(false);
+//				wv.getSettings().setDisplayZoomControls(false);
+//				setTitle(R.string.app_name);
+//				toolbar.setSubtitle(null);
+//				wv.getSettings().setJavaScriptEnabled(false);
+//				customActionsMap.clear();
+//				customActions = null;
+//				wv.loadUrl(URL_BLANK);
+//				themeColor = null;
+//				noTint = false;
+//				hideAppbar = 0;
+//				onConfigurationChanged(getResources().getConfiguration());
+//				overrodeCharset = null;
+//				hashes = null;
+//				tree = null;
+//				treeIndex = null;
+//				stopBackgroundService();
+//			}
+			getChooserCreate.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(MainActivity.TYPE_HTML));
+//			Bundle bu = new Bundle();
+//			bu.putString(KEY_ID, newId);
+//			nextWiki(new Intent(Intent.ACTION_MAIN).putExtras(bu));
+			return;
+		} else if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式，scheme -> content/file/http(s)
 			if ((u = nextWikiIntent.getData()) == null) {
 				notWikiConfirm();
 				return;
@@ -1504,8 +1770,18 @@ public class TWEditorWV extends AppCompatActivity {
 			Bundle bu;
 			if ((bu = nextWikiIntent.getExtras()) == null
 					|| (nextWikiId = bu.getString(MainActivity.KEY_ID)) == null
-					|| nextWikiId.length() == 0
-					|| (wa = wl.optJSONObject(nextWikiId)) == null) {
+					|| nextWikiId.length() == 0) {
+				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
+				finish();
+				return;
+			}
+			if (ID_DEFAULT.equals(nextWikiId)) {
+				if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+					Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
+					finish();
+					return;
+				}
+			} else if ((wa = wl.optJSONObject(nextWikiId)) == null) {
 				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 				finish();
 				return;
@@ -1591,7 +1867,6 @@ public class TWEditorWV extends AppCompatActivity {
 					Drawable drawable = svg.getSharpPicture().getDrawable();
 					int bound = Math.round(scale * 24);
 					toolbar.setLogo(MainActivity.svg2bmp(drawable, bound, getResources()));
-//					toolbar.setLogo(svg.getSharpPicture().getDrawable());
 				}
 			} catch (IllegalArgumentException | SvgParseException e) {
 				e.printStackTrace();
@@ -1625,7 +1900,7 @@ public class TWEditorWV extends AppCompatActivity {
 					return;
 				}
 			ux = actualUri != null ? actualUri : u1;
-			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, MainActivity.KEY_FD_R));
+			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, KEY_FD_R));
 					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 					FileChannel ic = is.getChannel()) {   //读全部数据
 				String data = null;
@@ -1842,8 +2117,8 @@ public class TWEditorWV extends AppCompatActivity {
 					e.printStackTrace();
 					continue;
 				}
-				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(inner.getUri(), MainActivity.KEY_FD_R));
-						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), MainActivity.KEY_FD_W));
+				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(inner.getUri(), KEY_FD_R));
+						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
 						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel ic = is.getChannel();
@@ -1916,7 +2191,7 @@ public class TWEditorWV extends AppCompatActivity {
 		File dumpDir = new File(new File(getExternalFilesDir(null), Uri.encode(u.getSchemeSpecificPart())), mfn + MainActivity.BACKUP_POSTFIX);
 		dumpDir.mkdirs();
 		try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(new File(dumpDir,
-				new StringBuffer(mfn).insert(mfn.lastIndexOf('.'), MainActivity.formatBackup(System.currentTimeMillis())).toString())), MainActivity.KEY_FD_W));
+				new StringBuffer(mfn).insert(mfn.lastIndexOf('.'), MainActivity.formatBackup(System.currentTimeMillis())).toString())), KEY_FD_W));
 				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 				FileChannel oc = os.getChannel()) {
 			MainActivity.ba2fc(data, oc);
@@ -1935,15 +2210,6 @@ public class TWEditorWV extends AppCompatActivity {
 		c.save();
 		c.restore();
 		return new BitmapDrawable(getResources(), icons);
-	}
-
-	// 关闭/返回
-	@Override
-	public void onBackPressed() {
-		if (mCustomView != null)
-			wcc.onHideCustomView();
-		else
-			wv.evaluateJavascript(getString(isClassic ? R.string.js_exit_c : R.string.js_exit), value -> confirmAndExit(Boolean.parseBoolean(value), null));
 	}
 
 	// 应用主题
