@@ -1,7 +1,7 @@
 /*
  * top.donmor.tiddloid.WikiListAdapter <= [P|Tiddloid]
- * Last modified: 17:09:26 2022/08/28
- * Copyright (c) 2022 donmor
+ * Last modified: 18:20:51 2024/02/16
+ * Copyright (c) 2024 donmor
  */
 
 package top.donmor.tiddloid;
@@ -36,9 +36,6 @@ import androidx.recyclerview.widget.RecyclerView;
 
 import com.pixplicity.sharp.Sharp;
 import com.pixplicity.sharp.SvgParseException;
-import com.thegrizzlylabs.sardineandroid.DavResource;
-import com.thegrizzlylabs.sardineandroid.Sardine;
-import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
 
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -51,7 +48,6 @@ import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
-import java.util.List;
 
 public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
 
@@ -142,8 +138,6 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 				return true;
 			});
 			// 条目显示
-			boolean iDav = wa.has(MainActivity.DB_KEY_DAV_AUTH);
-			if (!MainActivity.APIOver21 && iDav) return;
 			boolean fTextA = mItemFilter.fTextActive(), fText = mItemFilter.fText(n, s);
 			if (fTextA && !fText) {
 				holder.setVisibility(View.GONE);
@@ -180,66 +174,26 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			Uri u = Uri.parse(wa.optString(MainActivity.DB_KEY_URI));
 			boolean legacy = MainActivity.SCH_FILE.equals(u.getScheme());
 			DocumentFile df = null;
-			final DavResource[] vf = new DavResource[1];
 			int pTimeSubBgn = 0, pTimeSubEnd = 0;
 			Date mt = null;
 			try {
-				if (iDav) {
-					final IOException[] e0 = new IOException[1];
-					Sardine davClient = new OkHttpSardine();
-					davClient.setCredentials(wa.optString(MainActivity.DB_KEY_DAV_AUTH), wa.optString(MainActivity.DB_KEY_DAV_TOKEN));
-					Thread jt = new Thread(() -> {
-						try {
-							List<DavResource> root;
-							if (!davClient.exists(u.toString())) throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
-							DavResource p;
-							if (!(p = (root = davClient.list(u.toString())).remove(0)).isDirectory()) vf[0] = p;
-							else for (DavResource i : root)
-								if (MainActivity.KEY_FN_INDEX.equals(i.getName()) || MainActivity.KEY_FN_INDEX2.equals(i.getName())) {
-									vf[0] = i;
-									break;
-								}
-						} catch (ArrayIndexOutOfBoundsException e) {
-							e.printStackTrace();
-							e0[0] = new IOException(e.getMessage());
-						} catch (IOException e) {
-							e.printStackTrace();
-							e0[0] = e;
-						}
-					});
-					jt.start();
-					try {
-						jt.join();
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-						throw new IOException(e.getMessage());
-					}
-					if (e0[0] != null) throw e0[0];
-				} else if (MainActivity.APIOver21 && !legacy) try {
-					DocumentFile mdf = DocumentFile.fromTreeUri(context, u), p0;
+				if (!legacy) try {
+					DocumentFile mdf = DocumentFile.fromTreeUri(context, u);
 					if (mdf == null || !mdf.isDirectory())
 						throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
-					df = (p0 = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p0.isFile() ? p0 : (p0 = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p0.isFile() ? p0 : null;
+					df = MainActivity.getIndex(context, mdf);
 					if (df == null || !df.isFile())
 						throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
 				} catch (IllegalArgumentException ignored) {
 				}
 				DocumentFile f;
-				if (iDav) {
-					if (vf[0] != null) {
-						builder.append('\n');
-						pTimeSubBgn = builder.length();
-						mt = vf[0].getModified();
-						builder.append(SimpleDateFormat.getDateTimeInstance().format(mt));
-						pTimeSubEnd = builder.length();
-						builder.append(formatSize(vf[0].getContentLength()));
-						builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.webdav));
-					}
-				} else if (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme())) {
+				if (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme())) {
 					builder.append('\n');
 					builder.append(u.toString());
 					builder.append(c160).append(c160).append(c160).append(c160).append(context.getString(R.string.internet));
-				} else if ((f = legacy ? DocumentFile.fromFile(new File(u.getPath())) : df != null ? df : DocumentFile.fromSingleUri(context, u)) != null && f.exists()) {
+				} else if ((!legacy || u.getPath() != null)
+						&& (f = legacy ? DocumentFile.fromFile(new File(u.getPath())) : df != null ? df : DocumentFile.fromSingleUri(context, u)) != null
+						&& f.exists()) {
 					builder.append('\n');
 					pTimeSubBgn = builder.length();
 					mt = new Date(f.lastModified());

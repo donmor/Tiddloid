@@ -1,11 +1,12 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/layout/wikiconfig_dialog.xml <= [P|Tiddloid]
-  ~ Last modified: 16:47:24 2022/03/13
-  ~ Copyright (c) 2022 donmor
+  ~ Last modified: 21:46:01 2024/02/14
+  ~ Copyright (c) 2024 donmor
   -->
 
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	xmlns:app="http://schemas.android.com/apk/res-auto"
+	xmlns:tools="http://schemas.android.com/tools"
 	android:layout_width="match_parent"
 	android:layout_height="wrap_content"
 	android:animateLayoutChanges="true"
@@ -23,28 +24,39 @@
 		android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
 	<CheckBox
+		android:id="@+id/cbHTTPWriteable"
+		android:layout_width="wrap_content"
+		android:layout_height="wrap_content"
+		android:text="TODO:writeable"
+		tools:ignore="TouchTargetSizeCheck" /><!--TODO-->
+
+	<CheckBox
 		android:id="@+id/cbDefault"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="@string/default_wiki" />
+		android:text="@string/default_wiki"
+		tools:ignore="TouchTargetSizeCheck" />
 
 	<CheckBox
 		android:id="@+id/cbStayBackground"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:text="@string/stay_in_background" />
+		android:text="@string/stay_in_background"
+		tools:ignore="TouchTargetSizeCheck" />
 
 	<CheckBox
 		android:id="@+id/cbPluginAutoUpdate"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="@string/plugin_auto_update" />
+		android:text="@string/plugin_auto_update"
+		tools:ignore="TouchTargetSizeCheck" />
 
 	<CheckBox
 		android:id="@+id/cbBackup"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
-		android:text="@string/enable_backup" />
+		android:text="@string/enable_backup"
+		tools:ignore="TouchTargetSizeCheck" />
 
 	<androidx.constraintlayout.widget.ConstraintLayout
 		android:id="@+id/frmBackupList"

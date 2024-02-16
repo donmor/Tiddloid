@@ -1,0 +1,75 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/layout/file_dialog.xml <= [P|Tiddloid]
+  ~ Last modified: 00:51:52 2024/02/16
+  ~ Copyright (c) 2024 donmor
+  -->
+
+<TableLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="match_parent"
+	android:padding="20dp">
+
+	<TableRow
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:gravity="center_vertical|start">
+
+		<Button
+			android:id="@+id/btnBack"
+			style="@style/Widget.AppCompat.Light.ActionButton"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:drawableStart="@drawable/ic_arrow_back"
+			android:contentDescription="@string/find_up"
+			android:textAppearance="@style/TextAppearance.AppCompat.Title"
+			android:visibility="visible" />
+
+		<TextView
+			android:id="@+id/lblPath"
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_weight="1"
+			android:gravity="start"
+			android:textAlignment="textStart"
+			android:textAppearance="@style/TextAppearance.AppCompat.Small" />
+
+<!--		<ImageButton-->
+<!--			android:id="@+id/btnNewFolder"-->
+<!--			style="@style/Widget.AppCompat.Light.ActionButton"-->
+<!--			android:layout_width="wrap_content"-->
+<!--			android:layout_height="wrap_content"-->
+<!--			android:contentDescription="X"-->
+<!--			app:srcCompat="@drawable/ic_folder_add" />-->
+	</TableRow>
+
+	<androidx.recyclerview.widget.RecyclerView
+		android:id="@+id/diFileList"
+		android:layout_width="match_parent"
+		android:layout_height="0dp"
+		android:layout_weight="1"
+		android:minWidth="720dp"
+		android:minHeight="1280dp" />
+
+<!--	<TableRow-->
+<!--		android:layout_width="match_parent"-->
+<!--		android:layout_height="wrap_content"-->
+<!--		android:gravity="center_vertical|end">-->
+
+<!--		<EditText-->
+<!--			android:id="@+id/save_f_name"-->
+<!--			android:layout_width="0dp"-->
+<!--			android:layout_height="wrap_content"-->
+<!--			android:layout_weight="1"-->
+<!--			android:autofillHints="file_name"-->
+<!--			android:hint="X"-->
+<!--			android:imeOptions="actionDone"-->
+<!--			android:inputType="textPersonName"-->
+<!--			tools:targetApi="o" />-->
+
+<!--		<Spinner-->
+<!--			android:id="@+id/spnExt"-->
+<!--			android:layout_width="108dp"-->
+<!--			android:layout_height="match_parent" />-->
+<!--	</TableRow>-->
+</TableLayout>

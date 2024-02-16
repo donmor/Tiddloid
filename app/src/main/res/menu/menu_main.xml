@@ -1,7 +1,7 @@
 <!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/menu/menu_main.xml <= [P|Tiddloid]
-  ~ Last modified: 20:05:33 2022/09/10
-  ~ Copyright (c) 2022 donmor
+  ~ Last modified: 18:05:31 2024/02/16
+  ~ Copyright (c) 2024 donmor
   -->
 
 <menu xmlns:android="http://schemas.android.com/apk/res/android"
@@ -13,25 +13,25 @@
 		android:id="@+id/action_new"
 		android:icon="@drawable/ic_note_add"
 		android:title="@string/action_new"
-		app:showAsAction="never" />
+		app:showAsAction="ifRoom|withText" />
 	<item
 		android:id="@+id/action_file_import"
 		android:icon="@drawable/ic_folder_open"
 		android:title="@string/action_import"
-		app:showAsAction="never" />
+		app:showAsAction="ifRoom|withText" />
 	<item
 		android:id="@+id/action_add_dir"
 		android:icon="@drawable/ic_folder_add"
 		android:title="@string/action_dir"
 		app:showAsAction="never" />
 	<item
-		android:id="@+id/action_add_dav"
-		android:icon="@drawable/ic_dav"
-		android:title="@string/action_dav"
+		android:id="@+id/action_add_legacy"
+		android:icon="@drawable/ic_storage"
+		android:title="@string/local_legacy"
 		app:showAsAction="never" />
 	<item
 		android:id="@+id/action_filter"
-		android:icon="@drawable/ic_folder_add"
+		android:icon="@drawable/ic_filter"
 		android:title="TODO: FILTER"
 		app:showAsAction="never" /><!--TODO-->
 	<item

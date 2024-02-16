@@ -1,0 +1,52 @@
+<?xml version="1.0" encoding="utf-8"?>
+<!--
+  ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/layout/file_slot.xml <= [P|Tiddloid]
+  ~ Last modified: 18:07:22 2024/02/16
+  ~ Copyright (c) 2024 donmor
+  -->
+
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="match_parent"
+	android:layout_height="wrap_content">
+
+	<Button
+		android:id="@+id/c_buttonD"
+		style="@style/Widget.AppCompat.Button.Borderless"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:drawableStart="@drawable/ic_folder"
+		android:gravity="start|center_vertical"
+		android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+		android:visibility="gone" />
+
+	<Button
+		android:id="@+id/c_buttonF"
+		style="@style/Widget.AppCompat.Button.Borderless"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:drawableStart="@drawable/ic_description"
+		android:gravity="start|center_vertical"
+		android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+		android:visibility="gone" />
+
+<!--	<CheckBox-->
+<!--		android:id="@+id/c_buttonMF"-->
+<!--		style="@style/Widget.AppCompat.Button.Borderless"-->
+<!--		android:layout_width="match_parent"-->
+<!--		android:layout_height="wrap_content"-->
+<!--		android:drawableStart="@drawable/ic_description"-->
+<!--		android:drawableLeft="@drawable/ic_description"-->
+<!--		android:gravity="start|center_vertical"-->
+<!--		android:textAppearance="@style/TextAppearance.AppCompat.Menu"-->
+<!--		android:visibility="gone" />-->
+
+	<Button
+		android:id="@+id/c_buttonR"
+		style="@style/Widget.AppCompat.Button.Borderless"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:drawableStart="@drawable/ic_storage"
+		android:gravity="start|center_vertical"
+		android:textAppearance="@style/TextAppearance.AppCompat.Menu"
+		android:visibility="gone" />
+</RelativeLayout>

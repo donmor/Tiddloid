@@ -1,18 +1,12 @@
 /*
  * top.donmor.tiddloid.TWEditorWV <= [P|Tiddloid]
- * Last modified: 21:43:19 2022/09/10
- * Copyright (c) 2022 donmor
+ * Last modified: 18:41:04 2024/02/16
+ * Copyright (c) 2024 donmor
  */
 
 package top.donmor.tiddloid;
 
 import static android.Manifest.permission.POST_NOTIFICATIONS;
-import static top.donmor.tiddloid.MainActivity.APIOver21;
-import static top.donmor.tiddloid.MainActivity.APIOver33;
-import static top.donmor.tiddloid.MainActivity.KEY_FD_R;
-import static top.donmor.tiddloid.MainActivity.KEY_FD_W;
-import static top.donmor.tiddloid.MainActivity.KEY_ID;
-import static top.donmor.tiddloid.MainActivity.SCH_HTTPS;
 
 import android.Manifest;
 import android.accounts.NetworkErrorException;
@@ -37,7 +31,6 @@ import android.graphics.PixelFormat;
 import android.graphics.drawable.BitmapDrawable;
 import android.graphics.drawable.Drawable;
 import android.net.Uri;
-import android.os.Build;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.ParcelFileDescriptor;
@@ -84,7 +77,6 @@ import androidx.activity.OnBackPressedCallback;
 import androidx.activity.result.ActivityResultLauncher;
 import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
-import androidx.annotation.RequiresApi;
 import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.app.AppCompatDelegate;
@@ -101,9 +93,6 @@ import androidx.documentfile.provider.DocumentFile;
 
 import com.pixplicity.sharp.Sharp;
 import com.pixplicity.sharp.SvgParseException;
-import com.thegrizzlylabs.sardineandroid.DavResource;
-import com.thegrizzlylabs.sardineandroid.Sardine;
-import com.thegrizzlylabs.sardineandroid.impl.OkHttpSardine;
 
 import org.jetbrains.annotations.NotNull;
 import org.json.JSONArray;
@@ -127,7 +116,6 @@ import java.nio.channels.NonWritableChannelException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
 import java.security.DigestInputStream;
-import java.security.KeyManagementException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
@@ -135,14 +123,9 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
-import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
-
-import javax.net.ssl.HttpsURLConnection;
-
-import top.donmor.tiddloid.utils.TLSSocketFactory;
 
 public class TWEditorWV extends AppCompatActivity {
 	private JSONObject db, wApp;
@@ -156,12 +139,13 @@ public class TWEditorWV extends AppCompatActivity {
 	private WebView wv;
 	private Toolbar toolbar;
 	private ProgressBar wvProgress;
-	private Uri uri = null, cachedUri;
+	private Uri uri = null;
 	private boolean isWiki, isClassic, noTint = false, ready = false, failed = false, acc_notification = true;
 	private static boolean firstRun;
 	private Charset overrodeCharset = null;
 	private byte[] exData = null;
 	private Menu optMenu;
+	private final String[] auth = new String[2];
 	private String id;
 	private CharSequence extraContent;
 	private HashMap<String, byte[]> hashes = null;
@@ -178,10 +162,10 @@ public class TWEditorWV extends AppCompatActivity {
 			MIME_ANY = "*/*",
 			MIME_TEXT = "text/plain",
 			MIME_TID = "application/x-tiddler",
+			MIME_PUT = "application/x-www-form-urlencoded",
 			REX_SP_CHR = "\\s",
 			KEY_ACTION = "action",
 			KEY_ALG = "MD5",
-			KEY_COL = ":",
 			KEY_ENC = "enc",
 			KEY_ENCODING = "encoding",
 			KEY_EXTENSION = "extension",
@@ -375,7 +359,7 @@ public class TWEditorWV extends AppCompatActivity {
 			if (result.getData() != null) {
 				uri = result.getData().getData();
 				if (uri == null) return;
-				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, KEY_FD_W));
+				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
 					MainActivity.ba2fc(exData, oc);
@@ -392,7 +376,7 @@ public class TWEditorWV extends AppCompatActivity {
 			exData = null;
 		});
 		getChooserImport = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
-			if (MainActivity.APIOver21 && uploadMessage != null)
+			if (uploadMessage != null)
 				uploadMessage.onReceiveValue(WebChromeClient.FileChooserParams.parseResult(result.getResultCode(), result.getData()));
 			uploadMessage = null;
 		});
@@ -400,7 +384,7 @@ public class TWEditorWV extends AppCompatActivity {
 			if (exData == null) return;
 			if (result.getData() != null) {
 				Uri u = result.getData().getData();
-				if (u != null) try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u, KEY_FD_W));
+				if (u != null) try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(u, MainActivity.KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
 					JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
@@ -414,7 +398,7 @@ public class TWEditorWV extends AppCompatActivity {
 					}
 					if (exist) {
 						Toast.makeText(this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-						if (wa.optBoolean(MainActivity.DB_KEY_BACKUP)) MainActivity.backup(this, u, null);
+						if (wa.optBoolean(MainActivity.DB_KEY_BACKUP)) MainActivity.backup(this, u);
 					} else {
 						wa = new JSONObject();
 						id = MainActivity.genId();
@@ -456,7 +440,6 @@ public class TWEditorWV extends AppCompatActivity {
 			}
 
 			// 5.0+ 导入文件
-			@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 			@Override
 			public boolean onShowFileChooser(WebView webView, ValueCallback<Uri[]> filePathCallback, FileChooserParams fileChooserParams) {
 				uploadMessage = filePathCallback;
@@ -529,7 +512,6 @@ public class TWEditorWV extends AppCompatActivity {
 						return TWEditorWV.this.overrideUrlLoading(view, Uri.parse(url));
 					}
 
-					@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 					@Override
 					public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 						dialog.dismiss();
@@ -543,7 +525,6 @@ public class TWEditorWV extends AppCompatActivity {
 				return true;
 			}
 
-			@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 			@Override
 			public void onPermissionRequest(PermissionRequest request) {
 				for (String r : request.getResources())
@@ -564,7 +545,7 @@ public class TWEditorWV extends AppCompatActivity {
 			public void print() {
 				runOnUiThread(() -> {
 					PrintManager printManager = (PrintManager) TWEditorWV.this.getSystemService(Context.PRINT_SERVICE);
-					PrintDocumentAdapter printDocumentAdapter = MainActivity.APIOver21 ? wv.createPrintDocumentAdapter(getTitle().toString()) : wv.createPrintDocumentAdapter();
+					PrintDocumentAdapter printDocumentAdapter = wv.createPrintDocumentAdapter(getTitle().toString());
 					printManager.print(getTitle().toString(), printDocumentAdapter, new PrintAttributes.Builder().build());
 				});
 			}
@@ -592,20 +573,19 @@ public class TWEditorWV extends AppCompatActivity {
 
 			@JavascriptInterface
 			public void saveWiki(final String data) {
-				if (wApp == null || (MainActivity.SCH_HTTP.equals(uri.getScheme()) || SCH_HTTPS.equals(uri.getScheme())) && cachedUri == null) {
+				boolean httpW = false;
+				if (wApp == null || (MainActivity.SCH_HTTP.equals(uri.getScheme()) || MainActivity.SCH_HTTPS.equals(uri.getScheme()))
+						&& !(httpW = wApp.optBoolean(MainActivity.DB_KEY_HTTP_WRITEABLE))) {
 					exData = data.getBytes(StandardCharsets.UTF_8);
 					getChooserClone.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT)
 							.addCategory(Intent.CATEGORY_OPENABLE)
 							.setType(MainActivity.TYPE_HTML));
 					return;
 				}
-				// TODO: test PUT========
-				new Thread(() -> {
+				if ((MainActivity.SCH_HTTP.equals(uri.getScheme()) || MainActivity.SCH_HTTPS.equals(uri.getScheme())) && httpW)
 					try {
 						URL url = new URL(uri.toString());
 						HttpURLConnection connection = (HttpURLConnection) url.openConnection();
-						if (!APIOver21 && SCH_HTTPS.equals(url.getProtocol()) && connection instanceof HttpsURLConnection)
-							((HttpsURLConnection) connection).setSSLSocketFactory(new TLSSocketFactory());
 						connection.setDoOutput(true);
 						connection.setDoInput(true);
 						connection.setRequestMethod(KEY_HD_METHOD);
@@ -632,44 +612,27 @@ public class TWEditorWV extends AppCompatActivity {
 						is.close();
 						os.close();
 						int rc = connection.getResponseCode();
-						System.out.println(rc);
 						connection.disconnect();
 						if (rc != 200 && rc != 204) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
-					} catch (IOException | NoSuchAlgorithmException | KeyManagementException e) {
+						return;
+					} catch (IOException e) {
 						e.printStackTrace();
+						return;
 					}
-				}).start();
-				// TODO: test put========
-				Sardine davClient = null;
-				String auth = wApp.optString(MainActivity.DB_KEY_DAV_AUTH), tok = wApp.optString(MainActivity.DB_KEY_DAV_TOKEN);
-				if (cachedUri != null) {//	DAV
-					davClient = new OkHttpSardine();
-					davClient.setCredentials(auth, tok);
-				}
 				if (wApp.optBoolean(MainActivity.DB_KEY_BACKUP)) try {
-					MainActivity.backup(TWEditorWV.this, Uri.parse(wApp.optString(MainActivity.DB_KEY_URI)), davClient);
+					MainActivity.backup(TWEditorWV.this, Uri.parse(wApp.optString(MainActivity.DB_KEY_URI)));
 				} catch (IOException e) {
 					e.printStackTrace();
 					Toast.makeText(TWEditorWV.this, R.string.backup_failed, Toast.LENGTH_SHORT).show();
 				}
-				Uri ux = cachedUri != null ? cachedUri : uri;
-				String lt = null;
-				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, KEY_FD_W));
+				try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_W));
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel oc = os.getChannel()) {
 					MainActivity.ba2fc(data.getBytes(overrodeCharset != null ? overrodeCharset : StandardCharsets.UTF_8), oc);
-					if (cachedUri != null) {    //	DAV
-						davClient = new OkHttpSardine();
-						davClient.setCredentials(auth, tok);
-						lt = davClient.lock(uri.toString());
-						davClient.put(uri.toString(), new File(cachedUri.getPath()), MainActivity.TYPE_HTML);
-					}
 					failed = false;
 					runOnUiThread(() -> {
 						try {
-							if (cachedUri != null && !wApp.optString(MainActivity.DB_KEY_URI).equals(uri.toString()))
-								syncTree(wApp.optString(MainActivity.DB_KEY_URI), auth, tok);
-							else if (tree != null && treeIndex != null)
+							if (tree != null && treeIndex != null)
 								syncTree(tree, id, treeIndex);
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -681,14 +644,6 @@ public class TWEditorWV extends AppCompatActivity {
 					Toast.makeText(TWEditorWV.this, R.string.failed, Toast.LENGTH_SHORT).show();
 					failed = true;
 					dumpOnFail(data.getBytes(StandardCharsets.UTF_8), uri);
-				} finally {
-					if (davClient != null && lt != null) {
-						try {
-							davClient.unlock(uri.toString(), lt);
-						} catch (IOException e) {
-							e.printStackTrace();
-						}
-					}
 				}
 			}
 
@@ -699,22 +654,20 @@ public class TWEditorWV extends AppCompatActivity {
 
 		}, JSI);
 		wv.setWebViewClient(new WebViewClient() {
-			// KitKat fallback
-			@Override
-			public boolean shouldOverrideUrlLoading(WebView view, String url) {
-				if (url == null) return false;
-				return overrideUrlLoading(view, Uri.parse(url));
-			}
 
 			// 跳转处理
-			@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 			@Override
 			public boolean shouldOverrideUrlLoading(WebView view, WebResourceRequest request) {
 				return overrideUrlLoading(view, request.getUrl());
 			}
 
 			@Override
-			public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {    // TODO: Saved creds
+			public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
+				String vu, vp;
+				if ((vu = wApp.optString(MainActivity.DB_KEY_DAV_AUTH)).length() > 0 && (vp = wApp.optString(MainActivity.DB_KEY_DAV_TOKEN)).length() > 0) {
+					handler.proceed(vu, vp);
+					return;
+				}
 				LinearLayout layout = new LinearLayout(TWEditorWV.this);
 				LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(LinearLayout.LayoutParams.MATCH_PARENT, LinearLayout.LayoutParams.WRAP_CONTENT);
 				params.setMarginStart(dialogPadding);
@@ -733,7 +686,11 @@ public class TWEditorWV extends AppCompatActivity {
 						.setTitle(getString(R.string.hint_login, host))
 						.setMessage(realm)
 						.setView(layout)
-						.setPositiveButton(android.R.string.ok, (dialog12, which) -> handler.proceed(username.getText().toString(), password.getText().toString()))
+						.setPositiveButton(android.R.string.ok, (dialog12, which) -> {
+							auth[0] = username.getText().toString();
+							auth[1] = password.getText().toString();
+							handler.proceed(auth[0], auth[1]);
+						})
 						.setNegativeButton(android.R.string.cancel, null)
 						.create();
 				dialog.setOnShowListener(dialog13 -> username.requestFocus());
@@ -756,7 +713,7 @@ public class TWEditorWV extends AppCompatActivity {
 			public void onPageFinished(final WebView view, String url) {
 				view.evaluateJavascript(getString(R.string.js_print), null);
 				view.evaluateJavascript(getString(R.string.js_is_wiki), value -> {
-					if (isWiki = Boolean.parseBoolean(value))
+					if (isWiki = Boolean.parseBoolean(value)) {
 						view.evaluateJavascript(getString(R.string.js_is_classic), value1 -> {
 							isClassic = Boolean.parseBoolean(value1);
 							getInfo(view);
@@ -788,10 +745,26 @@ public class TWEditorWV extends AppCompatActivity {
 							extraContent = null;
 							extraContent2 = null;
 						});
-					else if (!URL_BLANK.equals(url)) {
+						if (auth[0] != null && auth[1] != null) {
+							try {
+								wApp.put(MainActivity.DB_KEY_DAV_AUTH, auth[0]);
+								wApp.put(MainActivity.DB_KEY_DAV_TOKEN, auth[1]);
+								MainActivity.writeJson(TWEditorWV.this, db);
+								auth[0] = null;
+								auth[1] = null;
+							} catch (JSONException e) {
+								e.printStackTrace();
+							}
+						}
+					} else if (!URL_BLANK.equals(url)) {
+						auth[0] = null;
+						auth[1] = null;
 						if (wApp == null) notWikiConfirm();
 						else {
 							try {
+								wApp.put(MainActivity.DB_KEY_DAV_AUTH, null);
+								wApp.put(MainActivity.DB_KEY_DAV_TOKEN, null);
+								MainActivity.writeJson(TWEditorWV.this, db);
 								autoRemoveConfirm(db.getJSONObject(MainActivity.DB_KEY_WIKI), id, Uri.parse(wApp.optString(MainActivity.DB_KEY_URI)));
 							} catch (JSONException e) {
 								e.printStackTrace();
@@ -973,7 +946,8 @@ public class TWEditorWV extends AppCompatActivity {
 
 	private JSONArray getExDataSingle(final Intent intent) {
 		Uri uri;
-		try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM), KEY_FD_R));
+		try (ParcelFileDescriptor ifd =
+				Objects.requireNonNull(getContentResolver().openFileDescriptor(Objects.requireNonNull(uri = intent.getParcelableExtra(Intent.EXTRA_STREAM)), MainActivity.KEY_FD_R));
 				FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 				FileChannel ic = is.getChannel()) {
 			String path = Uri.decode(uri.toString()), type = intent.getType();
@@ -1000,12 +974,12 @@ public class TWEditorWV extends AppCompatActivity {
 
 	private JSONArray getExDataMultiple(final Intent intent) {
 		JSONArray array = new JSONArray();
-		ArrayList<Uri> files = APIOver33
+		ArrayList<Uri> files = MainActivity.APIOver33
 				? intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM, Uri.class)
 				: intent.getParcelableArrayListExtra(Intent.EXTRA_STREAM);
 		if (files == null) return array;
 		for (Uri uri : files)
-			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, KEY_FD_R));
+			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_R));
 					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 					FileChannel ic = is.getChannel()) {
 				String path = Uri.decode(uri.toString()), type = getContentResolver().getType(uri);
@@ -1044,8 +1018,8 @@ public class TWEditorWV extends AppCompatActivity {
 			final long[] lastModified = new long[]{0L};
 			try (InputStream isw = MainActivity.getAdaptiveUriInputStream(Uri.parse(getString(R.string.template_repo)), lastModified);
 					OutputStream osw = Objects.requireNonNull(getContentResolver().openOutputStream(Uri.fromFile(cache)));
-					ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(cache), KEY_FD_R));
-					ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
+					ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(cache), MainActivity.KEY_FD_R));
+					ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), MainActivity.KEY_FD_W));
 					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 					FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 					FileChannel ic = is.getChannel();
@@ -1084,8 +1058,8 @@ public class TWEditorWV extends AppCompatActivity {
 				Toast.makeText(this, R.string.error_processing_file, Toast.LENGTH_SHORT).show();
 				finish();
 			}
-			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_R));
-					ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, KEY_FD_W));
+			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), MainActivity.KEY_FD_R));
+					ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(uri, MainActivity.KEY_FD_W));
 					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 					FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 					FileChannel ic = is.getChannel();
@@ -1102,7 +1076,7 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				if (exist) {
 					Toast.makeText(this, R.string.wiki_replaced, Toast.LENGTH_SHORT).show();
-					if (wa.optBoolean(MainActivity.DB_KEY_BACKUP)) MainActivity.backup(this, uri, null);
+					if (wa.optBoolean(MainActivity.DB_KEY_BACKUP)) MainActivity.backup(this, uri);
 				} else {
 					wa = new JSONObject()
 							.put(MainActivity.DB_KEY_URI, uri.toString())
@@ -1121,7 +1095,7 @@ public class TWEditorWV extends AppCompatActivity {
 					e.printStackTrace();
 				}
 				Bundle bu = new Bundle();
-				bu.putString(KEY_ID, id);
+				bu.putString(MainActivity.KEY_ID, id);
 				runOnUiThread(() -> {
 					pBar[0].setVisibility(View.GONE);
 					nextWiki(new Intent(Intent.ACTION_MAIN).putExtras(bu));
@@ -1231,7 +1205,6 @@ public class TWEditorWV extends AppCompatActivity {
 			request.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
 	}
 
-	@RequiresApi(api = Build.VERSION_CODES.LOLLIPOP)
 	@Override
 	public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
@@ -1291,7 +1264,10 @@ public class TWEditorWV extends AppCompatActivity {
 									e.printStackTrace();
 								}
 							}).create();
-					confirmInvoke.setOnShowListener(dialog1 -> confirmInvoke.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+					confirmInvoke.setOnShowListener(dialog1 -> {
+						Window w = confirmInvoke.getWindow();
+						if (w != null) w.getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()));
+					});
 					confirmInvoke.show();
 					break;
 			}
@@ -1502,7 +1478,10 @@ public class TWEditorWV extends AppCompatActivity {
 					)
 					.setNegativeButton(android.R.string.no, null)
 					.create();
-			confirmExit.setOnShowListener(dialog1 -> confirmExit.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+			confirmExit.setOnShowListener(dialog1 -> {
+				Window w = confirmExit.getWindow();
+				if (w != null) w.getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()));
+			});
 			confirmExit.show();
 			confirmExit.setCanceledOnTouchOutside(false);
 		} else {
@@ -1520,7 +1499,10 @@ public class TWEditorWV extends AppCompatActivity {
 				.setPositiveButton(android.R.string.ok, null)
 				.setOnDismissListener(dialog -> TWEditorWV.this.finish())
 				.create();
-		closeRemoveConfirm.setOnShowListener(dialog -> closeRemoveConfirm.getWindow().getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault())));
+		closeRemoveConfirm.setOnShowListener(dialog -> {
+			Window w = closeRemoveConfirm.getWindow();
+			if (w != null) w.getDecorView().setLayoutDirection(TextUtils.getLayoutDirectionFromLocale(Locale.getDefault()));
+		});
 		closeRemoveConfirm.show();
 	}
 
@@ -1567,31 +1549,7 @@ public class TWEditorWV extends AppCompatActivity {
 		String nextWikiId = null;
 		final String action = nextWikiIntent.getAction();
 		if (Intent.ACTION_CREATE_DOCUMENT.equals(action)) {
-			// 重置
-//			if (wv.getUrl() != null) {
-//				toolbar.setLogo(null);
-//				wv.getSettings().setBuiltInZoomControls(false);
-//				wv.getSettings().setDisplayZoomControls(false);
-//				setTitle(R.string.app_name);
-//				toolbar.setSubtitle(null);
-//				wv.getSettings().setJavaScriptEnabled(false);
-//				customActionsMap.clear();
-//				customActions = null;
-//				wv.loadUrl(URL_BLANK);
-//				themeColor = null;
-//				noTint = false;
-//				hideAppbar = 0;
-//				onConfigurationChanged(getResources().getConfiguration());
-//				overrodeCharset = null;
-//				hashes = null;
-//				tree = null;
-//				treeIndex = null;
-//				stopBackgroundService();
-//			}
 			getChooserCreate.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(MainActivity.TYPE_HTML));
-//			Bundle bu = new Bundle();
-//			bu.putString(KEY_ID, newId);
-//			nextWiki(new Intent(Intent.ACTION_MAIN).putExtras(bu));
 			return;
 		} else if (Intent.ACTION_VIEW.equals(action)) {    // 打开方式，scheme -> content/file/http(s)
 			if ((u = nextWikiIntent.getData()) == null) {
@@ -1642,7 +1600,7 @@ public class TWEditorWV extends AppCompatActivity {
 					for (String s : data.split(REX_SP_CHR)) {
 						if (s.contains(MainActivity.SCH_HTTP)) {
 							u1 = Uri.parse(s.substring(s.indexOf(MainActivity.SCH_HTTP)));
-							u1 = Uri.parse(u1.getScheme() + KEY_COL + u1.getSchemeSpecificPart());
+							u1 = Uri.parse(u1.getScheme() + ':' + u1.getSchemeSpecificPart());
 						}
 					}
 					if (u1 == null) {
@@ -1663,7 +1621,7 @@ public class TWEditorWV extends AppCompatActivity {
 					for (String s : data.split(REX_SP_CHR)) {
 						if (s.contains(MainActivity.SCH_FILE)) {
 							u1 = Uri.parse(s.substring(s.indexOf(MainActivity.SCH_FILE)));
-							u1 = Uri.parse(u1.getScheme() + KEY_COL + u1.getSchemeSpecificPart());
+							u1 = Uri.parse(u1.getScheme() + ':' + u1.getSchemeSpecificPart());
 						}
 					}
 					if (u1 == null) {
@@ -1749,6 +1707,7 @@ public class TWEditorWV extends AppCompatActivity {
 			if (isWiki) {
 				JSONObject p = new JSONObject();
 				try {
+					if (cs == null) return;
 					p.put(KEY_TEXT, cs.toString());
 					wv.evaluateJavascript(getString(isClassic ? R.string.js_new_tiddler_c : R.string.js_new_tiddler, p.toString()), null);
 				} catch (JSONException e) {
@@ -1817,29 +1776,20 @@ public class TWEditorWV extends AppCompatActivity {
 		uri = u;    // nonnull: normal/file/content/http(s)/url; null: html
 		id = nextWikiId;
 		Uri actualUri = u;
-		if (wa != null && wa.has(MainActivity.DB_KEY_DAV_AUTH)) {    // DAV
-			try {
-				cachedUri = actualUri = Uri.fromFile(syncTree(u.toString(), wa.optString(MainActivity.DB_KEY_DAV_AUTH), wa.optString(MainActivity.DB_KEY_DAV_TOKEN)));
-			} catch (IOException e) {
-				e.printStackTrace();
-				autoRemoveConfirm(wl, id, u);
-				return;
-			}
-		} else if (u != null && (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme()))) {
+		if (u != null && (MainActivity.SCH_HTTP.equals(u.getScheme()) || MainActivity.SCH_HTTPS.equals(u.getScheme()))) {
 			Iterator<String> iterator = wl.keys();
 			while (iterator.hasNext()) {
-				if (Uri.parse(u.getScheme() + KEY_COL + u.getSchemeSpecificPart()).toString().equals((wa = wl.optJSONObject(iterator.next())) != null ? wa.optString(MainActivity.DB_KEY_URI) : null)) {
+				if (Uri.parse(u.getScheme() + ':' + u.getSchemeSpecificPart()).toString().equals((wa = wl.optJSONObject(iterator.next())) != null ? wa.optString(MainActivity.DB_KEY_URI) : null)) {
 					wApp = wa;
 					break;
 				}
 			}
-		} else if (MainActivity.APIOver21 && u != null && !MainActivity.SCH_FILE.equals(u.getScheme()))
+		} else if (u != null && !MainActivity.SCH_FILE.equals(u.getScheme()))
 			try {
-				DocumentFile p;
 				tree = DocumentFile.fromTreeUri(this, u);
 				if (tree == null || !tree.isDirectory())
 					throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
-				treeIndex = (p = tree.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = tree.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
+				treeIndex = MainActivity.getIndex(this, tree);
 				if (treeIndex == null || !treeIndex.isFile())
 					throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);    // Fatal index不存在
 				uri = treeIndex.getUri();
@@ -1890,7 +1840,6 @@ public class TWEditorWV extends AppCompatActivity {
 		}
 		String ufn;
 		if (uri == null
-				|| !MainActivity.APIOver21 && MainActivity.SCH_CONTENT.equals(uri.getScheme()) && actualUri == uri
 				|| actualUri != null && (MainActivity.TYPE_HTA.equals(getContentResolver().getType(actualUri))
 				|| (ufn = actualUri.getLastPathSegment()) != null && ufn.endsWith(EXT_HTA))) {
 			Uri u1 = null, ux;
@@ -1900,7 +1849,7 @@ public class TWEditorWV extends AppCompatActivity {
 					return;
 				}
 			ux = actualUri != null ? actualUri : u1;
-			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, KEY_FD_R));
+			try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(ux, MainActivity.KEY_FD_R));
 					FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 					FileChannel ic = is.getChannel()) {   //读全部数据
 				String data = null;
@@ -1926,62 +1875,6 @@ public class TWEditorWV extends AppCompatActivity {
 				Toast.makeText(this, R.string.error_loading_page, Toast.LENGTH_SHORT).show();
 			}
 		} else wv.loadUrl(actualUri != null ? actualUri.toString() : URL_BLANK);
-	}
-
-	@NonNull
-	private File syncTree(String davSrc, String auth, String token) throws IOException, SecurityException {
-		File cacheRoot = new File(getCacheDir(), id);
-		if (hashes == null) {
-			hashes = new HashMap<>();
-			hashDir(cacheRoot, hashes);
-		}
-		Sardine davClient = new OkHttpSardine();
-		davClient.setCredentials(auth, token);
-		final IOException[] e0 = new IOException[1];
-		final File[] index = new File[1];
-		Thread jt = new Thread(() -> {
-			try {
-				if (!davClient.exists(davSrc)) throw new FileNotFoundException(MainActivity.EXCEPTION_FILE_NOT_FOUND);
-				List<DavResource> root = davClient.list(davSrc);
-				DavResource ivf;
-				if (!(ivf = root.remove(0)).isDirectory()) {
-					if (cacheRoot.exists() && !cacheRoot.isDirectory()) cacheRoot.delete();
-					if (!cacheRoot.exists()) cacheRoot.mkdir();
-					try (InputStream is = davClient.get(davSrc);
-							OutputStream os = getContentResolver().openOutputStream(Uri.fromFile(index[0] = new File(cacheRoot, ivf.getName())))) {
-						int length;
-						byte[] bytes = new byte[MainActivity.BUF_SIZE];
-						while ((length = is.read(bytes)) > -1) os.write(bytes, 0, length);
-						os.flush();
-					}
-				} else {
-					HashSet<String> files = new HashSet<>();
-					syncDir(davClient, davSrc, root, cacheRoot, files);
-					clrDir(cacheRoot, files);
-					File[] fl;
-					if ((fl = cacheRoot.listFiles(file -> MainActivity.KEY_FN_INDEX.equals(file.getName()))) != null && fl.length == 1) {
-						uri = Uri.parse(davSrc + MainActivity.KEY_FN_INDEX);
-						index[0] = new File(cacheRoot, MainActivity.KEY_FN_INDEX);
-					} else if ((fl = cacheRoot.listFiles(file -> MainActivity.KEY_FN_INDEX2.equals(file.getName()))) != null && fl.length == 1) {
-						uri = Uri.parse(davSrc + MainActivity.KEY_FN_INDEX2);
-						index[0] = new File(cacheRoot, MainActivity.KEY_FN_INDEX2);
-					} else throw new FileNotFoundException(MainActivity.EXCEPTION_TREE_INDEX_NOT_FOUND);
-				}
-			} catch (IOException e) {
-				e.printStackTrace();
-				e0[0] = e;
-			}
-		});
-		jt.start();
-		try {
-			jt.join();
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-			throw new IOException(e.getMessage());
-		}
-		if (e0[0] != null) throw e0[0];
-		if (index[0] == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
-		return index[0];
 	}
 
 	@NonNull
@@ -2028,59 +1921,6 @@ public class TWEditorWV extends AppCompatActivity {
 		}
 	}
 
-	private void syncDir(Sardine davClient, String uri, List<DavResource> src, File pos, HashSet<String> files) throws IOException, SecurityException {
-		if (!pos.isDirectory()) pos.delete();
-		if (!pos.exists()) {
-			pos.mkdir();
-		}
-		MessageDigest messageDigest = null;
-		try {
-			messageDigest = MessageDigest.getInstance(KEY_ALG);
-		} catch (NoSuchAlgorithmException e) {
-			e.printStackTrace();
-		}
-		for (DavResource inner : src) {
-			String iu = (uri.charAt(uri.length() - 1) == '/' ? uri : uri + MainActivity.KEY_SLASH) + inner.getName();
-			if (!inner.isDirectory()) {
-				File dest = new File(pos, inner.getName());
-				byte[] dg = null;
-				try (InputStream is = davClient.get(iu);
-						DigestInputStream dis = messageDigest != null ? new DigestInputStream(is, messageDigest) : null
-				) {
-					if (is == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
-					byte[] buf = new byte[MainActivity.BUF_SIZE];
-					int length;
-					if (dis != null) {
-						dis.on(true);
-						do length = dis.read(buf); while (length != -1);
-						if (Arrays.equals(hashes.get(dest.getPath()), dg = dis.getMessageDigest().digest())) {
-							files.add(dest.getPath());
-							continue;
-						}
-					}
-				} catch (IOException e) {
-					e.printStackTrace();
-					continue;
-				}
-				try (InputStream is = davClient.get(iu);
-						OutputStream os = getContentResolver().openOutputStream(Uri.fromFile(dest))) {
-					int length;
-					byte[] bytes = new byte[MainActivity.BUF_SIZE];
-					while ((length = is.read(bytes)) > -1) os.write(bytes, 0, length);
-					os.flush();
-					files.add(dest.getPath());
-					hashes.put(dest.getPath(), dg);
-				}
-			} else if (inner.isDirectory()) {
-				if (inner.getName() == null) continue;
-				List<DavResource> innerSrc = davClient.list(iu);
-				innerSrc.remove(0);
-				syncDir(davClient, iu, innerSrc, new File(pos, inner.getName()), files);
-			}
-		}
-		files.add(pos.getPath());
-	}
-
 	private void syncDir(DocumentFile src, File pos, HashSet<String> files) throws IOException, SecurityException {
 		if (src == null || !src.isDirectory())
 			throw new IOException(MainActivity.EXCEPTION_TREE_NOT_A_DIRECTORY);
@@ -2117,8 +1957,8 @@ public class TWEditorWV extends AppCompatActivity {
 					e.printStackTrace();
 					continue;
 				}
-				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(inner.getUri(), KEY_FD_R));
-						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), KEY_FD_W));
+				try (ParcelFileDescriptor ifd = Objects.requireNonNull(getContentResolver().openFileDescriptor(inner.getUri(), MainActivity.KEY_FD_R));
+						ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(dest), MainActivity.KEY_FD_W));
 						FileInputStream is = new FileInputStream(ifd.getFileDescriptor());
 						FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 						FileChannel ic = is.getChannel();
@@ -2154,7 +1994,7 @@ public class TWEditorWV extends AppCompatActivity {
 	private void addLink(Uri u) {
 		if (!MainActivity.SCH_HTTP.equals(u.getScheme()) && !MainActivity.SCH_HTTPS.equals(u.getScheme()))
 			return;
-		u = Uri.parse(u.getScheme() + KEY_COL + u.getSchemeSpecificPart());
+		u = Uri.parse(u.getScheme() + ':' + u.getSchemeSpecificPart());
 		try {
 			JSONObject wl = db.getJSONObject(MainActivity.DB_KEY_WIKI), wa = null;
 			boolean exist = false;
@@ -2188,10 +2028,11 @@ public class TWEditorWV extends AppCompatActivity {
 
 	private void dumpOnFail(byte[] data, Uri u) {
 		String mfn = Uri.parse(Uri.decode(u.toString())).getLastPathSegment();
+		if (mfn == null) mfn = MainActivity.KEY_TW;
 		File dumpDir = new File(new File(getExternalFilesDir(null), Uri.encode(u.getSchemeSpecificPart())), mfn + MainActivity.BACKUP_POSTFIX);
 		dumpDir.mkdirs();
 		try (ParcelFileDescriptor ofd = Objects.requireNonNull(getContentResolver().openFileDescriptor(Uri.fromFile(new File(dumpDir,
-				new StringBuffer(mfn).insert(mfn.lastIndexOf('.'), MainActivity.formatBackup(System.currentTimeMillis())).toString())), KEY_FD_W));
+				new StringBuffer(mfn).insert(mfn.lastIndexOf('.'), MainActivity.formatBackup(System.currentTimeMillis())).toString())), MainActivity.KEY_FD_W));
 				FileOutputStream os = new FileOutputStream(ofd.getFileDescriptor());
 				FileChannel oc = os.getChannel()) {
 			MainActivity.ba2fc(data, oc);
@@ -2245,9 +2086,9 @@ public class TWEditorWV extends AppCompatActivity {
 		txtFind.setTextColor(getResources().getColor(R.color.content));
 		txtFind.setHintTextColor(getResources().getColor(R.color.content_sub));
 		((TextView) findViewById(R.id.find_indicator)).setTextColor(getResources().getColor(R.color.content_sub));
-		((ImageButton) findViewById(R.id.find_up)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_up : R.drawable.ic_arrow_up_d, null));
-		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_arrow_down : R.drawable.ic_arrow_down_d, null));
-		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), MainActivity.APIOver21 || lightBar ? R.drawable.ic_close : R.drawable.ic_close_d, null));
+		((ImageButton) findViewById(R.id.find_up)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_arrow_up, null));
+		((ImageButton) findViewById(R.id.find_down)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_arrow_down, null));
+		((ImageButton) findViewById(R.id.find_close)).setImageDrawable(ResourcesCompat.getDrawable(getResources(), R.drawable.ic_close, null));
 		if (optMenu != null) {
 			try {
 				optMenu.removeGroup(CA_GRP_ID);

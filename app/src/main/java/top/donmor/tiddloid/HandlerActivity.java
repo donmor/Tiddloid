@@ -1,13 +1,12 @@
 /*
  * top.donmor.tiddloid.HandlerActivity <= [P|Tiddloid]
- * Last modified: 17:00:38 2022/03/13
- * Copyright (c) 2022 donmor
+ * Last modified: 21:23:48 2024/02/14
+ * Copyright (c) 2024 donmor
  */
 
 package top.donmor.tiddloid;
 
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
 
 import androidx.annotation.Nullable;
@@ -18,13 +17,13 @@ public class HandlerActivity extends AppCompatActivity {
 	public void onCreate(@Nullable Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Intent i;
-		Uri u;
+		Bundle b;
 		String a;
-		if ((i = getIntent()) == null || (u = i.getData()) == null || (a = i.getAction()) == null) {
+		if ((i = getIntent()) == null || (b = i.getExtras()) == null || b.getString(MainActivity.KEY_ID) == null || (a = i.getAction()) == null) {
 			finish();
 			return;
 		}
-		startActivity(new Intent(this, TWEditorWV.class).setData(u).setAction(a));
+		startActivity(new Intent(this, TWEditorWV.class).putExtras(b).setAction(a));
 		finish();
 	}
 }

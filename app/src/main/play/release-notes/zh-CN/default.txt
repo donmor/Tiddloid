@@ -4,4 +4,7 @@
 - 修复了保存为书签的wiki无法保存副本的bug
 - 修复了SVG图标缩放不正常的bug
 - 修复了TiddlyWiki5.2.6版本下tweaks插件功能失效的问题
-- 细节优化
+- 弃用并移除了大多数WebDAV功能（详情请移步GitHub）
+  - 相对地，HTTP Wiki加入了试验性的可写模式选项
+- 不再支持Android 4.4
+- 细节优化和修复

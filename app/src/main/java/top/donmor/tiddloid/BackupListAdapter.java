@@ -1,7 +1,7 @@
 /*
  * top.donmor.tiddloid.BackupListAdapter <= [P|Tiddloid]
- * Last modified: 15:22:20 2022/02/05
- * Copyright (c) 2022 donmor
+ * Last modified: 15:46:33 2024/02/14
+ * Copyright (c) 2024 donmor
  */
 
 package top.donmor.tiddloid;
@@ -18,30 +18,40 @@ import androidx.annotation.NonNull;
 import androidx.documentfile.provider.DocumentFile;
 import androidx.recyclerview.widget.RecyclerView;
 
-import com.thegrizzlylabs.sardineandroid.DavResource;
-import com.thegrizzlylabs.sardineandroid.Sardine;
-
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-import java.util.List;
 import java.util.Locale;
 import java.util.TimeZone;
 
 public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.BackupListHolder> {
 
 	private final Context context;
+	/**
+	 * Backup files array
+	 */
 	private File[] bk;
+	/**
+	 * Backup files array in tree mode
+	 */
 	private DocumentFile[] bkd;
-	private List<DavResource> bkv;
-	private Sardine davClient;
-	private String bkp;
+	/**
+	 * Triggered when list loaded
+	 */
 	private LoadListener mLoadListener;
+	/**
+	 * Button callback
+	 */
 	private BtnClickListener mBtnClickListener;
+	/**
+	 * Inflate layouts
+	 */
 	private final LayoutInflater inflater;
+	/**
+	 * Indicates if source wiki is tree mode
+	 */
 	private boolean tree;
 
 
@@ -53,7 +63,17 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	}
 
 	static class BackupListHolder extends RecyclerView.ViewHolder {
-		private final ImageButton btnRollBack, btnDelBackup;
+		/**
+		 * Rollback button
+		 */
+		private final ImageButton btnRollBack,
+		/**
+		 * Delete backup button
+		 */
+		btnDelBackup;
+		/**
+		 * Item label
+		 */
 		private final TextView lblBackupFile;
 
 		BackupListHolder(View itemView) {
@@ -73,8 +93,8 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 	@Override
 	public void onBindViewHolder(@NonNull final BackupListHolder holder, int position) {
 		try {
-			String efn = davClient != null ? bkv.get(position).getName() : tree ? bkd[position].getName() : bk[position].getName();
-			int efp1, efp2;
+			String efn = tree ? bkd[position].getName() : bk[position].getName();    // ~GenFilename
+			int efp1, efp2;        // FilenameSplittingPoint
 			if (efn == null) throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);
 			efp1 = efn.lastIndexOf('.', (efp2 = efn.lastIndexOf('.')) - 1);
 			holder.lblBackupFile.setText(SimpleDateFormat.getDateTimeInstance().format(parseUTCString(efn.substring(efp1 + 1, efp2)).getTime()));
@@ -87,93 +107,72 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 
 	@Override
 	public int getItemCount() {
-		return bkv != null ? bkv.size() : tree ? bkd.length : bk != null ? bk.length : 0;
+		return tree ? bkd.length : bk != null ? bk.length : 0;
 	}
 
 
+	/**
+	 * Button click callbacks, which=1 for rollback, 2 for delete
+	 */
 	interface BtnClickListener {
 		void onBtnClick(int pos, int which);
 	}
 
+	/**
+	 * Set button click callbacks
+	 */
 	void setOnBtnClickListener(BtnClickListener btnClickListener) {
 		this.mBtnClickListener = btnClickListener;
 
 	}
 
 
+	/**
+	 * Mainly for getting backup count
+	 */
 	interface LoadListener {
+		/**
+		 * Mainly for getting backup count
+		 */
 		void onLoad(int count);
 	}
 
+	/**
+	 * Set on load callbacks
+	 */
 	void setOnLoadListener(LoadListener loadListener) {
 		this.mLoadListener = loadListener;
 
 	}
 
+	/**
+	 * Get backup file
+	 */
 	File getBackupFile(int position) {
 		return tree ? null : position < getItemCount() ? bk[position] : null;
 	}
 
+	/**
+	 * Get backup file - tree mode
+	 */
 	DocumentFile getBackupDF(int position) {
 		return position < getItemCount() ? !tree ? DocumentFile.fromFile(bk[position]) : bkd[position] : null;
 	}
 
-	String getBackupDavUri(int position) {
-		return davClient != null && position < getItemCount() ? bkp + MainActivity.KEY_SLASH + bkv.get(position).getName() : null;
-	}
-
-	void reload(Uri mainFile, Sardine davClient) throws IOException {
-		if (MainActivity.SCH_HTTP.equals(mainFile.getScheme()) || MainActivity.SCH_HTTPS.equals(mainFile.getScheme())) {    // WebDAV
-			if (davClient == null) return;
-			this.davClient = davClient;
-			Thread jt = new Thread(() -> {
-				try {
-					List<DavResource> root;
-					if (davClient.exists(mainFile.toString()) && (root = davClient.list(mainFile.toString())).get(0).isDirectory()) {
-						boolean haveIndex = false;
-						for (DavResource f : root) {
-							if (MainActivity.KEY_FN_INDEX.equals(f.getName()) || MainActivity.KEY_FN_INDEX2.equals(f.getName())) {
-								bkv = davClient.list(bkp = mainFile.getScheme() + MainActivity.KEY_URI_NOTCH + mainFile.getAuthority() + f.getHref() + MainActivity.BACKUP_POSTFIX);
-								bkv.remove(0);
-								haveIndex = true;
-								break;
-							}
-						}
-						if (!haveIndex) for (DavResource f : root) {
-							if ((f.getName().equals(MainActivity.KEY_FN_INDEX + MainActivity.BACKUP_POSTFIX) || f.getName().equals(MainActivity.KEY_FN_INDEX2 + MainActivity.BACKUP_POSTFIX)) && f.isDirectory()) {
-								bkv = davClient.list(bkp = mainFile.getScheme() + MainActivity.KEY_URI_NOTCH + mainFile.getAuthority() + f.getHref());
-								bkv.remove(0);
-								haveIndex = true;
-								break;
-							}
-						}
-						if (!haveIndex) throw new FileNotFoundException(MainActivity.EXCEPTION_SAF_FILE_NOT_EXISTS);
-					} else {
-						bkv = davClient.list(bkp = mainFile + MainActivity.BACKUP_POSTFIX);
-						bkv.remove(0);
-					}
-				} catch (IOException | IndexOutOfBoundsException e) {
-					e.printStackTrace();
-					bkv = null;
-				}
-			});
-			jt.start();
-			try {
-				jt.join();
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-			mLoadListener.onLoad(getItemCount());
+	/**
+	 * Refresh data
+	 */
+	void reload(@NonNull Uri mainFile) throws IOException {
+		if (MainActivity.SCH_HTTP.equals(mainFile.getScheme()) || MainActivity.SCH_HTTPS.equals(mainFile.getScheme()))
 			return;
-		}
 		DocumentFile df, bdf = null;
 		String vfn = null;
 		boolean legacy = MainActivity.SCH_FILE.equals(mainFile.getScheme());
-		if (MainActivity.APIOver21 && !legacy) try {
-			DocumentFile mdf = DocumentFile.fromTreeUri(context, mainFile), p;    // 非TreeUri时抛IllegalArgumentException
+		if (!legacy) try {
+			DocumentFile mdf = DocumentFile.fromTreeUri(context, mainFile);    // 非TreeUri时抛IllegalArgumentException
 			if (mdf == null || !mdf.isDirectory())
 				throw new IOException(MainActivity.EXCEPTION_DOCUMENT_IO_ERROR);    // Fatal 根目录不可访问
-			df = (p = mdf.findFile(MainActivity.KEY_FN_INDEX)) != null && p.isFile() ? p : (p = mdf.findFile(MainActivity.KEY_FN_INDEX2)) != null && p.isFile() ? p : null;
+			df = MainActivity.getIndex(context, mdf);
 			vfn = df != null && df.getName() != null ? df.getName() : MainActivity.KEY_FN_INDEX;
 			String vfn2 = df != null && df.getName() != null ? df.getName() : MainActivity.KEY_FN_INDEX2;
 			bdf = mdf.findFile(vfn + MainActivity.BACKUP_POSTFIX);    // 不一定存在，需要判断
@@ -198,7 +197,35 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 				if (x > 0) System.arraycopy(b0, 0, bkd, 0, x);
 			} else bkd = new DocumentFile[0];
 		} else {    // 文件模式位置：External files/encoded uri/<filename>_backup/ legacy模式原地
-			File mf = legacy ? new File(mainFile.getPath()) : new File(new File(context.getExternalFilesDir(null), Uri.encode(mainFile.getSchemeSpecificPart())), (df = DocumentFile.fromSingleUri(context, mainFile)) != null && df.getName() != null ? df.getName() : Uri.parse(Uri.decode(mainFile.toString())).getLastPathSegment());
+			String mfp = mainFile.getPath();
+			File mf;
+			if (legacy) {
+				if (mfp == null) {
+					bk = new File[0];
+					mLoadListener.onLoad(getItemCount());
+					return;
+				}
+				mf = new File(mfp);
+			} else {
+				File pf = new File(context.getExternalFilesDir(null), Uri.encode(mainFile.getSchemeSpecificPart()));
+				if ((df = DocumentFile.fromSingleUri(context, mainFile)) != null && df.getName() != null)
+					mf = new File(pf, df.getName());
+				else {
+					String mfu = Uri.decode(mainFile.toString());
+					if (mfu == null) {
+						bk = new File[0];
+						mLoadListener.onLoad(getItemCount());
+						return;    // Usually not possible
+					}
+					String lp = Uri.parse(mfu).getLastPathSegment();
+					if (lp == null) {
+						bk = new File[0];
+						mLoadListener.onLoad(getItemCount());
+						return;    // Abort on error
+					}
+					mf = new File(pf, lp);
+				}
+			}
 			String mfn = mf.getName();
 			File mfd = new File(mf.getParentFile(), mfn + MainActivity.BACKUP_POSTFIX);
 			int x;
