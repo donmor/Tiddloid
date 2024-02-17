@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 22:52:05 2022/09/10
-  ~ Copyright (c) 2022 donmor
+  ~ Last modified: 22:41:37 2024/02/16
+  ~ Copyright (c) 2024 donmor
   -->
 
 <resources>
@@ -187,12 +187,11 @@
 	<string name="plugin_version" translatable="false">1.2.0</string>
 	<string name="logo" translatable="false">logo</string>
 	<string name="filter" translatable="false">filter</string>
+	<string name="filter_time">Filter by date</string>
 	<string name="filter_time_init" translatable="false">...</string>
 	<string name="filter_time_sep" translatable="false">-</string>
 	<string name="path" translatable="false">path</string>
 	<string name="icon" translatable="false">icon</string>
-	<string name="dav_go" translatable="false">dav_enter</string>
-	<string name="dav_legacy" translatable="false">dav_local</string>
 	<string name="rollback" translatable="false">rollback</string>
 	<string name="del_backup" translatable="false">del_backup</string>
 	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
@@ -202,7 +201,7 @@
 	<string name="action_new">New TiddlyWiki file</string>
 	<string name="action_import">Import a TiddlyWiki file</string>
 	<string name="action_dir">Add a TiddlyWiki folder</string>
-	<string name="action_dav">WebDAV / Local (Legacy)</string>
+	<string name="action_filter">Filter</string>
 	<string name="action_about">About Tiddloid</string>
 	<string name="action_update">Update available: %1$s</string>
 	<string name="action_save_to">Save to Tiddloid</string>
@@ -212,20 +211,15 @@
 	<string name="context_new_tiddler">New Tiddler here</string>
 	<string name="context_find">Find</string>
 	<string name="context_save">Save</string>
-	<string name="dav_address">WebDAV address</string>
-	<string name="dav_username">Username</string>
-	<string name="dav_password">Password</string>
 	<string name="find_find">Find</string>
 	<string name="find_close">Close</string>
 	<string name="find_down">Down</string>
 	<string name="find_up">Up</string>
 	<string name="no_permission">Unable to get filesystem permissions</string>
 	<string name="no_wiki">There is nothing here</string>
-	<string name="no_file">No such file or directory</string>
 	<string name="provider">Source:&#160;</string>
 	<string name="pathDir">Path:&#160;</string>
 	<string name="internet">Internet</string>
-	<string name="webdav" translatable="false">WebDAV</string>
 	<string name="local_legacy">Local (Legacy)</string>
 	<string name="unknown">Unknown</string>
 	<string name="default_wiki">Default Wiki</string>
@@ -242,6 +236,11 @@
 	<string name="server_error">Unable to connect to the server</string>
 	<string name="download_failed">Download failed</string>
 	<string name="please_wait">Please wait&#8230;</string>
+	<string name="show_hidden_files">Show hidden files</string>
+    <string name="action_sc_s_new">New</string>
+    <string name="action_sc_s_default">Default</string>
+    <string name="delete">Delete</string>
+    <string name="http_has_credential">HTTP credential stored</string>
 	<string name="failed">Failed</string>
 	<string name="cancelled">Cancelled</string>
 	<string name="wiki_replaced">Existing Wiki Overwritten</string>
@@ -276,7 +275,6 @@
 		Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down so that you can access them anywhere. For more details of TiddlyWiki, please see https://tiddlywiki.com/ .\n
 		\n
 		This app is released under GPL v2 license with the help of these open source projects:\n
-		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
 		sharp - https://github.com/Pixplicity/sharp ,\n
 		License files provided with source codes.\n
 		\n
@@ -299,4 +297,5 @@
 	<string name="agreements_desc3">To continue, you have to accept the agreements above.</string>
 	<string name="agreements_accept">Accept</string>
 	<string name="agreements_decline">Decline</string>
+	<string name="ICP" translatable="false">鲁ICP备2024056381号</string>
 </resources>

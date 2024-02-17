@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-zh-rCN/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 19:42:20 2022/08/28
-  ~ Copyright (c) 2022 donmor
+  ~ Last modified: 22:41:37 2024/02/16
+  ~ Copyright (c) 2024 donmor
   -->
 
 <resources>
 	<!--Misc-->
 	<string name="entry_name">添加到 Tiddloid</string>
+	<string name="filter_time">按日期筛选</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/zh-Hans/empty.html</string>
 	<string name="update_url">https://gitee.com/donmor/Tiddloid/releases/latest</string>
@@ -14,7 +15,7 @@
 	<string name="action_new">创建新的 TiddlyWiki 文件</string>
 	<string name="action_import">导入已有TiddlyWiki文件</string>
 	<string name="action_dir">添加 TiddlyWiki 文件夹</string>
-	<string name="action_dav">WebDAV / 本地（旧版）</string>
+	<string name="action_filter">筛选</string>
 	<string name="action_about">关于Tiddloid</string>
 	<string name="action_update">更新可用：%1$s</string>
 	<string name="action_save_to">保存到 Tiddloid</string>
@@ -24,16 +25,12 @@
 	<string name="context_new_tiddler">创建为新条目</string>
 	<string name="context_find">查找</string>
 	<string name="context_save">保存</string>
-	<string name="dav_address">WebDAV 网址</string>
-	<string name="dav_username">用户名</string>
-	<string name="dav_password">密码</string>
 	<string name="find_find">查找</string>
 	<string name="find_close">关闭</string>
 	<string name="find_down">向下</string>
 	<string name="find_up">向上</string>
 	<string name="no_permission">没有文件系统权限</string>
 	<string name="no_wiki">没有内容</string>
-	<string name="no_file">沒有这个文件或目录</string>
 	<string name="provider">来源:&#160;</string>
 	<string name="pathDir">"路径:&#160;"</string>
 	<string name="internet">网络</string>
@@ -53,6 +50,11 @@
 	<string name="server_error">连接服务器失败</string>
 	<string name="download_failed">下载失败</string>
 	<string name="please_wait">请稍候…</string>
+	<string name="show_hidden_files">显示隐藏文件</string>
+	<string name="action_sc_s_new">新建</string>
+	<string name="action_sc_s_default">默认</string>
+	<string name="delete">删除</string>
+	<string name="http_has_credential">HTTP凭证已被存储</string>
 	<string name="failed">失败</string>
 	<string name="cancelled">已取消</string>
 	<string name="wiki_replaced">已覆盖现有Wiki</string>
@@ -87,7 +89,6 @@
 		Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来以供随时查阅。有关TiddlyWiki的更多详细信息，请参阅https://tiddlywiki.com/。\n
 		\n
 		本应用程序遵循GPLv2许可发布，其完成离不开这些开源项目的帮助：\n
-		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
 		sharp - https://github.com/Pixplicity/sharp ,\n
 		许可证文件随源代码提供。\n
 		\n

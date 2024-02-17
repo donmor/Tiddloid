@@ -10,10 +10,6 @@ package top.donmor.tiddloid;
  * The File type filter for FileDialogOpen.
  */
 class FileDialogFilter {
-//	/**
-//	 * The name of the filter.
-//	 */
-//	public final String name;
 	/**
 	 * The extension names related.
 	 */
@@ -27,7 +23,6 @@ class FileDialogFilter {
 	 * @param extensions The extensions array. It should be formatted like { ".extension1", ".extension2", ... }. The extension can be like ".ext1.ext2". Use { "*" } for all types. The first extension in array will be used as default to create new files.
 	 */
 	FileDialogFilter(String[] extensions) {
-//		this.name = name;
 		this.extensions = extensions;
 	}
 

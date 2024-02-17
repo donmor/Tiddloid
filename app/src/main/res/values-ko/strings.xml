@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-ko/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 19:42:20 2022/08/28
-  ~ Copyright (c) 2022 donmor
+  ~ Last modified: 22:41:37 2024/02/16
+  ~ Copyright (c) 2024 donmor
   -->
 
 <resources>
 	<!--Misc-->
 	<string name="entry_name">Tiddloid에 추가</string>
+	<string name="filter_time">날짜별로 필터링</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/ko-KR/empty.html</string>
 	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
@@ -14,7 +15,7 @@
 	<string name="action_new">새 TiddlyWiki 파일 생성</string>
 	<string name="action_import">TiddlyWiki 파일 가져 오기</string>
 	<string name="action_dir">TiddlyWiki 폴더 추가</string>
-	<string name="action_dav">WebDAV / 로컬 (레거시)</string>
+	<string name="action_filter">필터</string>
 	<string name="action_about">Tiddloid에 대하여</string>
 	<string name="action_update">사용 가능한 업데이트: %1$s</string>
 	<string name="action_save_to">Tiddloid에 저장</string>
@@ -24,16 +25,12 @@
 	<string name="context_new_tiddler">여기 새로운 Tiddler</string>
 	<string name="context_find">검색</string>
 	<string name="context_save">저장</string>
-	<string name="dav_address">WebDAV URL</string>
-	<string name="dav_username">사용자 이름</string>
-	<string name="dav_password">비밀번호</string>
 	<string name="find_find">검색</string>
 	<string name="find_close">닫기</string>
 	<string name="find_down">다음</string>
 	<string name="find_up">이전</string>
 	<string name="no_permission">파일 시스템 권한을 얻을 수 없습니다.</string>
 	<string name="no_wiki">여기에 아무것도 없다</string>
-	<string name="no_file">파일 또는 디렉터리를 찾을 수 없음</string>
 	<string name="provider">"근원:&#160;"</string>
 	<string name="pathDir">경로:&#160;</string>
 	<string name="internet">인터넷</string>
@@ -53,6 +50,11 @@
 	<string name="server_error">서버에 연결할 수 없습니다</string>
 	<string name="download_failed">다운로드 실패</string>
 	<string name="please_wait">기다려주세요&#8230;</string>
+	<string name="show_hidden_files">숨김 파일 표시</string>
+	<string name="action_sc_s_new">새로운</string>
+	<string name="action_sc_s_default">기본</string>
+	<string name="delete">삭제</string>
+	<string name="http_has_credential">HTTP 자격 증명이 저장됨</string>
 	<string name="failed">실패한</string>
 	<string name="cancelled">취소 된</string>
 	<string name="wiki_replaced">기존 위키를 덮어 썼습니다</string>
@@ -87,7 +89,6 @@
 		Tiddloid는 로컬에 저장된 TiddlyWiki와 함께 작동하는 앱입니다. 일단 아이디어가 있으면 즉시 적어두고 어디서나 액세스 할 수 있습니다. TiddlyWiki에 대한 자세한 내용은 https://tiddlywiki.com/을 참조하십시오.\n
 		\n
 		이 앱은 이러한 오픈 소스 프로젝트의 도움으로 GPLv2 라이선스로 출시되었습니다:\n
-		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
 		sharp - https://github.com/Pixplicity/sharp ,\n
 		라이센스 파일은 소스 코드와 함께 배포됩니다.\n
 		\n

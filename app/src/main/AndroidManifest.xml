@@ -37,7 +37,6 @@
 		tools:targetApi="s">
 		<activity
 			android:name=".MainActivity"
-			android:alwaysRetainTaskState="true"
 			android:configChanges="keyboardHidden|orientation|screenSize"
 			android:exported="true"
 			android:hardwareAccelerated="true"
@@ -49,6 +48,7 @@
 		</activity>
 		<activity
 			android:name=".TWEditorWV"
+			android:alwaysRetainTaskState="true"
 			android:configChanges="keyboardHidden|orientation|screenSize|uiMode"
 			android:hardwareAccelerated="true"
 			android:launchMode="singleTask"
@@ -59,7 +59,6 @@
 			android:foregroundServiceType="dataSync" />
 		<activity
 			android:name=".HandlerActivity"
-			android:alwaysRetainTaskState="true"
 			android:exported="true"
 			android:label="@string/entry_name">
 			<intent-filter>
