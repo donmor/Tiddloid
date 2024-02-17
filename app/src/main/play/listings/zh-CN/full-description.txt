@@ -3,7 +3,6 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 - 使用最新模板创建新的Wiki
 - 导入存储在可写来源的现有Wiki
 - 添加一个包含基于TiddlyWiki的index.htm(l)的文件夹（Android 5.0+）
-- 添加托管在WebDAV服务器上的文件或文件夹（Android 5.0+）
 - 接收从浏览器分享的TiddlyWiki站点URL并存为新文件或书签
 - 打开一个HTML文件，如果是TiddlyWiki则添加到列表
 - 通过Wiki内配置实现应用主题色到系统界面，以及其他调整选项

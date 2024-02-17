@@ -149,7 +149,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			try {
 				builder.setSpan(new ForegroundColorSpan(context.getResources().getColor(R.color.content_sub)), builder.length(), builder.length(), Spanned.SPAN_MARK_POINT);
 				if (fTextA) {
-					int pkw = n.indexOf(fKeyword);
+					int pkw = n.indexOf(fKeyword);	// ~PointerKeyWord
 					while (pkw >= 0 && pkw < builder.length()) {
 						builder.setSpan(new BackgroundColorSpan(context.getResources().getColor(R.color.content_back_fil)), pkw, pkw + fKeyword.length(), Spanned.SPAN_POINT_MARK);
 						pkw = n.indexOf(fKeyword, pkw + 1);

@@ -32,8 +32,8 @@
 	<item
 		android:id="@+id/action_filter"
 		android:icon="@drawable/ic_filter"
-		android:title="TODO: FILTER"
-		app:showAsAction="never" /><!--TODO-->
+		android:title="@string/action_filter"
+		app:showAsAction="never" />
 	<item
 		android:id="@+id/action_about"
 		android:icon="@drawable/ic_info_outline"

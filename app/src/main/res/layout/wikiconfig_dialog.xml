@@ -24,13 +24,6 @@
 		android:textAppearance="@style/TextAppearance.AppCompat.Small" />
 
 	<CheckBox
-		android:id="@+id/cbHTTPWriteable"
-		android:layout_width="wrap_content"
-		android:layout_height="wrap_content"
-		android:text="TODO:writeable"
-		tools:ignore="TouchTargetSizeCheck" /><!--TODO-->
-
-	<CheckBox
 		android:id="@+id/cbDefault"
 		android:layout_width="wrap_content"
 		android:layout_height="wrap_content"
@@ -50,6 +43,32 @@
 		android:layout_height="wrap_content"
 		android:text="@string/plugin_auto_update"
 		tools:ignore="TouchTargetSizeCheck" />
+
+	<LinearLayout
+		android:id="@+id/rowCredential"
+		android:layout_width="match_parent"
+		android:layout_height="wrap_content"
+		android:orientation="horizontal">
+
+		<TextView
+			android:layout_width="0dp"
+			android:layout_height="wrap_content"
+			android:layout_marginStart="10dp"
+			android:layout_weight="1"
+			android:text="@string/http_has_credential"
+			android:textAppearance="@style/MenuTextAppearance"
+			android:textColor="?android:attr/colorFocusedHighlight"
+			tools:ignore="TextContrastCheck,TextSizeCheck" />
+
+		<Button
+			android:id="@+id/delete_credential"
+			style="@style/Widget.AppCompat.Button.Small"
+			android:layout_width="wrap_content"
+			android:layout_height="wrap_content"
+			android:minHeight="10dp"
+			android:text="@string/delete"
+			tools:ignore="TouchTargetSizeCheck" />
+	</LinearLayout>
 
 	<CheckBox
 		android:id="@+id/cbBackup"

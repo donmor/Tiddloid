@@ -1,10 +1,14 @@
 Update details:
 - Wikis can stay in background now
 - Added update checker (shows up in menu when update is available)
+- Now Supports obtaining filename from .htaccess file in directory mode
+- HTTP auth credential can be cleared in wiki options (clear cookies as well)
+  - The app may need to be completely restarted to take effect
 - Fixed the bug causing failure on saving a bookmarked wiki
 - Fixed the bug causing SVG icons not properly scaled
 - Fixed the bug that breaks the tweaks plugin when used with TiddlyWiki 5.2.6+
 - Removed most function of WebDAV as it is considered deprecated (visit GitHub for details)
-  - An experimental writeable option added to HTTP Wikis instead
+- New(?) local file chooser
+  - Long press back button to show hidden files
 - Dropped support for Android 4.4
 - Minor tweaks and fixes

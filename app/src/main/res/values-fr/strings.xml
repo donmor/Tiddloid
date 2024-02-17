@@ -1,12 +1,13 @@
 <?xml version="1.0" encoding="utf-8"?><!--
   ~ /home/donmor/AndroidStudioProjects/Tiddloid/app/src/main/res/values-fr/strings.xml <= [P|Tiddloid]
-  ~ Last modified: 19:42:20 2022/08/28
-  ~ Copyright (c) 2022 donmor
+  ~ Last modified: 22:41:37 2024/02/16
+  ~ Copyright (c) 2024 donmor
   -->
 
 <resources>
 	<!--Misc-->
 	<string name="entry_name">Ajouter à Tiddloid</string>
+	<string name="filter_time">Filtrer par date</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/fr-FR/empty.html</string>
 	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
@@ -14,7 +15,7 @@
 	<string name="action_new">Créer un nouveau fichier TiddlyWiki</string>
 	<string name="action_import">Importer un fichier TiddlyWiki</string>
 	<string name="action_dir">Ajouter un dossier TiddlyWiki</string>
-	<string name="action_dav">WebDAV / Local (Héritage)</string>
+	<string name="action_filter">Filtre</string>
 	<string name="action_about">À propos de Tiddloid</string>
 	<string name="action_update">Mise à jour disponible : %1$s</string>
 	<string name="action_save_to">Enregistrer dans Tiddloid</string>
@@ -24,16 +25,12 @@
 	<string name="context_new_tiddler">Créez un nouveau Tiddler ici</string>
 	<string name="context_find">Chercher</string>
 	<string name="context_save">Sauver</string>
-	<string name="dav_address">URL WebDAV</string>
-	<string name="dav_username">Nom d\'utilisateur</string>
-	<string name="dav_password">Mot de passe</string>
 	<string name="find_find">Rechercher</string>
 	<string name="find_close">Fermer</string>
 	<string name="find_down">Prochain</string>
 	<string name="find_up">Précédent</string>
 	<string name="no_permission">Impossible d\'obtenir les autorisations du système de fichiers</string>
 	<string name="no_wiki">Il n\'y a rien ici</string>
-	<string name="no_file">Fichier ou dossier non trouvé</string>
 	<string name="provider">Pourvoyeur:&#160;</string>
 	<string name="pathDir">"Chemin:&#160;"</string>
 	<string name="internet">Internet</string>
@@ -53,6 +50,11 @@
 	<string name="server_error">Impossible de se connecter au serveur</string>
 	<string name="download_failed">Échec du téléchargement</string>
 	<string name="please_wait">S\'il vous plaît, attendez&#8230;</string>
+	<string name="show_hidden_files">Montrer les fichiers cachés</string>
+	<string name="action_sc_s_new">Nouveau</string>
+	<string name="action_sc_s_default">Défaut</string>
+	<string name="delete">Supprimer</string>
+	<string name="http_has_credential">Les identifiants HTTP sont stockés</string>
 	<string name="failed">Échoué</string>
 	<string name="cancelled">Annulé</string>
 	<string name="wiki_replaced">Le wiki existant a été écrasé</string>
@@ -87,7 +89,6 @@
 		Tiddloid est une application pour travailler avec les TiddlyWikis stockés localement. Une fois avoir des idées, vous pouvez les écrire immédiatement vers le bas afin que vous puissiez y accéder partout. Pour plus de détails sur TiddlyWiki, veuillez consulter https://tiddlywiki.com/ .\n
 		\n
 		Cette application est publiée sous la licence GPLv2 à l\'aide de ces projets:\n
-		sardine-android - https://github.com/thegrizzlylabs/sardine-android ,\n
 		sharp - https://github.com/Pixplicity/sharp ,\n
 		Les fichiers de licence sont fournis avec les codes sources.\n
 		\n

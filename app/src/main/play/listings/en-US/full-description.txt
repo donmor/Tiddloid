@@ -3,7 +3,6 @@ Features
 - Creating new TiddlyWiki files with latest template
 - Importing existing TiddlyWiki files stored on a writable source
 - Adding a folder containing TiddlyWiki-based `index.htm(l)` (Android 5.0 and above)
-- Adding files or folders held on WebDAV servers (Android 5.0 and above)
 - Receiving a TiddlyWiki site URL shared from Browser and save as a new file or a bookmark
 - Opening an HTML file and adding to the list if it is a valid TiddlyWiki
 - Applying theme color to the UI with some in-wiki configurations, as well as other tweaks

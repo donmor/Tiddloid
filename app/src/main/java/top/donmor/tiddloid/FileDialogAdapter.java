@@ -22,31 +22,17 @@ class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.FileViewH
 
 	private File currentDir;
 	private final File rootDir;
-//	private boolean[] selected;
 	private File[] files, dirs, devices;
 	private boolean enRoot;
-	private final boolean dirOnly, showHidden, ignoreReadOnly;
-//	private final boolean multiSelect, dirOnly, showHidden, ignoreReadOnly;
-//	private int filterIndex;
+	private boolean showHidden;
 	private final Context context;
-//	private final MimeTypeMap mimeTypeMap;
-//	final String[] mimeTypes;
 	private final FileDialogFilter filter;
-//	final FileDialogFilter[] filters;
 	private final LayoutInflater inflater;
 
-	FileDialogAdapter(Context context, FileDialogFilter filter, File dir, boolean dirOnly, boolean showHidden, boolean ignoreReadOnly) {
-//	FileDialogAdapter(Context context, FileDialogFilter[] filters, int filterIndex, String[] mimeTypes, MimeTypeMap mimeTypeMap, File dir, boolean multiSelect, boolean dirOnly, boolean showHidden, boolean ignoreReadOnly) {
+	FileDialogAdapter(Context context, FileDialogFilter filter, File dir) {
 		this.context = context;
-//		this.multiSelect = multiSelect;
-		this.dirOnly = dirOnly;
-		this.showHidden = showHidden;
-		this.ignoreReadOnly = ignoreReadOnly;
-//		this.mimeTypeMap = mimeTypeMap;
-//		this.mimeTypes = mimeTypes;
+		this.showHidden = false;
 		this.filter = filter;
-//		this.filters = filters;
-//		this.filterIndex = filterIndex;
 		inflater = LayoutInflater.from(context);
 		try {
 			currentDir = dir;
@@ -57,21 +43,17 @@ class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.FileViewH
 		rootDir = Environment.getExternalStorageDirectory();
 		enRoot = false;
 		dirs = sortFile(getDirs());
-		if (dirOnly) files = new File[0];
-		else files = sortFile(getFiles());
-//		if (files != null) selected = new boolean[files.length];
-		devices = FileDialogOpen.getStorage(context.getApplicationContext(), ignoreReadOnly);
+		files = sortFile(getFiles());
+		devices = FileDialogOpen.getStorage(context.getApplicationContext());
 	}
 
 	static class FileViewHolder extends RecyclerView.ViewHolder {
 		private final Button cbD, cbF, cbR;
-//		private final CheckBox cbMF;
 
 		FileViewHolder(View itemView) {
 			super(itemView);
 			cbD = itemView.findViewById(R.id.c_buttonD);
 			cbF = itemView.findViewById(R.id.c_buttonF);
-//			cbMF = itemView.findViewById(R.id.c_buttonMF);
 			cbR = itemView.findViewById(R.id.c_buttonR);
 		}
 	}
@@ -95,27 +77,13 @@ class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.FileViewH
 					holder.cbD.setVisibility(View.VISIBLE);
 				}
 			} else if (pos < dirs.length + files.length) {
-//				if (multiSelect) {
-//					holder.cbMF.setText(files[pos - dirs.length].getName());
-//					holder.cbMF.setChecked(false);
-//					holder.cbMF.setVisibility(View.VISIBLE);
-//				} else {
-					holder.cbF.setText(files[pos - dirs.length].getName());
-					holder.cbF.setVisibility(View.VISIBLE);
-//				}
+				holder.cbF.setText(files[pos - dirs.length].getName());
+				holder.cbF.setVisibility(View.VISIBLE);
 			}
 		}
 		View.OnClickListener ocl = v -> mItemClickListener.onItemClick(pos);
-//		CompoundButton.OnCheckedChangeListener orl = new CompoundButton.OnCheckedChangeListener() {
-//			@Override
-//			public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
-//				selected[pos - dirs.length] = isChecked;
-//				mItemClickListener.onItemClick(pos);
-//			}
-//		};
 		holder.cbD.setOnClickListener(ocl);
 		holder.cbF.setOnClickListener(ocl);
-//		holder.cbMF.setOnCheckedChangeListener(orl);
 		holder.cbR.setOnClickListener(ocl);
 	}
 
@@ -137,7 +105,7 @@ class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.FileViewH
 
 	private ItemClickListener mItemClickListener;
 
-	public interface ItemClickListener {
+	interface ItemClickListener {
 		void onItemClick(int position);
 	}
 
@@ -146,22 +114,24 @@ class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.FileViewH
 
 	}
 
+	/**
+	 * @noinspection SameParameterValue
+	 */
+	void setShowHidden(boolean val) {
+		this.showHidden = val;
+		setDir(currentDir);
+	}
+
+	boolean getShowHidden() {
+		return this.showHidden;
+	}
+
 	private File[] getDirs() {
 		return currentDir.listFiles(pathname -> (!pathname.isHidden() || showHidden) && pathname.isDirectory());
 	}
 
 	private File[] getFiles() {
-		return currentDir.listFiles(pathname -> {
-//				if (mimeTypes != null)
-//					if ((!pathname.isHidden() || showHidden) && pathname.isFile())
-//						if (mimeTypes[filterIndex].equals(TWEditorWV.MIME_ANY)) return true;
-//						else
-//							return mimeTypes[filterIndex].equals(mimeTypeMap.getMimeTypeFromExtension(MimeTypeMap.getFileExtensionFromUrl(pathname.getName())));
-//					else return false;
-//				else
-//					return (!pathname.isHidden() || showHidden) && pathname.isFile() && filters[filterIndex].meetExtensions(pathname.getName());
-			return (!pathname.isHidden() || showHidden) && pathname.isFile() && filter.meetExtensions(pathname.getName());
-		});
+		return currentDir.listFiles(pathname -> (!pathname.isHidden() || showHidden) && pathname.isFile() && filter.meetExtensions(pathname.getName()));
 	}
 
 	private File[] sortFile(File[] src) {
@@ -188,14 +158,6 @@ class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.FileViewH
 		return false;
 	}
 
-//	void setFilterIndex(int index) {
-//		filterIndex = index;
-//	}
-
-//	int getFilterIndex() {
-//		return filterIndex;
-//	}
-
 	File getFile(int position) {
 		if (enRoot) return devices[position];
 		else {
@@ -207,29 +169,9 @@ class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.FileViewH
 		}
 	}
 
-//	File[] getSelectedFiles() {
-//		if (enRoot) return new File[0];
-//		else {
-//			File[] files1 = new File[files.length];
-//			int i = 0;
-//			for (int j = 0; j < selected.length; j++)
-//				if (selected[j]) {
-//					files1[i] = files[j];
-//					i++;
-//				}
-//			File[] files2 = new File[i];
-//			System.arraycopy(files1, 0, files2, 0, i);
-//			return files2;
-//		}
-//	}
-
 	File[] getDevices() {
 		return devices;
 	}
-
-//	File getCurrentDir() {
-//		return currentDir;
-//	}
 
 	File getRootDir() {
 		return rootDir;
@@ -252,27 +194,13 @@ class FileDialogAdapter extends RecyclerView.Adapter<FileDialogAdapter.FileViewH
 			currentDir = rootDir;
 		}
 		dirs = sortFile(getDirs());
-		if (dirOnly) files = new File[0];
-		else files = sortFile(getFiles());
-//		if (files != null) selected = new boolean[files.length];
+		files = sortFile(getFiles());
 		enRoot = false;
 	}
 
 	void setRoot() {
-		devices = FileDialogOpen.getStorage(context.getApplicationContext(), ignoreReadOnly);
-//		selected = new boolean[0];
+		devices = FileDialogOpen.getStorage(context.getApplicationContext());
 		enRoot = true;
 	}
 
-//	void reload() {
-//		if (!enRoot) {
-//			dirs = sortFile(getDirs());
-//			if (dirOnly) files = new File[0];
-//			else files = sortFile(getFiles());
-////			if (files != null) selected = new boolean[files.length];
-//		} else {
-//			devices = FileDialogOpen.getStorage(context.getApplicationContext(), ignoreReadOnly);
-////			selected = new boolean[0];
-//		}
-//	}
 }
