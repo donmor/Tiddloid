@@ -1,0 +1,105 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="entry_name">Добавить в Tiddloid</string>
+    <string name="filter_time">Фильтровать по дате</string>
+    <!--UI-->
+    <string name="action_new">Новый файл TiddlyWiki</string>
+    <string name="action_import">Импортировать файл TiddlyWiki</string>
+    <string name="action_dir">Добавить папку TiddlyWiki</string>
+    <string name="action_filter">Фильтр</string>
+    <string name="action_about">Про Tiddloid</string>
+    <string name="action_update">Доступно обновление: %1$s</string>
+    <string name="action_save_to">Сохранить в Tiddloid</string>
+    <string name="action_save_to_file">Сохранить как новый файл</string>
+    <string name="action_save_to_link">Сохранить как закладку</string>
+    <string name="action_save">Сохранить изменения</string>
+    <string name="context_new_tiddler">Новый Tiddloid здесь</string>
+    <string name="context_find">Найти</string>
+    <string name="context_save">Сохранить</string>
+    <string name="find_find">Найти</string>
+    <string name="find_close">Закрыть</string>
+    <string name="find_down">Вниз</string>
+    <string name="find_up">Вверх</string>
+    <string name="no_permission">Не удалось получить разрешения файловой системы</string>
+    <string name="no_wiki">Здесь ничего нет</string>
+    <string name="provider">Источник:</string>
+    <string name="pathDir">Путь:</string>
+    <string name="internet">Интернет</string>
+    <string name="local_legacy">Локальный (устаревший)</string>
+    <string name="unknown">Неизвестно</string>
+    <string name="default_wiki">Вики по умолчанию</string>
+    <string name="default_wiki_needed">Пожалуйста, установите вики по умолчанию</string>
+    <string name="stay_in_background">Оставаться в фоновом режиме</string>
+    <string name="plugin_auto_update">Настройте автоматическое обновление плагина</string>
+    <string name="enable_backup">Включить резервное копирование</string>
+    <string name="no_backups">Нет резервных копий</string>
+    <string name="create_shortcut">Создать ярлык</string>
+    <string name="shortcut_created">Ярлык успешно создан</string>
+    <string name="shortcut_failed">Не удалось создать ярлык</string>
+    <string name="clone_wiki">Клонировать</string>
+    <string name="remove_wiki">Удалить</string>
+    <string name="server_error">Не удалось подключиться к серверу</string>
+    <string name="download_failed">Сбой загрузки</string>
+    <string name="please_wait">Пожалуйста, подождите</string>
+    <string name="show_hidden_files">Показать скрытые файлы</string>
+    <string name="action_sc_s_new">Новый</string>
+    <string name="action_sc_s_default">По умолчанию</string>
+    <string name="delete">Удалить</string>
+    <string name="http_has_credential">Учетные данные HTTP сохранены</string>
+    <string name="failed">Сбой</string>
+    <string name="cancelled">Отменено</string>
+    <string name="wiki_replaced">Существующая вики перезаписана</string>
+    <string name="file_deleted">Файл удален</string>
+    <string name="backup_failed">Резервное копирование не удалось</string>
+    <string name="delete_backups_as_well">Удалить также резервные копии</string>
+    <string name="delete_the_html_file">Удалить HTML-файл (Необратимо!)</string>
+    <string name="not_a_wiki_page">Страница не является TiddlyWiki.</string>
+    <string name="failed_creating_file">Не удалось создать файл</string>
+    <string name="failed_deleting_file">Не удалось удалить файл</string>
+    <string name="failed_writing_file">Не удалось записать файл</string>
+    <string name="error_loading_page">Ошибка загрузки страницы</string>
+    <string name="error_processing_file">Ошибка обработки файла</string>
+    <string name="wiki_not_exist">Вики не существует</string>
+    <string name="wiki_already_exists">Вики уже существует</string>
+    <string name="wiki_link_added">Закладка успешно добавлена</string>
+    <string name="data_error">Ошибка данных</string>
+    <string name="confirm_to_del_backup">Вы уверены, что хотите удалить эту версию?</string>
+    <string name="confirm_to_remove_wiki">Вы уверены, что хотите удалить эту вики из Tiddloid?</string>
+    <string name="confirm_to_auto_remove_wiki">Вики больше недоступна. Вы хотите удалить её?</string>
+    <string name="confirm_to_rollback">Вы хотите восстановить предыдущую резервную копию? Будет создана резервная копия текущей версии.</string>
+    <string name="confirm_to_exit_wiki">Обнаружены несохраненные изменения. Вы уверены, что хотите выйти?</string>
+    <string name="wiki_rolled_back_successfully">Вики успешно откачена назад</string>
+    <string name="third_part_rising">Страница пытается запустить другое приложение. Вы хотите продолжить?</string>
+
+    <string name="backup_deleted">Резервная копия удалена</string>
+    <string name="hint_login">Войти в %1$s</string>
+    <string name="hint_username">Имя пользователя</string>
+    <string name="hint_password">Пароль</string>
+    <string name="market">Оцените это приложение</string>
+    <string name="acquire_permission_notification">Для Tiddloid требуется разрешения на отправку уведомлений.</string>
+    <string name="about">
+        Tiddloid — это приложение для работы с локально хранящимися TiddlyWiki. Как только у вас появятся идеи, вы можете тут же записать их, чтобы иметь к ним доступ откуда угодно. Для получения дополнительной информации о TiddlyWiki, пожалуйста, посетите https://tiddlywiki.com/ . \n
+        \n
+        Это приложение распространяется под лицензией GPL v2 с помощью этих проектов с открытым исходным кодом:\n
+        sharp - https://github.com/Pixplicity/sharp, \n
+        Лицензионные файлы предоставляются вместе с исходным кодом.\n
+        \n
+        Для получения более подробной информации об этом приложении, пожалуйста, посетите страницу проекта ( https://github.com/donmor/Tiddloid/ ) или мою домашнюю страницу ( https://donmor.top/ ).
+    </string>
+    <string name="agreements_title">Условия использования</string>
+    <string name="agreements_desc1">Tiddloid распространяется под лицензией GPL v2:</string>
+    <string name="agreements_desc2">Для корректной работы Tiddloid требуются следующие разрешения:</string>
+    <string name="agreements_privacy">
+        [Подключение к Интернету]
+        \nДля получения отдалённых шаблонов
+        \n[Запись во внешнее хранилище]
+        \nНеобязательно, для обработки файла устаревшим способом
+        \n[Камера]
+        \nНеобязательно, для возможных плагинов, использующих камеру
+        \n[Создание ярлыка]
+        \nНеобязательно, для создания ярлыков
+    </string>
+    <string name="agreements_desc3">Чтобы продолжить, вы должны принять вышеуказанные соглашения.</string>
+    <string name="agreements_accept">Принять</string>
+    <string name="agreements_decline">Отклонить</string>
+</resources>
