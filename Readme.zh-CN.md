@@ -7,7 +7,7 @@
 
 Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来以供随时查阅。
 
-<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="180" height="320" alt="01"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="180" height="320" alt="02"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="180" height="320" alt="02"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="180" height="320" alt="02"/>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="180" height="320" alt="01"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="180" height="320" alt="02"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="180" height="320" alt="03"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="180" height="320" alt="04"/>
 
 有关TiddlyWiki的更多详细信息，请参阅https://tiddlywiki.com/。
 

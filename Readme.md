@@ -7,7 +7,7 @@
 
 Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere.
 
-<img src="metadata/en-US/images/phoneScreenshots/1.png" width="180" height="320" alt="01"/>&emsp;<img src="metadata/en-US/images/phoneScreenshots/2.png" width="180" height="320" alt="02"/>&emsp;<img src="metadata/en-US/images/phoneScreenshots/3.png" width="180" height="320" alt="02"/>&emsp;<img src="metadata/en-US/images/phoneScreenshots/4.png" width="180" height="320" alt="02"/>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="180" height="320" alt="01"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="180" height="320" alt="02"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="180" height="320" alt="03"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="180" height="320" alt="04"/>
 
 See http://tiddlywiki.com/ for more details of TiddlyWiki.
 
