@@ -120,7 +120,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
 感谢您尝试我们的产品。如果您愿意支持，我们将不胜感激，并不遗余力地加以改进。
 
-&ensp;&ensp;<a href="https://liberapay.com/donmor3000/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg" height="30" /></a>&ensp;&ensp;<a href="https://donmor.top/#DonationQrCode"><img alt="Donate using Alipay and Wechat Pay" src="https://donmor.top/img/aliwechat.svg" height="30" /></a>
+&ensp;&ensp;<a href="https://afdian.com/a/donmor"><img alt="Donate using Afdian" src="https://static.afdiancdn.com/static/img/logo/logo.png" height="80" /></a>
 
 如果您感兴趣，欢迎访问[我的主页](https://donmor.top/)。
 
