@@ -1,0 +1,3 @@
+- 支持Tiddloid Tweaks插件自动更新
+- 支持SVG图标
+- 细节优化和修复

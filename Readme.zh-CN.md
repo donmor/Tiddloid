@@ -1,12 +1,13 @@
 # Tiddloid
 
-![avatar](img/Tiddloid.png)
+<!--suppress CheckImageSize -->
+<img src="fastlane/metadata/android/en-US/images/icon.png"  alt="avatar" width="256" height="256"/>
 
-&ensp;&ensp;&ensp;&ensp;&ensp;[<img src="https://static.coolapk.com/static/web/v8/images/header-logo.png" width="72" height="72" alt="CoolApk" />](https://www.coolapk.com/apk/top.donmor.tiddloid)&ensp;&ensp;&ensp;&ensp;<img src="img/qr.png" width="72" height="72" alt="QrCode"/>&ensp;&ensp;&ensp;&ensp;[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on-zh-cn.svg" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/top.donmor.tiddloid)
+&ensp;&ensp;&ensp;&ensp;[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on-zh-cn.svg" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/top.donmor.tiddloid)
 
 Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来以供随时查阅。
 
-<img src="img/img01.png" width="180" height="320" alt="01"/>&emsp;<img src="img/img02.png" width="180" height="320" alt="02"/>&emsp;<img src="img/img03.png" width="180" height="320" alt="02"/>&emsp;<img src="img/img04.png" width="180" height="320" alt="02"/>
+<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/1.png" width="180" height="320" alt="01"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/2.png" width="180" height="320" alt="02"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/3.png" width="180" height="320" alt="02"/>&emsp;<img src="fastlane/metadata/android/en-US/images/phoneScreenshots/4.png" width="180" height="320" alt="02"/>
 
 有关TiddlyWiki的更多详细信息，请参阅https://tiddlywiki.com/。
 
