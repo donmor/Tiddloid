@@ -235,7 +235,7 @@
 	<string name="shortcut_created">Shortcut successfully created</string>
 	<string name="shortcut_failed">Failed to create shortcut</string>
 	<string name="clone_wiki">Clone</string>
-	<string name="remove_wiki">Remove</string>
+	<string name="remove">Remove</string>
 	<string name="server_error">Unable to connect to the server</string>
 	<string name="download_failed">Download failed</string>
 	<string name="please_wait">Please wait&#8230;</string>

@@ -47,7 +47,7 @@
 	<string name="shortcut_created">Raccourci créé avec succès</string>
 	<string name="shortcut_failed">Impossible de créer un raccourci</string>
 	<string name="clone_wiki">Cloner</string>
-	<string name="remove_wiki">Supprimer le wiki</string>
+	<string name="remove">Enlever</string>
 	<string name="server_error">Impossible de se connecter au serveur</string>
 	<string name="download_failed">Échec du téléchargement</string>
 	<string name="please_wait">S\'il vous plaît, attendez&#8230;</string>

@@ -42,7 +42,7 @@
     <string name="shortcut_created">Ярлык успешно создан</string>
     <string name="shortcut_failed">Не удалось создать ярлык</string>
     <string name="clone_wiki">Клонировать</string>
-    <string name="remove_wiki">Удалить</string>
+    <string name="remove">Удалить</string>
     <string name="server_error">Не удалось подключиться к серверу</string>
     <string name="download_failed">Сбой загрузки</string>
     <string name="please_wait">Пожалуйста, подождите</string>

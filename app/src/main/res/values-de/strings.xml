@@ -47,7 +47,7 @@
 	<string name="shortcut_created">Verknüpfung erfolgreich erstellt</string>
 	<string name="shortcut_failed">Fehlgeschlagen Verknüpfung erstellen</string>
 	<string name="clone_wiki">Klonen</string>
-	<string name="remove_wiki">Wiki entfernen</string>
+	<string name="remove">Entfernen</string>
 	<string name="server_error">Verbindung zum Server nicht möglich</string>
 	<string name="download_failed">Herunterladen fehlgeschlagen</string>
 	<string name="please_wait">Warten Sie mal&#8230;</string>

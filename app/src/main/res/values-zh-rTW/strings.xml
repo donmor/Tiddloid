@@ -47,7 +47,7 @@
 	<string name="shortcut_created">快捷方式成功創建</string>
 	<string name="shortcut_failed">無法創建快捷方式</string>
 	<string name="clone_wiki">創建副本</string>
-	<string name="remove_wiki">刪除Wiki</string>
+	<string name="remove">移除</string>
 	<string name="server_error">無法連接到服務器</string>
 	<string name="download_failed">下載失敗</string>
 	<string name="please_wait">請耐心等待…</string>

@@ -47,7 +47,7 @@
 	<string name="shortcut_created">Acceso directo creado correctamente</string>
 	<string name="shortcut_failed">Error al crear acceso directo</string>
 	<string name="clone_wiki">Clonar</string>
-	<string name="remove_wiki">Eliminar Wiki</string>
+	<string name="remove">Eliminar</string>
 	<string name="server_error">No es posible conectarse al servidor</string>
 	<string name="download_failed">Descarga fracasó</string>
 	<string name="please_wait">Por favor espera&#8230;</string>

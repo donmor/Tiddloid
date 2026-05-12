@@ -47,7 +47,7 @@
 	<string name="shortcut_created">바로 가기가 성공적으로 생성되었습니다</string>
 	<string name="shortcut_failed">바로 가기를 만들지 못했습니다</string>
 	<string name="clone_wiki">사본 만들기</string>
-	<string name="remove_wiki">위키 삭제</string>
+	<string name="remove">제거하다</string>
 	<string name="server_error">서버에 연결할 수 없습니다</string>
 	<string name="download_failed">다운로드 실패</string>
 	<string name="please_wait">기다려주세요&#8230;</string>

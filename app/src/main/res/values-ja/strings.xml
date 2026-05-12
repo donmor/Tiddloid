@@ -47,7 +47,7 @@
 	<string name="shortcut_created">ショートカットが作成されました</string>
 	<string name="shortcut_failed">ショートカットを作成できませんでした</string>
 	<string name="clone_wiki">コピー作成</string>
-	<string name="remove_wiki">Wikiを削除する</string>
+	<string name="remove">削除</string>
 	<string name="server_error">サーバーに接続できません</string>
 	<string name="download_failed">ダウンロード失敗</string>
 	<string name="please_wait">お待ちください…</string>

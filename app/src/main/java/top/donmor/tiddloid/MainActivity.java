@@ -314,9 +314,10 @@ public class MainActivity extends AppCompatActivity {
 						wikiListAdapter.notifyDataSetChanged();
 					})
 					.setNegativeButton(android.R.string.cancel, null)
-					.setNeutralButton(android.R.string.cancel, (dialog, which) -> {
+					.setNeutralButton(R.string.remove, (dialog, which) -> {
 						dtFilterBgn = null;
 						btnFilterDTBgn.setText(R.string.filter_time_init);
+						wikiListAdapter.notifyDataSetChanged();
 					}).show();
 		});
 		btnFilterDTEnd = findViewById(R.id.filter_date_end);
@@ -343,9 +344,10 @@ public class MainActivity extends AppCompatActivity {
 						wikiListAdapter.notifyDataSetChanged();
 					})
 					.setNegativeButton(android.R.string.cancel, null)
-					.setNeutralButton(android.R.string.cancel, (dialog, which) -> {
+					.setNeutralButton(R.string.remove, (dialog, which) -> {
 						dtFilterEnd = null;
 						btnFilterDTEnd.setText(R.string.filter_time_init);
+						wikiListAdapter.notifyDataSetChanged();
 					}).show();
 		});
 		noWiki = findViewById(R.id.t_noWiki);
@@ -382,7 +384,7 @@ public class MainActivity extends AppCompatActivity {
 
 			@Override
 			public boolean fTime(Date time) {
-				return fTimeActive() && !(dtFilterBgn != null && time.before(new Date(dtFilterBgn.getTime())) || dtFilterEnd != null && time.after(dtFilterEnd));
+				return time != null && fTimeActive() && !(dtFilterBgn != null && time.before(new Date(dtFilterBgn.getTime())) || dtFilterEnd != null && time.after(dtFilterEnd));
 			}
 		});
 		wikiListAdapter.setOnItemClickListener(new WikiListAdapter.ItemClickListener() {
@@ -537,7 +539,7 @@ public class MainActivity extends AppCompatActivity {
 						.setTitle(name)
 						.setIcon(icon != null ? icon : ContextCompat.getDrawable(MainActivity.this, R.drawable.ic_description))
 						.setView(view)
-						.setPositiveButton(R.string.remove_wiki, (dialog, which) -> {
+						.setPositiveButton(R.string.remove, (dialog, which) -> {
 							dialog.dismiss();
 							View view1 = LayoutInflater.from(MainActivity.this).inflate(R.layout.del_confirm, null);
 							final CheckBox cbDelFile = view1.findViewById(R.id.cbDelFile);
