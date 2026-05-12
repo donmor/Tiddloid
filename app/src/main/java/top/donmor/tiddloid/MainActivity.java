@@ -9,7 +9,6 @@ package top.donmor.tiddloid;
 import android.Manifest;
 import android.accounts.NetworkErrorException;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.content.ActivityNotFoundException;
@@ -133,6 +132,7 @@ import java.util.UUID;
 
 import javax.net.ssl.HttpsURLConnection;
 
+@SuppressWarnings({"CallToPrintStackTrace", "ResultOfMethodCallIgnored"})
 public class MainActivity extends AppCompatActivity {
 	private TextView noWiki;
 	private WikiListAdapter wikiListAdapter;
@@ -461,7 +461,7 @@ public class MainActivity extends AppCompatActivity {
 				cbDefault.setVisibility(!iNet ? View.VISIBLE : View.GONE);
 				cbStayBackground.setVisibility(!iNet ? View.VISIBLE : View.GONE);
 				cbPluginAutoUpdate.setVisibility(!iNet ? View.VISIBLE : View.GONE);
-				rowCredential.setVisibility(iNet && wa.optString(DB_KEY_HTTP_AUTH).length() > 0 && wa.optString(DB_KEY_HTTP_TOKEN).length() > 0 ? View.VISIBLE : View.GONE);
+				rowCredential.setVisibility(iNet && !wa.optString(DB_KEY_HTTP_AUTH).isEmpty() && !wa.optString(DB_KEY_HTTP_TOKEN).isEmpty() ? View.VISIBLE : View.GONE);
 				cbBackup.setVisibility(!iNet ? View.VISIBLE : View.GONE);
 				final ConstraintLayout frmBackupList = view.findViewById(R.id.frmBackupList);
 				frmBackupList.setVisibility(cbBackup.isChecked() ? View.VISIBLE : View.GONE);
@@ -582,7 +582,7 @@ public class MainActivity extends AppCompatActivity {
 								if (ShortcutManagerCompat.isRequestPinShortcutSupported(MainActivity.this)) {
 									ShortcutInfoCompat shortcut = new ShortcutInfoCompat.Builder(MainActivity.this, id)
 											.setShortLabel(name)
-											.setLongLabel(name + (sub.length() > 0 ? KEY_LBL + sub : sub))
+											.setLongLabel(name + (!sub.isEmpty() ? KEY_LBL + sub : sub))
 											.setIcon(finalIcon != null ? IconCompat.createWithBitmap(
 													finalIcon instanceof BitmapDrawable ? ((BitmapDrawable) finalIcon).getBitmap() : drawable2bitmap(finalIcon)
 											) : IconCompat.createWithResource(MainActivity.this, R.drawable.ic_shortcut))
@@ -729,7 +729,7 @@ public class MainActivity extends AppCompatActivity {
 					cookieManager.removeSessionCookies(null);
 					cookieManager.removeAllCookies(null);
 					cookieManager.flush();
-					if (!(wa.optString(DB_KEY_HTTP_AUTH).length() > 0 && wa.optString(DB_KEY_HTTP_TOKEN).length() > 0)) rowCredential.setVisibility(View.GONE);
+					if (!(!wa.optString(DB_KEY_HTTP_AUTH).isEmpty() && !wa.optString(DB_KEY_HTTP_TOKEN).isEmpty())) rowCredential.setVisibility(View.GONE);
 				});
 				cbBackup.setOnCheckedChangeListener((buttonView, isChecked) -> {
 					try {
@@ -959,7 +959,7 @@ public class MainActivity extends AppCompatActivity {
 			purgeDir(new File(getCacheDir(), id));    // Remove related cache
 			if (del && xw != null) {
 				String um = xw.optString(DB_KEY_URI);
-				if (um.length() == 0) return;
+				if (um.isEmpty()) return;
 				Uri u = Uri.parse(um);
 				boolean legacy = SCH_FILE.equals(u.getScheme()), tree = false;
 				DocumentFile df, mdf = null;
@@ -1161,7 +1161,7 @@ public class MainActivity extends AppCompatActivity {
 	}
 
 	private void browseLocal() {
-		if (!checkPermission(MainActivity.this)) return;
+		if (APIOver23 && !checkPermission(MainActivity.this)) return;
 		FileDialogOpen.fileOpen(this, HTML_FILTER, file -> {
 			try {
 				String id = null, ux = Uri.fromFile(file).toString();
@@ -1523,7 +1523,7 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	@TargetApi(23)
+	@androidx.annotation.RequiresApi(23)
 	private static boolean checkPermission(Context context) {
 		boolean havePerms = false;
 		if (APIOver30) {

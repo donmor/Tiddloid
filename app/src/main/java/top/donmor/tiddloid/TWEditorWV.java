@@ -11,7 +11,6 @@ import static android.Manifest.permission.POST_NOTIFICATIONS;
 import android.Manifest;
 import android.accounts.NetworkErrorException;
 import android.annotation.SuppressLint;
-import android.annotation.TargetApi;
 import android.app.Activity;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
@@ -123,6 +122,7 @@ import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 
+@SuppressWarnings({"CallToPrintStackTrace", "ResultOfMethodCallIgnored"})
 public class TWEditorWV extends AppCompatActivity {
 	private JSONObject db, wApp;
 	private WebChromeClient wcc;
@@ -515,7 +515,7 @@ public class TWEditorWV extends AppCompatActivity {
 			public void onPermissionRequest(PermissionRequest request) {
 				for (String r : request.getResources())
 					if (PermissionRequest.RESOURCE_VIDEO_CAPTURE.equals(r))
-						openCamera(TWEditorWV.this, request);
+						if (MainActivity.APIOver23) openCamera(TWEditorWV.this, request);
 			}
 		};
 		wv.setWebChromeClient(wcc);
@@ -611,7 +611,7 @@ public class TWEditorWV extends AppCompatActivity {
 			@Override
 			public void onReceivedHttpAuthRequest(WebView view, HttpAuthHandler handler, String host, String realm) {
 				String vu, vp;
-				if ((vu = wApp.optString(MainActivity.DB_KEY_HTTP_AUTH)).length() > 0 && (vp = wApp.optString(MainActivity.DB_KEY_HTTP_TOKEN)).length() > 0) {
+				if (!(vu = wApp.optString(MainActivity.DB_KEY_HTTP_AUTH)).isEmpty() && !(vp = wApp.optString(MainActivity.DB_KEY_HTTP_TOKEN)).isEmpty()) {
 					handler.proceed(vu, vp);
 					return;
 				}
@@ -660,6 +660,7 @@ public class TWEditorWV extends AppCompatActivity {
 			public void onPageFinished(final WebView view, String url) {
 				view.evaluateJavascript(getString(R.string.js_print), null);
 				view.evaluateJavascript(getString(R.string.js_is_wiki), value -> {
+					//noinspection AssignmentUsedAsCondition
 					if (isWiki = Boolean.parseBoolean(value)) {
 						view.evaluateJavascript(getString(R.string.js_is_classic), value1 -> {
 							isClassic = Boolean.parseBoolean(value1);
@@ -1126,7 +1127,7 @@ public class TWEditorWV extends AppCompatActivity {
 				return;
 			}
 			if (ID_DEFAULT.equals(fid)) {
-				if ((fid = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(fid)) == null) {
+				if ((fid = db.optString(MainActivity.DB_KEY_DEFAULT)).isEmpty() || (wa = wl.optJSONObject(fid)) == null) {
 					Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 					finishAfterTransition();
 					return;
@@ -1142,7 +1143,7 @@ public class TWEditorWV extends AppCompatActivity {
 		}
 	}
 
-	@TargetApi(23)
+	@androidx.annotation.RequiresApi(23)
 	private void openCamera(Context context, PermissionRequest request) {
 		if (ContextCompat.checkSelfPermission(context, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
 			mPermissionRequest = request;
@@ -1165,7 +1166,7 @@ public class TWEditorWV extends AppCompatActivity {
 		if (u.getSchemeSpecificPart().equals(Uri.parse(wv.getUrl()).getSchemeSpecificPart()))
 			return false;
 		String sch = u.getScheme();
-		if (sch == null || sch.length() == 0)
+		if (sch == null || sch.isEmpty())
 			return false;
 		try {
 			final Intent intent;
@@ -1274,7 +1275,7 @@ public class TWEditorWV extends AppCompatActivity {
 							.put(MainActivity.DB_KEY_SUBTITLE, subtitle)
 							.put(MainActivity.DB_KEY_COLOR, themeColor)
 							.put(MainActivity.DB_KEY_NO_TINT, noTint)
-							.put(MainActivity.KEY_FAVICON, fib64.length() > 0 ? fib64 : null);
+							.put(MainActivity.KEY_FAVICON, !fib64.isEmpty() ? fib64 : null);
 					MainActivity.writeJson(TWEditorWV.this, db);
 				}
 				if (optMenu != null) {
@@ -1290,7 +1291,7 @@ public class TWEditorWV extends AppCompatActivity {
 						String i = keys.next();
 						JSONObject object = mt.getJSONObject(i);
 						String enc = object.optString(KEY_ENCODING), ext = object.optString(KEY_EXTENSION);
-						if (enc.length() == 0 || ext.length() == 0) continue;
+						if (enc.isEmpty() || ext.isEmpty()) continue;
 						TW_TYPES.put(i, TW_TYPE_MAP.get(enc));
 						TW_TYPE_EXT.put(ext, i);
 					}
@@ -1377,7 +1378,7 @@ public class TWEditorWV extends AppCompatActivity {
 			wv.evaluateJavascript(getString(R.string.js_get_selected), s -> {
 				String s1 = s.substring(1, s.length() - 1);
 				EditText txtFind = findViewById(R.id.find_edit_find);
-				if (s1.length() > 0) txtFind.setText(s1);
+				if (!s1.isEmpty()) txtFind.setText(s1);
 				else wv.findAllAsync(txtFind.getText().toString());
 			});
 			mode.finish();
@@ -1479,6 +1480,7 @@ public class TWEditorWV extends AppCompatActivity {
 	}
 
 	// 加载内容
+	@SuppressLint("SetJavaScriptEnabled")
 	private void nextWiki(Intent nextWikiIntent) {
 		// 读取数据
 		final JSONObject wl;
@@ -1549,7 +1551,7 @@ public class TWEditorWV extends AppCompatActivity {
 						}
 					}
 					if (u1 == null) {
-						if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+						if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).isEmpty() || (wa = wl.optJSONObject(nextWikiId)) == null) {
 							Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 							finishAfterTransition();
 							return;
@@ -1570,7 +1572,7 @@ public class TWEditorWV extends AppCompatActivity {
 						}
 					}
 					if (u1 == null) {
-						if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+						if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).isEmpty() || (wa = wl.optJSONObject(nextWikiId)) == null) {
 							Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 							finishAfterTransition();
 							return;
@@ -1609,7 +1611,7 @@ public class TWEditorWV extends AppCompatActivity {
 						}
 					}
 				} else {
-					if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+					if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).isEmpty() || (wa = wl.optJSONObject(nextWikiId)) == null) {
 						Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 						finishAfterTransition();
 						return;
@@ -1621,7 +1623,7 @@ public class TWEditorWV extends AppCompatActivity {
 					extraContent = data;
 				}
 			} else {
-				if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+				if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).isEmpty() || (wa = wl.optJSONObject(nextWikiId)) == null) {
 					Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 					finishAfterTransition();
 					return;
@@ -1633,7 +1635,7 @@ public class TWEditorWV extends AppCompatActivity {
 				extraContent2 = getExDataSingle(nextWikiIntent);
 			}
 		} else if (Intent.ACTION_SEND_MULTIPLE.equals(action)) {    // 分享链接克隆站点
-			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).isEmpty() || (wa = wl.optJSONObject(nextWikiId)) == null) {
 				Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 				finishAfterTransition();
 				return;
@@ -1660,7 +1662,7 @@ public class TWEditorWV extends AppCompatActivity {
 				}
 				return;
 			}
-			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+			if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).isEmpty() || (wa = wl.optJSONObject(nextWikiId)) == null) {
 				Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 				finishAfterTransition();
 				return;
@@ -1674,13 +1676,13 @@ public class TWEditorWV extends AppCompatActivity {
 			Bundle bu;
 			if ((bu = nextWikiIntent.getExtras()) == null
 					|| (nextWikiId = bu.getString(MainActivity.KEY_ID)) == null
-					|| nextWikiId.length() == 0) {
+					|| nextWikiId.isEmpty()) {
 				Toast.makeText(this, R.string.wiki_not_exist, Toast.LENGTH_SHORT).show();
 				finishAfterTransition();
 				return;
 			}
 			if (ID_DEFAULT.equals(nextWikiId)) {
-				if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).length() == 0 || (wa = wl.optJSONObject(nextWikiId)) == null) {
+				if ((nextWikiId = db.optString(MainActivity.DB_KEY_DEFAULT)).isEmpty() || (wa = wl.optJSONObject(nextWikiId)) == null) {
 					Toast.makeText(this, R.string.default_wiki_needed, Toast.LENGTH_SHORT).show();
 					finishAfterTransition();
 					return;
@@ -1751,8 +1753,8 @@ public class TWEditorWV extends AppCompatActivity {
 			String wvSubTitle = wApp.optString(MainActivity.DB_KEY_SUBTITLE);
 			String fib64 = wApp.optString(MainActivity.KEY_FAVICON);
 			this.setTitle(wvTitle);
-			toolbar.setSubtitle(wvSubTitle.length() > 0 ? wvSubTitle : null);
-			if (fib64.length() > 0) try {
+			toolbar.setSubtitle(!wvSubTitle.isEmpty() ? wvSubTitle : null);
+			if (!fib64.isEmpty()) try {
 				if (fib64.matches(MainActivity.REX_B64)) {    // Base64
 					byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
 					Bitmap favicon = BitmapFactory.decodeByteArray(b, 0, b.length);
@@ -1870,9 +1872,7 @@ public class TWEditorWV extends AppCompatActivity {
 		if (src == null || !src.isDirectory())
 			throw new IOException(MainActivity.EXCEPTION_TREE_NOT_A_DIRECTORY);
 		if (!pos.isDirectory()) pos.delete();
-		if (!pos.exists()) {
-			pos.mkdir();
-		}
+		if (!pos.exists()) pos.mkdir();
 		MessageDigest messageDigest = null;
 		try {
 			messageDigest = MessageDigest.getInstance(KEY_ALG);
@@ -2042,12 +2042,12 @@ public class TWEditorWV extends AppCompatActivity {
 						JSONObject item = customActions.getJSONObject(i);
 						if (item == null) continue;
 						String vn = item.optString(MainActivity.KEY_NAME), vc = item.optString(KEY_ACTION);
-						if (vn.length() == 0 || vc.length() == 0) continue;
+						if (vn.isEmpty() || vc.isEmpty()) continue;
 						int id = CA_GRP_ID + i;
 						MenuItem si = optMenu.add(CA_GRP_ID, id, 0, vn);
 						si.setShowAsAction(MenuItem.SHOW_AS_ACTION_IF_ROOM | MenuItem.SHOW_AS_ACTION_WITH_TEXT);
 						String fib64 = item.optString(KEY_ICON);
-						if (fib64.length() > 0) try {
+						if (!fib64.isEmpty()) try {
 							if (fib64.matches(MainActivity.REX_B64)) {    // Base64
 								byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
 								Bitmap icon = BitmapFactory.decodeByteArray(b, 0, b.length);

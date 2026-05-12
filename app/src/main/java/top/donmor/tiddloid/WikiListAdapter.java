@@ -49,6 +49,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
+@SuppressWarnings({"CallToPrintStackTrace", "ClassEscapesDefinedScope"})
 public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
 
 	private final Context context;
@@ -109,7 +110,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			JSONObject wa = wl.getJSONObject(id);
 			String n = wa.optString(MainActivity.KEY_NAME, MainActivity.KEY_TW), s = wa.optString(MainActivity.DB_KEY_SUBTITLE), fib64 = wa.optString(MainActivity.KEY_FAVICON);
 			holder.btnWiki.setCompoundDrawablesRelativeWithIntrinsicBounds(R.drawable.ic_description, 0, 0, 0);
-			if (fib64.length() > 0) {
+			if (!fib64.isEmpty()) {
 				try {
 					if (fib64.matches(MainActivity.REX_B64)) {    // Base64
 						byte[] b = Base64.decode(fib64, Base64.NO_PADDING);
@@ -158,7 +159,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 			} catch (Resources.NotFoundException e) {
 				e.printStackTrace();
 			}
-			if (s.length() > 0) {
+			if (!s.isEmpty()) {
 				builder.append(MainActivity.KEY_LBL);
 				int ps = builder.length();
 				builder.append(s);

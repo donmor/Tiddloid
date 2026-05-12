@@ -30,6 +30,7 @@ import java.util.List;
 /**
  * The class FileDialogOpen is from FileDialog project, provides a set of methods to open dialogs for file-operating. Only fileOpen is used here.
  */
+@SuppressWarnings("CallToPrintStackTrace")
 abstract class FileDialogOpen {
 
 	private static final String METHOD_GET_VOLUME_LIST = "getVolumeList",

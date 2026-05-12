@@ -26,6 +26,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
+@SuppressWarnings({"ClassEscapesDefinedScope", "CallToPrintStackTrace"})
 public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.BackupListHolder> {
 
 	private final Context context;
