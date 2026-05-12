@@ -10,6 +10,7 @@
 	<string name="filter_time">按日期篩選</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/zh-Hant/empty.html</string>
+	<string name="update_api">https://api.github.com/repos/donmor/Tiddloid/releases/latest</string>
 	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
 	<!--UI-->
 	<string name="action_new">創建一個新的 TiddlyWiki 文件</string>

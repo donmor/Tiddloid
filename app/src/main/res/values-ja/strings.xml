@@ -10,6 +10,7 @@
 	<string name="filter_time">日付でフィルタリングする</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/ja-JP/empty.html</string>
+	<string name="update_api">https://api.github.com/repos/donmor/Tiddloid/releases/latest</string>
 	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
 	<!--UI-->
 	<string name="action_new">新しいTiddlyWikiファイルを作成します</string>

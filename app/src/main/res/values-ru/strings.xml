@@ -5,6 +5,7 @@
     <string name="filter_time">Фильтровать по дате</string>
     <!--JSON and Settings-->
     <string name="template_repo">https://tiddlywiki.com/empty.html</string><!--We don't have russian template yet-->
+    <string name="update_api">https://api.github.com/repos/donmor/Tiddloid/releases/latest</string>
     <string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
     <!--UI-->
     <string name="action_new">Новый файл TiddlyWiki</string>

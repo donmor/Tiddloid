@@ -10,6 +10,7 @@
 	<string name="filter_time">Filtrer par date</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/languages/fr-FR/empty.html</string>
+	<string name="update_api">https://api.github.com/repos/donmor/Tiddloid/releases/latest</string>
 	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
 	<!--UI-->
 	<string name="action_new">Créer un nouveau fichier TiddlyWiki</string>

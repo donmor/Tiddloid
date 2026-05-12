@@ -20,6 +20,7 @@ import android.content.pm.PackageInfo;
 import android.content.pm.PackageManager;
 import android.content.pm.ShortcutInfo;
 import android.content.pm.ShortcutManager;
+import android.content.pm.Signature;
 import android.content.res.Configuration;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
@@ -104,6 +105,7 @@ import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
+import java.io.ByteArrayInputStream;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
@@ -120,6 +122,9 @@ import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
 import java.nio.charset.Charset;
 import java.nio.charset.StandardCharsets;
+import java.security.cert.CertificateException;
+import java.security.cert.CertificateFactory;
+import java.security.cert.X509Certificate;
 import java.text.SimpleDateFormat;
 import java.util.Arrays;
 import java.util.Calendar;
@@ -147,6 +152,7 @@ public class MainActivity extends AppCompatActivity {
 	private Button btnFilterDTBgn, btnFilterDTEnd;
 	private EditText txtFilter;
 	private Date dtFilterBgn = null, dtFilterEnd = null;
+	private static Boolean isFDroidBuild = null;
 
 	// CONSTANT
 	private static final FileDialogFilter HTML_FILTER = new FileDialogFilter(new String[]{".html", ".htm", ".hta"});
@@ -196,12 +202,16 @@ public class MainActivity extends AppCompatActivity {
 			KEY_EX_HTM = ".htm",
 			KEY_EX_HTA = ".hta",
 			KEY_SPACE = " ",
-			KEY_HDR_LOC = "Location",
 			KEY_PATCH1 = "</html>\n",    // Random char workaround
 			KEY_URI_RATE = "market://details?id=",
 			LICENSE_FILE_NAME = "LICENSE",
 			SCH_PACKAGES = "package",
-			CLONING_FILE_NAME = "cloning.html";
+			CLONING_FILE_NAME = "cloning.html",
+			UC_F_DROID_RSP_KEY_1 = "packages",
+			UC_F_DROID_RSP_KEY_2 = "versionName",
+			UC_GITHUB_RSP_KEY_1 = "tag_name",
+			CERT_F_DROID_DN = "CN=FDroid, OU=FDroid, O=fdroid.org, L=ORG, ST=ORG, C=UK",
+			CERT_F_DROID_TYPE = "X.509";
 	@SuppressWarnings("WeakerAccess")
 	static final boolean APIOver23 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.M,
 			APIOver24 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.N,
@@ -1081,14 +1091,17 @@ public class MainActivity extends AppCompatActivity {
 		} else if (id == idAbout) {
 			SpannableStringBuilder spannableString = new SpannableStringBuilder(getString(R.string.about));
 			Linkify.addLinks(spannableString, Linkify.ALL);
-			if (Locale.CHINA.equals(getResources().getConfiguration().locale)) {
+			if (Locale.CHINA.equals(getResources().getConfiguration().locale) || isFDroidBuild) {
 				spannableString.append('\n').append('\n');
 				spannableString.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.content_sub)),
 						spannableString.length(), spannableString.length(), Spanned.SPAN_MARK_POINT);
 				spannableString.setSpan(new RelativeSizeSpan(0.75f), spannableString.length(), spannableString.length(), Spanned.SPAN_MARK_POINT);
 				spannableString.setSpan((AlignmentSpan) () -> Layout.Alignment.ALIGN_CENTER,
 						spannableString.length(), spannableString.length(), Spanned.SPAN_MARK_POINT);
-				spannableString.append(getString(R.string.ICP));
+				if (Locale.CHINA.equals(getResources().getConfiguration().locale))
+					spannableString.append(getString(R.string.ICP));
+				if (isFDroidBuild)
+					spannableString.append('\n').append(getString(R.string.f_droid_build));
 			}
 			AlertDialog aboutDialog = new AlertDialog.Builder(this)
 					.setTitle(getString(R.string.about_title, getVersion(this)))
@@ -1110,7 +1123,7 @@ public class MainActivity extends AppCompatActivity {
 			if (APIOver23)
 				((TextView) aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
 		} else if (id == idUpdate) {
-			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(R.string.update_url)));
+			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(isFDroidBuild ? R.string.update_url_f_droid : R.string.update_url)));
 			try {
 				startActivity(intent);
 			} catch (RuntimeException e) {
@@ -1144,19 +1157,61 @@ public class MainActivity extends AppCompatActivity {
 
 	private void checkUpdate() {
 		try {
-			URL url = new URL(getString(R.string.update_url));
+			checkFDroidPackage();
+			URL url = new URL(getString(isFDroidBuild ? R.string.update_api_f_droid : R.string.update_api));
 			HttpsURLConnection httpURLConnection = (HttpsURLConnection) url.openConnection();
 			httpURLConnection.setReadTimeout(10000);
-			httpURLConnection.setInstanceFollowRedirects(false);
 			httpURLConnection.connect();
 			int status = httpURLConnection.getResponseCode();
-			if (status != HttpsURLConnection.HTTP_MOVED_TEMP
-					&& status != HttpsURLConnection.HTTP_MOVED_PERM
-					&& status != HttpsURLConnection.HTTP_SEE_OTHER)
-				return;
-			latestVersion = Uri.parse(httpURLConnection.getHeaderField(KEY_HDR_LOC)).getLastPathSegment();
-		} catch (IOException | NullPointerException e) {
+			if (status != HttpsURLConnection.HTTP_OK) return;
+			try (InputStream is = httpURLConnection.getInputStream();
+				 InputStreamReader ir = new InputStreamReader(is, StandardCharsets.UTF_8);
+				 BufferedReader bir = new BufferedReader(ir)) {
+				StringBuilder builder = new StringBuilder();
+				String l;
+				while ((l = bir.readLine()) != null) builder.append(l);
+				JSONObject response = new JSONObject(builder.toString());
+				if (isFDroidBuild) {
+					JSONArray packages = response.getJSONArray(UC_F_DROID_RSP_KEY_1);
+					JSONObject latest = packages.getJSONObject(0);
+					latestVersion = latest.getString(UC_F_DROID_RSP_KEY_2);
+				} else {
+					latestVersion = response.getString(UC_GITHUB_RSP_KEY_1);
+				}
+			}
+
+		} catch (IOException | NullPointerException | JSONException | UnsupportedOperationException e) {
 			e.printStackTrace();
+		}
+	}
+
+	private void checkFDroidPackage() throws UnsupportedOperationException {
+		// Drops support for API23-
+		if (!APIOver24) throw new UnsupportedOperationException();
+
+		if (isFDroidBuild != null) return;
+		PackageManager pm = getPackageManager();
+		try {
+			// GET_SIGNATURES deprecated, considering drop API<28
+			PackageInfo info = pm.getPackageInfo(getPackageName(),
+					Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+							? PackageManager.GET_SIGNING_CERTIFICATES
+							: PackageManager.GET_SIGNATURES);
+			Signature[] signatures = info != null ? Build.VERSION.SDK_INT >= Build.VERSION_CODES.P
+					? info.signingInfo != null ? info.signingInfo.getApkContentsSigners() : null
+					: info.signatures
+					: null;
+			isFDroidBuild = signatures != null && Arrays.stream(signatures).anyMatch(
+					signature -> {
+						try {
+							CertificateFactory certFactory = CertificateFactory.getInstance(CERT_F_DROID_TYPE);
+							X509Certificate certificate = (X509Certificate) certFactory.generateCertificate(new ByteArrayInputStream(signature.toByteArray()));
+							return CERT_F_DROID_DN.equals(certificate.getIssuerX500Principal().toString());
+						} catch (CertificateException e) {
+							return false;
+						}
+					});
+		} catch (PackageManager.NameNotFoundException ignored) {
 		}
 	}
 

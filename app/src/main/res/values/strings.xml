@@ -194,7 +194,10 @@
 	<string name="icon" translatable="false">icon</string>
 	<string name="rollback" translatable="false">rollback</string>
 	<string name="del_backup" translatable="false">del_backup</string>
+	<string name="update_api">https://api.github.com/repos/donmor/Tiddloid/releases/latest</string>
+	<string name="update_api_f_droid" translatable="false">https://f-droid.org/api/v1/packages/top.donmor.tiddloid</string>
 	<string name="update_url">https://github.com/donmor/Tiddloid/releases/latest</string>
+	<string name="update_url_f_droid" translatable="false">https://f-droid.org/packages/top.donmor.tiddloid/</string>
 	<!--JSON and Settings-->
 	<string name="template_repo">https://tiddlywiki.com/empty.html</string>
 	<!--UI-->
@@ -298,4 +301,5 @@
 	<string name="agreements_accept">Accept</string>
 	<string name="agreements_decline">Decline</string>
 	<string name="ICP" translatable="false">鲁ICP备2024056381号</string>
+	<string name="f_droid_build" translatable="false">F-Droid build</string>
 </resources>
