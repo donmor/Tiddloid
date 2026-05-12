@@ -1,0 +1,48 @@
+name: Build & Publish Release APK
+on:
+  release:
+    types: [published]
+  workflow_dispatch:
+    inputs:
+      ref:
+        description: "ref"
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v5
+        with:
+          ref: ${{ github.event.inputs.ref || github.ref_name }}
+      - name: Setup project
+        run: |
+          echo "BUILD_REF=${{ github.event.inputs.ref || github.ref_name }}" >> $GITHUB_ENV
+      - uses: gradle/gradle-build-action@v2
+        with:
+          gradle-version: current
+          arguments: assembleRelease
+      - uses: ilharp/sign-android-release@v2.0.0
+        with:
+          releaseDir: app/build/outputs/apk/release
+          signingKey: ${{ secrets.SIGNING_KEY }}
+          keyAlias: ${{ secrets.ALIAS }}
+          keyStorePassword: ${{ secrets.KEY_STORE_PASSWORD }}
+          keyPassword: ${{ secrets.KEY_PASSWORD }}
+      - name: Move APKs
+        run: |
+          mv -v app/build/outputs/apk/release/app-release-unsigned.apk Tiddloid-${{ env.BUILD_REF }}-unsigned.apk
+          mv -v app/build/outputs/apk/release/app-release-unsigned-signed.apk Tiddloid-${{ env.BUILD_REF }}.apk
+      - name: Upload to release assets
+        uses: softprops/action-gh-release@v2
+        if: github.ref_type == 'tag'
+        with:
+          files: |
+            Tiddloid-${{ env.BUILD_REF }}.apk
+      - name: Upload as artifacts
+        if: github.ref_type != 'tag'
+        uses: actions/upload-artifact@v4
+        with:
+          name: APK
+          path: |
+            Tiddloid-${{ env.BUILD_REF }}.apk
+            Tiddloid-${{ env.BUILD_REF }}-unsigned.apk
