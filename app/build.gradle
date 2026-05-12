@@ -57,6 +57,10 @@ android {
     applicationVariants.configureEach { variant ->
         variant.resValue "string", "versionName", variant.versionName
     }
+    dependenciesInfo {
+        includeInApk = false
+        includeInBundle = false
+    }
 }
 dependencies {
     //noinspection GradleDependency

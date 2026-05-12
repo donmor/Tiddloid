@@ -1,0 +1,5 @@
+- Fixed a bug causing crash when using date filters
+- Fixed some UI text
+- Added Russian translation (thanks to @yurtpage)
+- Refactored update checker
+- Added F-Droid build mark in About window
