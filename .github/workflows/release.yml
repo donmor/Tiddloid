@@ -32,12 +32,14 @@ jobs:
         run: |
           mv -v app/build/outputs/apk/release/app-release-unsigned.apk Tiddloid-${{ env.BUILD_REF }}-unsigned.apk
           mv -v app/build/outputs/apk/release/app-release-unsigned-signed.apk Tiddloid-${{ env.BUILD_REF }}.apk
+          cp -av app/src/main/assets/tiddloid-tweaks-plugin.tid ./
       - name: Upload to release assets
         uses: softprops/action-gh-release@v2
         if: github.ref_type == 'tag'
         with:
           files: |
             Tiddloid-${{ env.BUILD_REF }}.apk
+            tiddloid-tweaks-plugin.tid
       - name: Upload as artifacts
         if: github.ref_type != 'tag'
         uses: actions/upload-artifact@v4
