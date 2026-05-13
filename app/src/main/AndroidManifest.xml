@@ -12,11 +12,13 @@
 		tools:ignore="ScopedStorage" />
 	<uses-permission
 		android:name="android.permission.MANAGE_EXTERNAL_STORAGE"
-		tools:ignore="ScopedStorage" />
+		tools:ignore="AllFilesAccessPolicy,ScopedStorage" />
 	<uses-permission android:name="android.permission.VIBRATE" />
 	<uses-permission android:name="android.permission.CAMERA" />
-	<uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
-	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+	<uses-permission
+		android:name="android.permission.FOREGROUND_SERVICE"
+		tools:ignore="ForegroundServicesPolicy" />
+	<uses-permission android:name="android.permission.FOREGROUND_SERVICE_SPECIAL_USE" />
 	<uses-permission android:name="com.android.launcher.permission.INSTALL_SHORTCUT" />
 	<uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
 	<uses-permission android:name="android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS" />
@@ -56,7 +58,7 @@
 
 		<service
 			android:name=".StayBackgroundService"
-			android:foregroundServiceType="dataSync" />
+			android:foregroundServiceType="specialUse" />
 		<activity
 			android:name=".HandlerActivity"
 			android:exported="true"

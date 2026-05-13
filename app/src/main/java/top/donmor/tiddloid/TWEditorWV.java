@@ -1153,7 +1153,7 @@ public class TWEditorWV extends AppCompatActivity {
 	}
 
 	@Override
-	public void onRequestPermissionsResult(int requestCode, @NonNull @NotNull String[] permissions, @NonNull @NotNull int[] grantResults) {
+	public void onRequestPermissionsResult(int requestCode, @NonNull String[] permissions, @NonNull int[] grantResults) {
 		super.onRequestPermissionsResult(requestCode, permissions, grantResults);
 		if (requestCode == 1 && grantResults[0] == PackageManager.PERMISSION_GRANTED && mPermissionRequest != null) {
 			mPermissionRequest.grant(new String[]{PermissionRequest.RESOURCE_VIDEO_CAPTURE});
@@ -2008,7 +2008,7 @@ public class TWEditorWV extends AppCompatActivity {
 		toolbar.setVisibility(wApp != null && (hideAppbar == 1 || hideAppbar == 2 && Configuration.ORIENTATION_LANDSCAPE == newConfig.orientation) && ready ? View.GONE : View.VISIBLE);
 		Window window = getWindow();
 		WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(window, window.getDecorView());
-		if (MainActivity.APIOver23)
+		if (MainActivity.APIOver23 && !MainActivity.APIOver35)
 			window.setStatusBarColor(primColor);
 		if (MainActivity.APIOver26)
 			window.setNavigationBarColor(primColor);

@@ -14,7 +14,8 @@
 	android:layoutDirection="locale"
 	android:orientation="vertical"
 	android:textDirection="locale"
-	tools:context=".MainActivity">
+	tools:context=".MainActivity"
+	tools:ignore="Overdraw">
 
 	<include
 		android:id="@+id/splash_layout"
@@ -26,7 +27,7 @@
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
 		android:layout_weight="0"
-		android:animateLayoutChanges="true"
+		android:fitsSystemWindows="true"
 		android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
 		<androidx.appcompat.widget.Toolbar

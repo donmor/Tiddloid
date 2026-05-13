@@ -15,13 +15,14 @@
 	android:layoutDirection="locale"
 	android:orientation="vertical"
 	android:textDirection="locale"
-	tools:context=".TWEditorWV">
+	tools:context=".TWEditorWV"
+	tools:ignore="Overdraw">
 
 	<com.google.android.material.appbar.AppBarLayout
 		android:id="@+id/wv_appbar"
 		android:layout_width="match_parent"
 		android:layout_height="wrap_content"
-		android:animateLayoutChanges="true"
+		android:fitsSystemWindows="true"
 		android:theme="@style/ThemeOverlay.AppCompat.ActionBar">
 
 		<androidx.appcompat.widget.Toolbar

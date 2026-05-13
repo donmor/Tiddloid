@@ -219,7 +219,10 @@ public class MainActivity extends AppCompatActivity {
 			APIOver26 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.O,
 			APIOver29 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.Q,
 			APIOver30 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R,
-			APIOver33 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU;
+			APIOver33 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
+			APIOver35 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM,
+			APIOver36 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA,
+			APIOver37 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN;
 	static final String
 			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
 			EXCEPTION_DOCUMENT_IO_ERROR = "Document IO Error",
@@ -1441,7 +1444,7 @@ public class MainActivity extends AppCompatActivity {
 		int color = getResources().getColor(R.color.design_default_color_primary);
 		WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(w, w.getDecorView());
 		if (APIOver23) w.setStatusBarColor(color);
-		if (APIOver26) w.setNavigationBarColor(color);
+		if (APIOver26 && !APIOver35) w.setNavigationBarColor(color);
 		wic.show(WindowInsetsCompat.Type.systemBars());
 		boolean lightBar = (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
 		wic.setAppearanceLightNavigationBars(lightBar);
@@ -1748,7 +1751,7 @@ public class MainActivity extends AppCompatActivity {
 		try {
 			PackageManager manager = context.getPackageManager();
 			PackageInfo info = manager.getPackageInfo(context.getPackageName(), 0);
-			return version = info.versionName;
+			return (version = info.versionName) != null ? version : STR_EMPTY;
 		} catch (PackageManager.NameNotFoundException e) {
 			e.printStackTrace();
 		}
