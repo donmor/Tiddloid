@@ -19,7 +19,7 @@ android {
     defaultConfig {
         applicationId "top.donmor.tiddloid"
         minSdkVersion 21
-        targetSdkVersion 35
+        targetSdkVersion 36
         multiDexEnabled true
         versionCode 205001
         versionName "2.5.1"
@@ -48,6 +48,7 @@ android {
 }
 dependencies {
     implementation 'androidx.appcompat:appcompat:1.7.1'
+    //noinspection GradleDependency
     implementation 'androidx.core:core:1.17.0'
     implementation 'androidx.legacy:legacy-support-v4:1.0.0'
     implementation 'com.google.android.material:material:1.13.0'
