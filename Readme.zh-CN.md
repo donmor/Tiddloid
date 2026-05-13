@@ -1,9 +1,6 @@
 # Tiddloid
 
-<!--suppress CheckImageSize -->
-<img src="fastlane/metadata/android/en-US/images/icon.png"  alt="avatar" width="256" height="256"/>
-
-&ensp;&ensp;&ensp;&ensp;[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on-zh-cn.svg" alt="Get it on F-Droid" height="40">](https://f-droid.org/packages/top.donmor.tiddloid)
+&ensp;&ensp;&ensp;&ensp;[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on-zh-cn.svg" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/top.donmor.tiddloid)
 
 Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有了一些想法，您可以立即将它们写下来以供随时查阅。
 
@@ -108,12 +105,12 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
 注意：任何发布在Issues的信息将对所有人可见。
 
-### 关于我们
+### 关于作者
 
-感谢您尝试本人的作品。如果您愿意支持，本人将不胜感激，并不遗余力地加以改进。
+感谢您尝试我们的作品。如果您愿意支持，本人将不胜感激，并不遗余力地加以改进。
 
 &ensp;&ensp;<a href="https://liberapay.com/donmor3000/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg" height="30" /></a>&ensp;&ensp;<a href="https://afdian.com/a/donmor"><img alt="Donate using Afdian" src="https://static.afdiancdn.com/static/img/logo/logo.png" height="30" /></a>
 
-如果您感兴趣，欢迎访问[我的主页](https://donmor.top/)。
+欢迎访问[我的主页](https://donmor.top/)。
 
 您还可以访问[太记的项目页面](https://github.com/tiddly-gittly/TidGi-Desktop)，了解有关中文版桌面应用程序的更多信息。

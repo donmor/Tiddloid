@@ -1,9 +1,6 @@
 # Tiddloid
 
-<!--suppress CheckImageSize -->
-<img src="fastlane/metadata/android/en-US/images/icon.png"  alt="avatar" width="256" height="256"/>
-
-&ensp;&ensp;&ensp;&ensp;[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.svg" alt="Get it on F-Droid" height="40">](https://f-droid.org/packages/top.donmor.tiddloid)
+&ensp;&ensp;&ensp;&ensp;[<img src="https://fdroid.gitlab.io/artwork/badge/get-it-on.svg" alt="Get it on F-Droid" height="80">](https://f-droid.org/packages/top.donmor.tiddloid)
 
 Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere.
 
@@ -124,8 +121,8 @@ Note: Any information posted on Issues will be available to everyone.
 
 ### About us
 
-Thank you for trying donmor's productions. I'd really appreciate it if you kindly support us via the buttons below, and take more effect to improve our productions.
+Thank you for trying our productions. I'd really appreciate it if you kindly support us via the buttons below, and take more effect to improve our productions.
 
 &ensp;&ensp;<a href="https://liberapay.com/donmor3000/donate"><img alt="Donate using Liberapay" src="https://liberapay.com/assets/widgets/donate.svg" height="30" /></a>&ensp;&ensp;<a href="https://afdian.com/a/donmor"><img alt="Donate using Afdian" src="https://static.afdiancdn.com/static/img/logo/logo.png" height="30" /></a>
 
-If you take an interest in us, fell free to visit [our homepage](https://donmor.top/).
+Fell free to visit [my homepage](https://donmor.top/).
