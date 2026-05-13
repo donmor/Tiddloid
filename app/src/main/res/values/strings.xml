@@ -185,7 +185,6 @@
 	<string name="entry_name">Add to Tiddloid</string>
 	<string name="tiddlywiki" translatable="false">TiddlyWiki</string>
 	<string name="plugin_version" translatable="false">1.2.0</string>
-	<string name="logo" translatable="false">logo</string>
 	<string name="filter" translatable="false">filter</string>
 	<string name="filter_time">Filter by date</string>
 	<string name="filter_time_init" translatable="false">...</string>

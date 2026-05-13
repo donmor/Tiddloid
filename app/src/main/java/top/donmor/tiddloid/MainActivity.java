@@ -58,7 +58,6 @@ import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
-import android.view.ViewParent;
 import android.view.Window;
 import android.view.WindowManager;
 import android.webkit.CookieManager;
@@ -239,7 +238,6 @@ public class MainActivity extends AppCompatActivity {
 	@SuppressLint("NotifyDataSetChanged")
 	@Override
 	protected void onCreate(Bundle savedInstanceState) {
-		long time0 = System.nanoTime();
 		super.onCreate(savedInstanceState);
 		Window w = getWindow();
 		w.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
@@ -821,17 +819,7 @@ public class MainActivity extends AppCompatActivity {
 				rvWikiList.setAdapter(wikiListAdapter);
 				noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
 			});
-			while ((System.nanoTime() - time0) / 1000000 < 1000) try {
-				//noinspection BusyWait
-				Thread.sleep(1);    // Minimum splash time
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
 			runOnUiThread(() -> {
-				View splash = findViewById(R.id.splash_layout);
-				ViewParent parent;
-				if (splash != null && (parent = splash.getParent()) instanceof ViewGroup)
-					((ViewGroup) parent).removeView(splash);
 				w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 				if (firstRun)
 					firstRunReq(this, new OnFirstRun() {
