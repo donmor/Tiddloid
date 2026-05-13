@@ -69,7 +69,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
 * I still want to add `Local (Legacy)` wikis.
 
     * Use "Local (Legacy)" option.
-    * Or Install a file manager designed for old versions of Android that opening files by passing `file://`URIs, open a HTML file, and choose `Add to Tiddloid`.
+    * Or Install a file manager designed for old versions of Android that opening files by passing `file://`URIs, open an HTML file, and choose `Add to Tiddloid`.
     * Or select `file://`URI text and press `Share`->`Add to Tiddloid`.
 
 * Why there's a Tiddloid Lite? What's the difference between the two versions?
@@ -107,7 +107,7 @@ is permitted UNDER THESE CONDITIONS:
 3. Disclose source under
 4. Same license.
 
-License files provided along with the source code (including licence files of dependencies).
+License files provided along with the source code (including license files of dependencies).
 
 ### Localization
 

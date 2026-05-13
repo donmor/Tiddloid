@@ -78,17 +78,17 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
 
     以下是不同版本之间的差异：
 
-    | 功能                   | Tiddloid 1.x                       | Tiddloid 2.0 及以上                   | [Tiddloid Lite](https://gitee.com/donmor/TiddloidLite) |
-    |------------------------|------------------------------------|------------------------------------|--------------------------------------------------------|
-    | 文件API                | Java文件API                          | Android SAF以及 Java文件API            | Android SAF                                            |
-    | 备份系统               | 有                                  | 有                                  | 无                                                     |
-    | 搜索-克隆系统          | 有                                  | 无（改为接收从浏览器分享的TiddlyWiki站点URL并保存）   | 无                                                     |
-    | 下载服务               | 有                                  | 无                                  | 无                                                     |
-    | 直接访问同目录下的文件 | 支持                                 | 部分支持（旧版模式，文件夹模式通过缓存所有文件）           | 不支持                                                 |
-    | 云存储                 | 不支持                                | 支持（通过SAF）                          | 支持（通过SAF）                                        |
-    | 模板                   | 首次使用时下载，可手动更新                      | 创建新文件时下载，并缓存以备无网络时使用               | 创建新文件时下载                                       |
-    | 兼容性                 | 适配旧Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5                     |
-    | 推荐的Android版本      | Android 4.4 ~ 9.0                  | Android 5.0 及以上，8.0最佳              | Android 4.4 及以上，8.0最佳                            |
+    | 功能           | Tiddloid 1.x                       | Tiddloid 2.0 及以上                   | [Tiddloid Lite](https://gitee.com/donmor/TiddloidLite) |
+    |--------------|------------------------------------|------------------------------------|--------------------------------------------------------|
+    | 文件API        | Java文件API                          | Android SAF以及 Java文件API            | Android SAF                                            |
+    | 备份系统         | 有                                  | 有                                  | 无                                                      |
+    | 搜索-克隆系统      | 有                                  | 无（改为接收从浏览器分享的TiddlyWiki站点URL并保存）   | 无                                                      |
+    | 下载服务         | 有                                  | 无                                  | 无                                                      |
+    | 直接访问同目录下的文件  | 支持                                 | 部分支持（旧版模式，文件夹模式通过缓存所有文件）           | 不支持                                                    |
+    | 云存储          | 不支持                                | 支持（通过SAF）                          | 支持（通过SAF）                                              |
+    | 模板           | 首次使用时下载，可手动更新                      | 创建新文件时下载，并缓存以备无网络时使用               | 创建新文件时下载                                               |
+    | 兼容性          | 适配旧Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5                             |
+    | 推荐的Android版本 | Android 4.4 ~ 9.0                  | Android 5.0 及以上，8.0最佳              | Android 4.4 及以上，8.0最佳                                  |
 
 
 ### 许可
