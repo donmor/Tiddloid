@@ -5,10 +5,10 @@ android {
     defaultConfig {
         applicationId "top.donmor.tiddloid"
         minSdkVersion 21
-        targetSdkVersion 36
+        targetSdkVersion 37
         multiDexEnabled true
-        versionCode 205001
-        versionName "2.5.1"
+        versionCode 205002
+        versionName "2.5.2"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
         vectorDrawables.useSupportLibrary = true
     }

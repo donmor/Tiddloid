@@ -220,7 +220,6 @@ public class MainActivity extends AppCompatActivity {
 			APIOver30 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.R,
 			APIOver33 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU,
 			APIOver35 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.VANILLA_ICE_CREAM,
-			APIOver36 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.BAKLAVA,
 			APIOver37 = Build.VERSION.SDK_INT >= Build.VERSION_CODES.CINNAMON_BUN;
 	static final String
 			EXCEPTION_JSON_DATA_ERROR = "JSON data file corrupted",
@@ -365,7 +364,7 @@ public class MainActivity extends AppCompatActivity {
 		wikiListAdapter.setItemFilter(new WikiListAdapter.ItemFilter() {
 			@Override
 			public boolean fTextActive() {
-				return filterBar.getVisibility() == View.VISIBLE && txtFilter.getEditableText().length() > 0;
+				return filterBar.getVisibility() == View.VISIBLE && !txtFilter.getEditableText().toString().isEmpty();
 			}
 
 			@Override
@@ -1063,28 +1062,20 @@ public class MainActivity extends AppCompatActivity {
 
 	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-		int id = item.getItemId();
-		final int idNew = R.id.action_new,
-				idImport = R.id.action_file_import,
-				idDir = R.id.action_add_dir,
-				idLocal = R.id.action_add_legacy,
-				idFilter = R.id.action_filter,
-				idAbout = R.id.action_about,
-				idUpdate = R.id.action_update;
-		if (id == idNew) {
+		if (item.getItemId() == R.id.action_new) {
 			getChooserCreate.launch(new Intent(Intent.ACTION_CREATE_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML));
-		} else if (id == idImport) {
+		} else if (item.getItemId() == R.id.action_file_import) {
 			getChooserImport.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT).addCategory(Intent.CATEGORY_OPENABLE).setType(TYPE_HTML).putExtra(Intent.EXTRA_MIME_TYPES, TYPE_FILTERS));
-		} else if (id == idDir) {
+		} else if (item.getItemId() == R.id.action_add_dir) {
 			getChooserTree.launch(new Intent(Intent.ACTION_OPEN_DOCUMENT_TREE).addFlags(Intent.FLAG_GRANT_WRITE_URI_PERMISSION));
-		} else if (id == idLocal) {
+		} else if (item.getItemId() == R.id.action_add_legacy) {
 			browseLocal();
-		} else if (id == idFilter) {
+		} else if (item.getItemId() == R.id.action_filter) {
 			filterBar.setVisibility(View.VISIBLE);
-		} else if (id == idAbout) {
+		} else if (item.getItemId() == R.id.action_about) {
 			SpannableStringBuilder spannableString = new SpannableStringBuilder(getString(R.string.about));
 			Linkify.addLinks(spannableString, Linkify.ALL);
-			if (Locale.CHINA.equals(getResources().getConfiguration().locale) || isFDroidBuild) {
+			if (Locale.CHINA.equals(getResources().getConfiguration().locale) || isFDroidPackage()) {
 				spannableString.append('\n').append('\n');
 				spannableString.setSpan(new ForegroundColorSpan(getResources().getColor(R.color.content_sub)),
 						spannableString.length(), spannableString.length(), Spanned.SPAN_MARK_POINT);
@@ -1093,7 +1084,7 @@ public class MainActivity extends AppCompatActivity {
 						spannableString.length(), spannableString.length(), Spanned.SPAN_MARK_POINT);
 				if (Locale.CHINA.equals(getResources().getConfiguration().locale))
 					spannableString.append(getString(R.string.ICP));
-				if (isFDroidBuild)
+				if (isFDroidPackage())
 					spannableString.append('\n').append(getString(R.string.f_droid_build));
 			}
 			AlertDialog aboutDialog = new AlertDialog.Builder(this)
@@ -1115,7 +1106,7 @@ public class MainActivity extends AppCompatActivity {
 			((TextView) aboutDialog.findViewById(android.R.id.message)).setMovementMethod(LinkMovementMethod.getInstance());
 			if (APIOver23)
 				((TextView) aboutDialog.findViewById(android.R.id.message)).setTextAppearance(android.R.style.TextAppearance_DeviceDefault_Widget_TextView);
-		} else if (id == idUpdate) {
+		} else if (item.getItemId() == R.id.action_update) {
 			Intent intent = new Intent(Intent.ACTION_VIEW, Uri.parse(getString(isFDroidBuild ? R.string.update_url_f_droid : R.string.update_url)));
 			try {
 				startActivity(intent);
@@ -1150,8 +1141,7 @@ public class MainActivity extends AppCompatActivity {
 
 	private void checkUpdate() {
 		try {
-			checkFDroidPackage();
-			URL url = new URL(getString(isFDroidBuild ? R.string.update_api_f_droid : R.string.update_api));
+			URL url = new URL(getString(isFDroidPackage() ? R.string.update_api_f_droid : R.string.update_api));
 			HttpsURLConnection httpURLConnection = (HttpsURLConnection) url.openConnection();
 			httpURLConnection.setReadTimeout(10000);
 			httpURLConnection.connect();
@@ -1164,7 +1154,7 @@ public class MainActivity extends AppCompatActivity {
 				String l;
 				while ((l = bir.readLine()) != null) builder.append(l);
 				JSONObject response = new JSONObject(builder.toString());
-				if (isFDroidBuild) {
+				if (isFDroidPackage()) {
 					JSONArray packages = response.getJSONArray(UC_F_DROID_RSP_KEY_1);
 					JSONObject latest = packages.getJSONObject(0);
 					latestVersion = latest.getString(UC_F_DROID_RSP_KEY_2);
@@ -1178,11 +1168,11 @@ public class MainActivity extends AppCompatActivity {
 		}
 	}
 
-	private void checkFDroidPackage() throws UnsupportedOperationException {
+	private boolean isFDroidPackage() throws UnsupportedOperationException {
 		// Drops support for API23-
 		if (!APIOver24) throw new UnsupportedOperationException();
 
-		if (isFDroidBuild != null) return;
+		if (isFDroidBuild != null) return isFDroidBuild;
 		PackageManager pm = getPackageManager();
 		try {
 			// GET_SIGNATURES deprecated, considering drop API<28
@@ -1204,8 +1194,10 @@ public class MainActivity extends AppCompatActivity {
 							return false;
 						}
 					});
+			return isFDroidBuild;
 		} catch (PackageManager.NameNotFoundException ignored) {
 		}
+		return false;
 	}
 
 	private void browseLocal() {

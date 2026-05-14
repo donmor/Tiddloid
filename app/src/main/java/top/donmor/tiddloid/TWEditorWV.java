@@ -59,6 +59,7 @@ import android.webkit.JavascriptInterface;
 import android.webkit.PermissionRequest;
 import android.webkit.ValueCallback;
 import android.webkit.WebChromeClient;
+import android.webkit.WebResourceError;
 import android.webkit.WebResourceRequest;
 import android.webkit.WebSettings;
 import android.webkit.WebView;
@@ -105,6 +106,7 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.InterruptedIOException;
 import java.io.OutputStream;
+import java.io.Serial;
 import java.nio.channels.FileChannel;
 import java.nio.channels.NonReadableChannelException;
 import java.nio.channels.NonWritableChannelException;
@@ -130,7 +132,6 @@ public class TWEditorWV extends AppCompatActivity {
 	private WebChromeClient.CustomViewCallback mCustomViewCallback;
 	private int mOriginalOrientation, dialogPadding, hideAppbar = 0;
 	private Integer themeColor = null;
-	private float scale;
 	private ValueCallback<Uri[]> uploadMessage;
 	private WebView wv;
 	private Toolbar toolbar;
@@ -179,7 +180,8 @@ public class TWEditorWV extends AppCompatActivity {
 			SCH_TEL = "tel",
 			SCH_MAILTO = "mailto",
 			SCH_PACKAGE = "package",
-			URL_BLANK = "about:blank";
+			URL_BLANK = "about:blank",
+			WC_ERR_CLEARTEXT = "net::ERR_CLEARTEXT_NOT_PERMITTED";
 	static final String ID_DEFAULT = "<default>";
 	private static final int CA_GRP_ID = 999;
 	static final byte[]
@@ -192,7 +194,8 @@ public class TWEditorWV extends AppCompatActivity {
 		UTF8, UTF16LE, BASE64
 	}
 
-	private static final HashMap<String, TW_CONTENT_ENCODING> TW_TYPE_MAP = new HashMap<String, TW_CONTENT_ENCODING>() {
+	private static final HashMap<String, TW_CONTENT_ENCODING> TW_TYPE_MAP = new HashMap<>() {
+		@Serial
 		private static final long serialVersionUID = 5978131546666849058L;
 
 		{
@@ -201,7 +204,8 @@ public class TWEditorWV extends AppCompatActivity {
 			put("base64", TW_CONTENT_ENCODING.BASE64);
 		}
 	};
-	private static final HashMap<String, TW_CONTENT_ENCODING> TW_TYPES = new HashMap<String, TW_CONTENT_ENCODING>() {
+	private static final HashMap<String, TW_CONTENT_ENCODING> TW_TYPES = new HashMap<>() {
+		@Serial
 		private static final long serialVersionUID = 5978131546666849058L;
 
 		{
@@ -234,7 +238,8 @@ public class TWEditorWV extends AppCompatActivity {
 			put("video/webm", TW_CONTENT_ENCODING.BASE64);
 		}
 	};
-	private static final HashMap<String, String> TW_TYPE_EXT = new HashMap<String, String>() {
+	private static final HashMap<String, String> TW_TYPE_EXT = new HashMap<>() {
+		@Serial
 		private static final long serialVersionUID = 5978131546666849058L;
 
 		{
@@ -263,7 +268,8 @@ public class TWEditorWV extends AppCompatActivity {
 			put(".webm", "video/webm");
 		}
 	};
-	private static final Map<String, String> TW_TYPE_EXT_D = new HashMap<String, String>() {
+	private static final Map<String, String> TW_TYPE_EXT_D = new HashMap<>() {
+		@Serial
 		private static final long serialVersionUID = 5978131546666849058L;
 
 		{
@@ -313,7 +319,6 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setAllowUniversalAccessFromFileURLs(true);
 		wvs.setSupportMultipleWindows(true);
 		wvs.setMediaPlaybackRequiresUserGesture(false);
-		scale = getResources().getDisplayMetrics().density;
 		if (MainActivity.isDebug(this)) WebView.setWebContentsDebuggingEnabled(true);    // 在debug环境启用调试
 		// 注册SAF回调
 		getChooserCreate = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), result -> {
@@ -653,6 +658,16 @@ public class TWEditorWV extends AppCompatActivity {
 					optMenu.getItem(1).setVisible(false);
 					optMenu.removeGroup(CA_GRP_ID);
 				}
+			}
+
+			@Override
+			public void onReceivedError(WebView view, WebResourceRequest request, WebResourceError error) {
+				super.onReceivedError(view, request, error);
+				if (request.isForMainFrame())
+					if (MainActivity.APIOver37 && error.getErrorCode() == WebViewClient.ERROR_UNKNOWN && WC_ERR_CLEARTEXT.contentEquals(error.getDescription())) {
+						ActivityCompat.requestPermissions(TWEditorWV.this, new String[]{Manifest.permission.ACCESS_LOCAL_NETWORK}, 1);
+						finishAfterTransition();
+					}
 			}
 
 			// 加载完成回调
@@ -1109,7 +1124,7 @@ public class TWEditorWV extends AppCompatActivity {
 			wv.evaluateJavascript(getString(R.string.js_import, cs), null);
 		} else if (Intent.ACTION_PROCESS_TEXT.equals(action)) {    // 摘录文本
 			CharSequence cs;
-			if (!MainActivity.APIOver23 || !isWiki || (cs = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)) == null || cs.length() == 0) return;
+			if (!MainActivity.APIOver23 || !isWiki || (cs = intent.getCharSequenceExtra(Intent.EXTRA_PROCESS_TEXT)) == null || cs.toString().isEmpty()) return;
 			JSONObject p = new JSONObject();
 			try {
 				p.put(KEY_TEXT, cs.toString());
@@ -1263,7 +1278,7 @@ public class TWEditorWV extends AppCompatActivity {
 					} else {    // SVG
 						Sharp svg = Sharp.loadString(fib64);
 						Drawable drawable = svg.getSharpPicture().getDrawable();
-						int bound = Math.round(scale * 24);
+						int bound = Math.round(getResources().getDisplayMetrics().density * 24);
 						toolbar.setLogo(MainActivity.svg2bmp(drawable, bound, getResources()));
 					}
 				} catch (IllegalArgumentException | SvgParseException e) {
@@ -1762,7 +1777,7 @@ public class TWEditorWV extends AppCompatActivity {
 				} else {    // SVG
 					Sharp svg = Sharp.loadString(fib64);
 					Drawable drawable = svg.getSharpPicture().getDrawable();
-					int bound = Math.round(scale * 24);
+					int bound = Math.round(getResources().getDisplayMetrics().density * 24);
 					toolbar.setLogo(MainActivity.svg2bmp(drawable, bound, getResources()));
 				}
 			} catch (IllegalArgumentException | SvgParseException e) {
@@ -1988,8 +2003,8 @@ public class TWEditorWV extends AppCompatActivity {
 	// 生成icon
 	private BitmapDrawable cIcon(Bitmap icon) {
 		Matrix matrix = new Matrix();
-		matrix.postScale(scale * 32f / icon.getWidth(), scale * 32f / icon.getHeight());
-		Bitmap icons = Bitmap.createBitmap(Math.round(scale * 40f), Math.round(scale * 32f), Bitmap.Config.ARGB_8888);
+		matrix.postScale(getResources().getDisplayMetrics().density * 32f / icon.getWidth(), getResources().getDisplayMetrics().density * 32f / icon.getHeight());
+		Bitmap icons = Bitmap.createBitmap(Math.round(getResources().getDisplayMetrics().density * 40f), Math.round(getResources().getDisplayMetrics().density * 32f), Bitmap.Config.ARGB_8888);
 		Canvas c = new Canvas(icons);
 		c.drawBitmap(icon, matrix, null);
 		c.save();
@@ -2055,7 +2070,7 @@ public class TWEditorWV extends AppCompatActivity {
 							} else {    // SVG
 								Sharp svg = Sharp.loadString(fib64);
 								Drawable drawable = svg.getSharpPicture().getDrawable();
-								int bound = Math.round(scale * 24);
+								int bound = Math.round(getResources().getDisplayMetrics().density * 24);
 								si.setIcon(MainActivity.svg2bmp(drawable, bound, getResources()));
 							}
 						} catch (IllegalArgumentException | SvgParseException e) {
