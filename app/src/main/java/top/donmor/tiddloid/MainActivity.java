@@ -826,6 +826,7 @@ public class MainActivity extends AppCompatActivity {
 						public void onAgreed() {
 							try {
 								writeJson(MainActivity.this, db);
+								firstRun = false;
 								runOnUiThread(() -> refreshDynamicShortcuts());
 							} catch (JSONException e) {
 								e.printStackTrace();
