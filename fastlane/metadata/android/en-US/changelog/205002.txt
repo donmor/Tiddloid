@@ -1,0 +1,2 @@
+- Migrated to Android 17
+- Removed splash screen

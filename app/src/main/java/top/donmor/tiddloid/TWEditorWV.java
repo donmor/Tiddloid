@@ -2003,8 +2003,10 @@ public class TWEditorWV extends AppCompatActivity {
 	// 生成icon
 	private BitmapDrawable cIcon(Bitmap icon) {
 		Matrix matrix = new Matrix();
-		matrix.postScale(getResources().getDisplayMetrics().density * 32f / icon.getWidth(), getResources().getDisplayMetrics().density * 32f / icon.getHeight());
-		Bitmap icons = Bitmap.createBitmap(Math.round(getResources().getDisplayMetrics().density * 40f), Math.round(getResources().getDisplayMetrics().density * 32f), Bitmap.Config.ARGB_8888);
+		matrix.postScale(getResources().getDisplayMetrics().density * 32f / icon.getWidth(),
+				getResources().getDisplayMetrics().density * 32f / icon.getHeight());
+		Bitmap icons = Bitmap.createBitmap(Math.round(getResources().getDisplayMetrics().density * 40f),
+				Math.round(getResources().getDisplayMetrics().density * 32f), Bitmap.Config.ARGB_8888);
 		Canvas c = new Canvas(icons);
 		c.drawBitmap(icon, matrix, null);
 		c.save();
