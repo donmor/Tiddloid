@@ -49,7 +49,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.Iterator;
 
-@SuppressWarnings({"CallToPrintStackTrace", "ClassEscapesDefinedScope"})
+@SuppressWarnings("CallToPrintStackTrace")
 public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiListHolder> {
 
 	private final Context context;
@@ -73,7 +73,7 @@ public class WikiListAdapter extends RecyclerView.Adapter<WikiListAdapter.WikiLi
 		inflater = LayoutInflater.from(context);
 	}
 
-	static class WikiListHolder extends RecyclerView.ViewHolder {
+	public static class WikiListHolder extends RecyclerView.ViewHolder {
 		private final Button btnWiki;
 
 		WikiListHolder(View itemView) {

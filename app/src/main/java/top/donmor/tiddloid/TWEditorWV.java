@@ -815,7 +815,8 @@ public class TWEditorWV extends AppCompatActivity {
 
 				@Override
 				public void onDeclined() {
-
+					finishAfterTransition();
+					System.exit(0);
 				}
 			});
 	}

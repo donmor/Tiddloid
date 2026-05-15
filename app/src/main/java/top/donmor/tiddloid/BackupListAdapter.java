@@ -26,7 +26,7 @@ import java.util.Date;
 import java.util.Locale;
 import java.util.TimeZone;
 
-@SuppressWarnings({"ClassEscapesDefinedScope", "CallToPrintStackTrace"})
+@SuppressWarnings("CallToPrintStackTrace")
 public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.BackupListHolder> {
 
 	private final Context context;
@@ -63,7 +63,7 @@ public class BackupListAdapter extends RecyclerView.Adapter<BackupListAdapter.Ba
 		inflater = LayoutInflater.from(context);
 	}
 
-	static class BackupListHolder extends RecyclerView.ViewHolder {
+	public static class BackupListHolder extends RecyclerView.ViewHolder {
 		/**
 		 * Rollback button
 		 */

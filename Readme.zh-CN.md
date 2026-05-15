@@ -88,7 +88,7 @@ Tiddloid是一款适用于本地存储的TiddlyWiki的应用程序。一旦有�
     | 云存储          | 不支持                                | 支持（通过SAF）                          | 支持（通过SAF）                                              |
     | 模板           | 首次使用时下载，可手动更新                      | 创建新文件时下载，并缓存以备无网络时使用               | 创建新文件时下载                                               |
     | 兼容性          | 适配旧Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5及Classic | 适配新Android版本，支持TiddlyWiKi5                             |
-    | 推荐的Android版本 | Android 4.4 ~ 9.0                  | Android 5.0 及以上，8.0最佳              | Android 4.4 及以上，8.0最佳                                  |
+    | 推荐的Android版本 | Android 4.4 ~ 9.0                  | Android 5.0 及以上，8.0最佳              | Android 5.0 及以上，8.0最佳                                  |
 
 
 ### 许可

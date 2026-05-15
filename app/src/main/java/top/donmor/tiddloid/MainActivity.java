@@ -59,7 +59,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.view.ViewGroup;
 import android.view.Window;
-import android.view.WindowManager;
 import android.webkit.CookieManager;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -239,7 +238,6 @@ public class MainActivity extends AppCompatActivity {
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		Window w = getWindow();
-		w.addFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 		w.setFormat(PixelFormat.RGBA_8888);
 		AppCompatDelegate.setDefaultNightMode(AppCompatDelegate.MODE_NIGHT_FOLLOW_SYSTEM);
 		setContentView(R.layout.activity_main);
@@ -819,7 +817,6 @@ public class MainActivity extends AppCompatActivity {
 				noWiki.setVisibility(wikiListAdapter.getItemCount() == 0 ? View.VISIBLE : View.GONE);
 			});
 			runOnUiThread(() -> {
-				w.clearFlags(WindowManager.LayoutParams.FLAG_NOT_TOUCHABLE | WindowManager.LayoutParams.FLAG_NOT_FOCUSABLE);
 				if (firstRun)
 					firstRunReq(this, new OnFirstRun() {
 						@Override
@@ -1424,8 +1421,8 @@ public class MainActivity extends AppCompatActivity {
 		Window w = getWindow();
 		int color = getResources().getColor(R.color.design_default_color_primary);
 		WindowInsetsControllerCompat wic = WindowCompat.getInsetsController(w, w.getDecorView());
-		if (APIOver23) w.setStatusBarColor(color);
-		if (APIOver26 && !APIOver35) w.setNavigationBarColor(color);
+		if (APIOver23 && !APIOver35) w.setStatusBarColor(color);
+		if (APIOver26) w.setNavigationBarColor(color);
 		wic.show(WindowInsetsCompat.Type.systemBars());
 		boolean lightBar = (newConfig.uiMode & Configuration.UI_MODE_NIGHT_MASK) != Configuration.UI_MODE_NIGHT_YES;
 		wic.setAppearanceLightNavigationBars(lightBar);

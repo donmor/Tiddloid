@@ -88,7 +88,7 @@ See http://tiddlywiki.com/ for more details of TiddlyWiki.
     | Cloud Service                             | No                                                       | Yes (via SAF)                                                                         | Yes (via SAF)                                                  |
     | Template                                  | Download on first startup, manually updated              | Download on creating new wiki, and cached in case it is unable to access the Internet | Download on creating new wiki                                  |
     | Compatibility                             | Supports legacy Android versions and most of TiddlyWikis | Supports latest Android versions best and supports most of TiddlyWikis                | Supports latest Android versions best and supports most of TW5 |
-    | Recommended Android version               | Android 4.4 ~ 9.0                                        | Android 4.4 and above, best for 8.0                                                   | Android 4.4 and above, best for 8.0                            |
+    | Recommended Android version               | Android 4.4 ~ 9.0                                        | Android 5.0 and above, best for 8.0                                                   | Android 5.0 and above, best for 8.0                            |
 
 
 ### License
