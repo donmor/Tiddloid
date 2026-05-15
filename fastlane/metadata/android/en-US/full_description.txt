@@ -1,4 +1,4 @@
-Tiddloid Lite, a lightweight version of Tiddloid, is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere. See https://tiddlywiki.com/ for more details of TiddlyWiki.
+Tiddloid is an app to work with locally stored TiddlyWikis. Once have some ideas, you can immediately write them down and save it in a tiddler, and sync the Wiki to your other devices so that you can access these ideas anywhere. See https://tiddlywiki.com/ for more details of TiddlyWiki.
 
 <b>Features</b>
 - Creating new TiddlyWiki files with latest template
