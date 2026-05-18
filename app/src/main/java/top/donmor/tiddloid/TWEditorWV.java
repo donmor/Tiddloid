@@ -315,7 +315,6 @@ public class TWEditorWV extends AppCompatActivity {
 		wvs.setLoadWithOverviewMode(true);
 		wvs.setAllowFileAccess(true);
 		wvs.setAllowContentAccess(true);
-		wvs.setAllowFileAccessFromFileURLs(true);
 		wvs.setSupportMultipleWindows(true);
 		wvs.setMediaPlaybackRequiresUserGesture(false);
 		if (MainActivity.isDebug(this)) WebView.setWebContentsDebuggingEnabled(true);    // 在debug环境启用调试
